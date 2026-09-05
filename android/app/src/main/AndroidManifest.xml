@@ -1,4 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Rede: dio (API) + connectivity_plus (status offline-first). INTERNET
+         precisa estar aqui no manifesto principal, senão builds release/profile
+         ficam sem acesso à rede (o manifesto de debug só cobre o hot reload). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!-- local_auth: desbloqueio por biometria/credencial do dispositivo. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+
+    <!-- image_picker: captura de foto pela câmera nos anexos da OS. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
     <application
         android:label="servory"
         android:name="${applicationName}"
