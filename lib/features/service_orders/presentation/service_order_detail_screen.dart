@@ -1,18 +1,17 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/local_file_image.dart';
+import '../../attachments/application/pending_uploads.dart';
 import '../../attachments/application/service_order_attachments_provider.dart';
-import '../../attachments/application/upload_queue_provider.dart';
 import '../../attachments/presentation/photo_capture_sheet.dart';
 import '../../attachments/presentation/signature_pad_sheet.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../equipments/application/equipments_provider.dart';
 import '../../locations/application/locations_provider.dart';
-import '../../sync/application/sync_provider.dart';
 import '../application/service_order_edit_controller.dart';
 import '../application/service_order_part_controller.dart';
 import '../application/service_orders_provider.dart';
@@ -54,6 +53,10 @@ class _ServiceOrderDetailScreenState
   bool _seeded = false;
   bool _saving = false;
   String? _error;
+
+  /// Atualizado a cada rebuild (não só na 1ª vez, ao contrário do
+  /// `_seedFrom`) — as ações nomeadas mudam a `version` e precisam da atual.
+  int? _currentVersion;
 
   @override
   void dispose() {
@@ -104,6 +107,7 @@ class _ServiceOrderDetailScreenState
       } else {
         await controller.update(
           serviceOrderId: widget.serviceOrderId,
+          baseVersion: _currentVersion,
           locationId: _locationId,
           equipmentId: _equipmentId,
           reason: _reasonController.text.trim(),
@@ -115,6 +119,9 @@ class _ServiceOrderDetailScreenState
         if (!mounted) return;
         Navigator.of(context).pop();
       }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.friendlyMessage);
     } catch (e) {
       if (!mounted) return;
       setState(
@@ -126,14 +133,26 @@ class _ServiceOrderDetailScreenState
     }
   }
 
-  Future<void> _runTransition(Future<void> Function(String) action) async {
+  Future<void> _runTransition(String action) async {
     setState(() {
       _saving = true;
       _error = null;
     });
     try {
-      await action(widget.serviceOrderId);
-    } catch (e) {
+      final c = ref.read(serviceOrderEditControllerProvider);
+      final v = _currentVersion;
+      switch (action) {
+        case 'start':
+          await c.start(widget.serviceOrderId, baseVersion: v);
+        case 'complete':
+          await c.complete(widget.serviceOrderId, baseVersion: v);
+        case 'reopen':
+          await c.reopen(widget.serviceOrderId, baseVersion: v);
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.friendlyMessage);
+    } catch (_) {
       if (!mounted) return;
       setState(() => _error = 'Não foi possível registrar a transição.');
     } finally {
@@ -163,6 +182,7 @@ class _ServiceOrderDetailScreenState
               body: const Center(child: Text('Ordem não encontrada.')),
             );
           }
+          _currentVersion = order.version;
           _seedFrom(order);
           return _buildForm(context, order: order);
         },
@@ -218,8 +238,8 @@ class _ServiceOrderDetailScreenState
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            await ref.read(syncRunnerProvider.notifier).runSync();
-            await ref.read(uploadQueueRunnerProvider.notifier).drain();
+            await ref.read(serviceOrderRepositoryProvider).refresh();
+            await drainPendingUploads(ref);
           },
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -241,39 +261,21 @@ class _ServiceOrderDetailScreenState
                           OutlinedButton(
                             onPressed: _saving
                                 ? null
-                                : () => _runTransition(
-                                    (id) => ref
-                                        .read(
-                                          serviceOrderEditControllerProvider,
-                                        )
-                                        .start(id),
-                                  ),
+                                : () => _runTransition('start'),
                             child: const Text('Iniciar'),
                           ),
                         if (order.status == 'in_progress')
                           OutlinedButton(
                             onPressed: _saving
                                 ? null
-                                : () => _runTransition(
-                                    (id) => ref
-                                        .read(
-                                          serviceOrderEditControllerProvider,
-                                        )
-                                        .complete(id),
-                                  ),
+                                : () => _runTransition('complete'),
                             child: const Text('Concluir'),
                           ),
                         if (order.status == 'completed')
                           OutlinedButton(
                             onPressed: _saving
                                 ? null
-                                : () => _runTransition(
-                                    (id) => ref
-                                        .read(
-                                          serviceOrderEditControllerProvider,
-                                        )
-                                        .reopen(id),
-                                  ),
+                                : () => _runTransition('reopen'),
                             child: const Text('Reabrir'),
                           ),
                       ],
@@ -518,11 +520,10 @@ class _PhotosSection extends ConsumerWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      File(item.filePath),
+                    child: localFileImage(
+                      item.filePath,
                       width: 96,
                       height: 96,
-                      fit: BoxFit.cover,
                     ),
                   ),
                   const Positioned(
@@ -578,8 +579,8 @@ class _SignatureSection extends ConsumerWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.file(
-              File(pendingSignature.first.filePath),
+            child: localFileImage(
+              pendingSignature.first.filePath,
               width: 120,
               height: 80,
               fit: BoxFit.contain,
@@ -679,7 +680,11 @@ class _PartsSection extends ConsumerWidget {
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () => ref
                               .read(serviceOrderPartControllerProvider)
-                              .deletePart(part.id),
+                              .deletePart(
+                                serviceOrderId: serviceOrderId,
+                                partId: part.id,
+                                baseVersion: part.version,
+                              ),
                         ),
                         onTap: () => _showPartSheet(context, ref, part: part),
                       ),
@@ -776,7 +781,9 @@ class _PartFormSheetState extends ConsumerState<_PartFormSheet> {
         );
       } else {
         await controller.updatePart(
+          serviceOrderId: widget.serviceOrderId,
           partId: widget.part!.id,
+          baseVersion: widget.part!.version,
           description: _descriptionController.text.trim(),
           partNumber: _partNumberController.text.trim(),
           quantity: _quantityController.text.trim(),

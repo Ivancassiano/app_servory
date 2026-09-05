@@ -1,12 +1,14 @@
-import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
-import '../../sync/application/sync_provider.dart';
+import '../../clients/application/clients_provider.dart';
+import '../data/service_order_repository.dart';
 
-/// Uma ordem + o nome do cliente, resolvido via join — evita uma consulta
-/// por linha na lista (a tabela local não guarda nome de cliente
-/// desnormalizado).
+export '../data/service_order_repository.dart'
+    show serviceOrderRepositoryProvider;
+
+/// Uma ordem + o nome do cliente. O join (antes em SQL) virou combinação de
+/// dois providers — funciona igual no app (drift) e no web (REST).
 class ServiceOrderWithClient {
   const ServiceOrderWithClient({required this.order, required this.clientName});
 
@@ -14,55 +16,33 @@ class ServiceOrderWithClient {
   final String clientName;
 }
 
-final serviceOrderListProvider = StreamProvider<List<ServiceOrderWithClient>>((
-  ref,
-) {
-  final db = ref.watch(appDatabaseProvider);
-  final query =
-      db.select(db.localServiceOrders).join([
-          leftOuterJoin(
-            db.localClients,
-            db.localClients.id.equalsExp(db.localServiceOrders.clientId),
-          ),
-        ])
-        ..where(db.localServiceOrders.deleted.equals(false))
-        ..orderBy([
-          OrderingTerm(
-            expression: db.localServiceOrders.localUpdatedAt,
-            mode: OrderingMode.desc,
-          ),
-        ]);
-  return query.watch().map(
-    (rows) => rows
-        .map(
-          (row) => ServiceOrderWithClient(
-            order: row.readTable(db.localServiceOrders),
-            clientName: row.readTableOrNull(db.localClients)?.name ?? '—',
-          ),
-        )
-        .toList(),
+final _serviceOrdersRawProvider = StreamProvider<List<LocalServiceOrder>>(
+  (ref) => ref.watch(serviceOrderRepositoryProvider).watchList(),
+);
+
+final serviceOrderListProvider =
+    Provider<AsyncValue<List<ServiceOrderWithClient>>>((ref) {
+  final ordersAsync = ref.watch(_serviceOrdersRawProvider);
+  final clients = ref.watch(clientListProvider).value ?? const [];
+  final nameById = {for (final c in clients) c.id: c.name};
+  return ordersAsync.whenData(
+    (orders) => [
+      for (final o in orders)
+        ServiceOrderWithClient(
+          order: o,
+          clientName: nameById[o.clientId] ?? '—',
+        ),
+    ],
   );
 });
 
 final serviceOrderByIdProvider =
-    StreamProvider.family<LocalServiceOrder?, String>((ref, id) {
-      final db = ref.watch(appDatabaseProvider);
-      final query = db.select(db.localServiceOrders)
-        ..where((t) => t.id.equals(id));
-      return query.watchSingleOrNull();
-    });
+    StreamProvider.family<LocalServiceOrder?, String>(
+  (ref, id) => ref.watch(serviceOrderRepositoryProvider).watchById(id),
+);
 
 final servicePartsProvider =
-    StreamProvider.family<List<LocalServiceOrderPart>, String>((
-      ref,
-      serviceOrderId,
-    ) {
-      final db = ref.watch(appDatabaseProvider);
-      final query = db.select(db.localServiceOrderParts)
-        ..where(
-          (t) =>
-              t.serviceOrderId.equals(serviceOrderId) & t.deleted.equals(false),
-        )
-        ..orderBy([(t) => OrderingTerm(expression: t.localUpdatedAt)]);
-      return query.watch();
-    });
+    StreamProvider.family<List<LocalServiceOrderPart>, String>(
+  (ref, orderId) =>
+      ref.watch(serviceOrderRepositoryProvider).watchParts(orderId),
+);

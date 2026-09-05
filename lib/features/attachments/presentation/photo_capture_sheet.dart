@@ -1,14 +1,14 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../application/upload_queue_controller.dart';
+import '../application/attachment_controller.dart';
 
-/// Bottom sheet: escolhe câmera ou galeria, depois classifica a foto
-/// (`kind`/legenda) antes de enfileirar (GUIA-FLUTTER.md §7) — a foto é
-/// salva localmente e enfileirada mesmo sem conexão.
+/// Bottom sheet: escolhe câmera ou galeria, classifica a foto
+/// (`kind`/legenda) e envia (GUIA-FLUTTER.md §7). No nativo salva local e
+/// enfileira (funciona offline); no web envia direto.
 class PhotoCaptureSheet extends ConsumerStatefulWidget {
   const PhotoCaptureSheet({super.key, required this.serviceOrderId});
 
@@ -20,7 +20,8 @@ class PhotoCaptureSheet extends ConsumerStatefulWidget {
 
 class _PhotoCaptureSheetState extends ConsumerState<PhotoCaptureSheet> {
   final _captionController = TextEditingController();
-  File? _picked;
+  XFile? _picked;
+  Uint8List? _bytes;
   String _kind = 'other';
   bool _saving = false;
 
@@ -36,22 +37,27 @@ class _PhotoCaptureSheetState extends ConsumerState<PhotoCaptureSheet> {
       imageQuality: 85,
     );
     if (file == null || !mounted) return;
-    setState(() => _picked = File(file.path));
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    setState(() {
+      _picked = file;
+      _bytes = bytes;
+    });
   }
 
   Future<void> _submit() async {
     final picked = _picked;
-    if (picked == null) return;
+    final bytes = _bytes;
+    if (picked == null || bytes == null) return;
     setState(() => _saving = true);
     try {
-      await ref
-          .read(uploadQueueControllerProvider)
-          .enqueuePhoto(
-            serviceOrderId: widget.serviceOrderId,
-            sourceFile: picked,
-            photoKind: _kind,
-            caption: _captionController.text.trim(),
-          );
+      await ref.read(attachmentControllerProvider).submitPhoto(
+        orderId: widget.serviceOrderId,
+        bytes: bytes,
+        filename: picked.name,
+        photoKind: _kind,
+        caption: _captionController.text.trim(),
+      );
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -77,7 +83,7 @@ class _PhotoCaptureSheetState extends ConsumerState<PhotoCaptureSheet> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
-            if (_picked == null) ...[
+            if (_bytes == null) ...[
               Row(
                 children: [
                   Expanded(
@@ -100,11 +106,14 @@ class _PhotoCaptureSheetState extends ConsumerState<PhotoCaptureSheet> {
             ] else ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.file(_picked!, height: 180, fit: BoxFit.cover),
+                child: Image.memory(_bytes!, height: 180, fit: BoxFit.cover),
               ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () => setState(() => _picked = null),
+                onPressed: () => setState(() {
+                  _picked = null;
+                  _bytes = null;
+                }),
                 child: const Text('Trocar foto'),
               ),
               const SizedBox(height: 8),

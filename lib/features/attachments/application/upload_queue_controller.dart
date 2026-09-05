@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart' show Value;
@@ -13,9 +14,10 @@ import '../../auth/application/session_controller.dart';
 import '../../sync/application/sync_provider.dart';
 import 'upload_queue_provider.dart';
 
-/// Grava o arquivo capturado (foto/assinatura) no diretório do app e
+/// Grava os bytes capturados (foto/assinatura) no diretório do app e
 /// enfileira o envio (GUIA-FLUTTER.md §7) — a captura funciona sempre,
-/// mesmo offline; só o envio de fato precisa de conexão.
+/// mesmo offline; só o envio de fato precisa de conexão. Caminho **nativo**
+/// (o web envia direto, sem fila — ver `attachment_controller_web.dart`).
 class UploadQueueController {
   UploadQueueController(this._ref);
   final Ref _ref;
@@ -32,12 +34,14 @@ class UploadQueueController {
 
   Future<void> enqueuePhoto({
     required String serviceOrderId,
-    required File sourceFile,
+    required Uint8List bytes,
+    required String extension,
     required String photoKind,
     String? caption,
   }) => _enqueue(
     serviceOrderId: serviceOrderId,
-    sourceFile: sourceFile,
+    bytes: bytes,
+    extension: extension.isEmpty ? '.jpg' : extension,
     kind: 'photo',
     photoKind: photoKind,
     caption: caption,
@@ -45,29 +49,29 @@ class UploadQueueController {
 
   Future<void> enqueueSignature({
     required String serviceOrderId,
-    required File sourceFile,
+    required Uint8List bytes,
   }) => _enqueue(
     serviceOrderId: serviceOrderId,
-    sourceFile: sourceFile,
+    bytes: bytes,
+    extension: '.png',
     kind: 'signature',
   );
 
   Future<void> _enqueue({
     required String serviceOrderId,
-    required File sourceFile,
+    required Uint8List bytes,
+    required String extension,
     required String kind,
     String? photoKind,
     String? caption,
   }) async {
     final organizationId = _organizationId;
     final id = const Uuid().v4();
-    final bytes = await sourceFile.readAsBytes();
     final hash = sha256.convert(bytes).toString();
 
     // Uma subpasta por tipo (`photos/` e `signature/`) deixa a pasta
     // auto-descritiva: depois que a fila drena e a linha some, o gerador de
-    // PDF local (§10) ainda consegue classificar cada arquivo pelo caminho,
-    // sem depender de metadado que já foi embora.
+    // PDF local (§10) ainda consegue classificar cada arquivo pelo caminho.
     final dir = Directory(
       p.join(
         (await getApplicationDocumentsDirectory()).path,
@@ -77,8 +81,8 @@ class UploadQueueController {
       ),
     );
     await dir.create(recursive: true);
-    final savedPath = p.join(dir.path, '$id${p.extension(sourceFile.path)}');
-    await sourceFile.copy(savedPath);
+    final savedPath = p.join(dir.path, '$id$extension');
+    await File(savedPath).writeAsBytes(bytes, flush: true);
 
     await _db
         .into(_db.uploadQueue)
@@ -114,8 +118,7 @@ class UploadQueueController {
     try {
       await _ref.read(uploadQueueRunnerProvider.notifier).drain();
     } catch (_) {
-      // silencioso de propósito: a linha já está na fila e será tentada de
-      // novo na próxima sincronização (puxar pra atualizar, ou reabrir a tela).
+      // silencioso: a linha já está na fila e será tentada de novo depois.
     }
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../sync/application/sync_provider.dart';
 import '../application/locations_provider.dart';
 
 class LocationListScreen extends ConsumerWidget {
@@ -15,7 +14,7 @@ class LocationListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Locais')),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(syncRunnerProvider.notifier).runSync(),
+        onRefresh: () => ref.read(locationRepositoryProvider).refresh(),
         child: locationsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../core/network/api_exception.dart';
 import '../application/equipment_edit_controller.dart';
 import '../application/equipments_provider.dart';
 
@@ -25,6 +26,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
   final _brandController = TextEditingController();
   final _modelController = TextEditingController();
   final _notesController = TextEditingController();
+  int? _version;
   bool _seeded = false;
   bool _saving = false;
   String? _error;
@@ -44,6 +46,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
     _brandController.text = equipment.brand;
     _modelController.text = equipment.model;
     _notesController.text = equipment.notes;
+    _version = equipment.version;
     _seeded = true;
   }
 
@@ -58,6 +61,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
           .read(equipmentEditControllerProvider)
           .update(
             equipmentId: widget.equipmentId,
+            baseVersion: _version,
             name: _nameController.text.trim(),
             brand: _brandController.text.trim(),
             model: _modelController.text.trim(),
@@ -65,6 +69,9 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.friendlyMessage);
     } catch (_) {
       if (!mounted) return;
       setState(

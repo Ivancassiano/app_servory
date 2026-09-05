@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../core/network/api_exception.dart';
 import '../application/location_edit_controller.dart';
 import '../application/locations_provider.dart';
 
@@ -23,6 +24,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
   final _contactController = TextEditingController();
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
+  int? _version;
   bool _seeded = false;
   bool _saving = false;
   String? _error;
@@ -42,6 +44,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
     _contactController.text = location.contactPerson;
     _phoneController.text = location.phone;
     _notesController.text = location.notes;
+    _version = location.version;
     _seeded = true;
   }
 
@@ -56,6 +59,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
           .read(locationEditControllerProvider)
           .update(
             locationId: widget.locationId,
+            baseVersion: _version,
             name: _nameController.text.trim(),
             contactPerson: _contactController.text.trim(),
             phone: _phoneController.text.trim(),
@@ -63,6 +67,9 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.friendlyMessage);
     } catch (_) {
       if (!mounted) return;
       setState(

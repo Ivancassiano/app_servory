@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' show OrderingTerm, Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
 
 import '../../../core/db/app_database.dart';
 import '../../sync/application/sync_provider.dart';
@@ -54,18 +55,20 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
       final pending = await db.select(db.uploadQueue).get();
       for (final item in pending) {
         try {
-          final file = File(item.filePath);
+          final bytes = await File(item.filePath).readAsBytes();
           if (item.kind == 'photo') {
             await api.addPhoto(
               serviceOrderId: item.serviceOrderId,
-              file: file,
+              bytes: bytes,
+              filename: p.basename(item.filePath),
               kind: item.photoKind,
               caption: item.caption,
             );
           } else {
             await api.putSignature(
               serviceOrderId: item.serviceOrderId,
-              file: file,
+              bytes: bytes,
+              filename: p.basename(item.filePath),
             );
           }
           await (db.delete(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../sync/application/sync_provider.dart';
 import '../application/clients_provider.dart';
 
 class ClientListScreen extends ConsumerWidget {
@@ -15,7 +14,7 @@ class ClientListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Clientes')),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(syncRunnerProvider.notifier).runSync(),
+        onRefresh: () => ref.read(clientRepositoryProvider).refresh(),
         child: clientsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(

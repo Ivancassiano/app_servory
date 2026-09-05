@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../attachments/application/upload_queue_provider.dart';
-import '../../sync/application/sync_provider.dart';
+import '../../attachments/application/pending_uploads.dart';
 import '../application/service_orders_provider.dart';
 
 const _statusLabels = {
@@ -24,8 +23,8 @@ class ServiceOrderListScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Ordens de serviço')),
       body: RefreshIndicator(
         onRefresh: () async {
-          await ref.read(syncRunnerProvider.notifier).runSync();
-          await ref.read(uploadQueueRunnerProvider.notifier).drain();
+          await ref.read(serviceOrderRepositoryProvider).refresh();
+          await drainPendingUploads(ref);
         },
         child: ordersAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),

@@ -3,6 +3,10 @@ import 'dart:convert';
 import 'package:drift/drift.dart' show Value;
 
 import '../../../core/db/app_database.dart';
+import '../../clients/data/client_mapper.dart';
+import '../../equipments/data/equipment_mapper.dart';
+import '../../locations/data/location_mapper.dart';
+import '../../service_orders/data/service_order_mapper.dart';
 import '../data/sync_api.dart';
 
 /// As 3 entidades desta entrega (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`/
@@ -221,152 +225,41 @@ class SyncEngine {
     }
   }
 
+  /// Grava o estado atual de uma entidade vindo de `pull`/`bootstrap`. O
+  /// mapeamento JSON→`Local*` é o mesmo do caminho REST direto
+  /// (`lib/features/*/data/*_mapper.dart`) — o shape é idêntico.
   Future<void> _upsert(String entityType, Map<String, dynamic> data) async {
-    final now = DateTime.now();
+    final org = _organizationId;
     switch (entityType) {
       case 'client':
         await _db
             .into(_db.localClients)
             .insertOnConflictUpdate(
-              LocalClientsCompanion.insert(
-                id: data['id'] as String,
-                organizationId: _organizationId,
-                kind: data['kind'] as String? ?? 'legal',
-                name: data['name'] as String? ?? '',
-                legalName: Value(data['legal_name'] as String? ?? ''),
-                taxId: Value(data['tax_id'] as String? ?? ''),
-                phone: Value(data['phone'] as String? ?? ''),
-                email: Value(data['email'] as String? ?? ''),
-                contactPerson: Value(data['contact_person'] as String? ?? ''),
-                internalNotes: Value(data['internal_notes'] as String?),
-                version: Value(data['version'] as int?),
-                createdAt: Value(_parseDate(data['created_at'])),
-                updatedAt: Value(_parseDate(data['updated_at'])),
-                localUpdatedAt: now,
-                syncStatus: const Value('synced'),
-                lastSyncedAt: Value(now),
-                deleted: const Value(false),
-              ),
+              clientFromApiJson(data, organizationId: org),
             );
       case 'location':
         await _db
             .into(_db.localLocations)
             .insertOnConflictUpdate(
-              LocalLocationsCompanion.insert(
-                id: data['id'] as String,
-                organizationId: _organizationId,
-                clientId: data['client_id'] as String? ?? '',
-                parentLocationId: Value(data['parent_location_id'] as String?),
-                name: data['name'] as String? ?? '',
-                postalCode: Value(data['postal_code'] as String? ?? ''),
-                street: Value(data['street'] as String? ?? ''),
-                number: Value(data['number'] as String? ?? ''),
-                complement: Value(data['complement'] as String? ?? ''),
-                district: Value(data['district'] as String? ?? ''),
-                city: Value(data['city'] as String? ?? ''),
-                state: Value(data['state'] as String? ?? ''),
-                contactPerson: Value(data['contact_person'] as String? ?? ''),
-                phone: Value(data['phone'] as String? ?? ''),
-                accessInstructions: Value(
-                  data['access_instructions'] as String? ?? '',
-                ),
-                notes: Value(data['notes'] as String? ?? ''),
-                version: Value(data['version'] as int?),
-                createdAt: Value(_parseDate(data['created_at'])),
-                updatedAt: Value(_parseDate(data['updated_at'])),
-                localUpdatedAt: now,
-                syncStatus: const Value('synced'),
-                lastSyncedAt: Value(now),
-                deleted: const Value(false),
-              ),
+              locationFromApiJson(data, organizationId: org),
             );
       case 'equipment':
         await _db
             .into(_db.localEquipments)
             .insertOnConflictUpdate(
-              LocalEquipmentsCompanion.insert(
-                id: data['id'] as String,
-                organizationId: _organizationId,
-                locationId: data['location_id'] as String? ?? '',
-                equipmentTypeId: data['equipment_type_id'] as String? ?? '',
-                name: data['name'] as String? ?? '',
-                brand: Value(data['brand'] as String? ?? ''),
-                model: Value(data['model'] as String? ?? ''),
-                serialNumber: Value(data['serial_number'] as String?),
-                internalLocation: Value(
-                  data['internal_location'] as String? ?? '',
-                ),
-                installedAt: Value(data['installed_at'] as String?),
-                cost: Value(data['cost'] as String?),
-                notes: Value(data['notes'] as String? ?? ''),
-                version: Value(data['version'] as int?),
-                createdAt: Value(_parseDate(data['created_at'])),
-                updatedAt: Value(_parseDate(data['updated_at'])),
-                localUpdatedAt: now,
-                syncStatus: const Value('synced'),
-                lastSyncedAt: Value(now),
-                deleted: const Value(false),
-              ),
+              equipmentFromApiJson(data, organizationId: org),
             );
       case 'service_order':
         await _db
             .into(_db.localServiceOrders)
             .insertOnConflictUpdate(
-              LocalServiceOrdersCompanion.insert(
-                id: data['id'] as String,
-                organizationId: _organizationId,
-                clientId: data['client_id'] as String? ?? '',
-                locationId: Value(data['location_id'] as String?),
-                equipmentId: Value(data['equipment_id'] as String?),
-                serviceOrderTypeId: Value(
-                  data['service_order_type_id'] as String?,
-                ),
-                companyId: Value(data['company_id'] as String?),
-                assignedUserId: Value(data['assigned_user_id'] as String?),
-                status: Value(data['status'] as String? ?? 'draft'),
-                reason: Value(data['reason'] as String? ?? ''),
-                diagnosis: Value(data['diagnosis'] as String? ?? ''),
-                workPerformed: Value(data['work_performed'] as String? ?? ''),
-                recommendations: Value(
-                  data['recommendations'] as String? ?? '',
-                ),
-                finalCondition: Value(data['final_condition'] as String? ?? ''),
-                notes: Value(data['notes'] as String? ?? ''),
-                scheduledFor: Value(_parseDate(data['scheduled_for'])),
-                startedAt: Value(_parseDate(data['started_at'])),
-                completedAt: Value(_parseDate(data['completed_at'])),
-                version: Value(data['version'] as int?),
-                createdAt: Value(_parseDate(data['created_at'])),
-                updatedAt: Value(_parseDate(data['updated_at'])),
-                localUpdatedAt: now,
-                syncStatus: const Value('synced'),
-                lastSyncedAt: Value(now),
-                deleted: const Value(false),
-              ),
+              serviceOrderFromApiJson(data, organizationId: org),
             );
       case 'service_order_part':
         await _db
             .into(_db.localServiceOrderParts)
             .insertOnConflictUpdate(
-              LocalServiceOrderPartsCompanion.insert(
-                id: data['id'] as String,
-                organizationId: _organizationId,
-                serviceOrderId: data['service_order_id'] as String? ?? '',
-                description: Value(data['description'] as String? ?? ''),
-                partNumber: Value(data['part_number'] as String? ?? ''),
-                quantity: Value(data['quantity']?.toString() ?? '1'),
-                unit: Value(data['unit'] as String? ?? ''),
-                unitCost: Value(data['unit_cost']?.toString()),
-                unitPrice: Value(data['unit_price']?.toString()),
-                notes: Value(data['notes'] as String? ?? ''),
-                version: Value(data['version'] as int?),
-                createdAt: Value(_parseDate(data['created_at'])),
-                updatedAt: Value(_parseDate(data['updated_at'])),
-                localUpdatedAt: now,
-                syncStatus: const Value('synced'),
-                lastSyncedAt: Value(now),
-                deleted: const Value(false),
-              ),
+              servicePartFromApiJson(data, organizationId: org),
             );
     }
   }
@@ -395,9 +288,6 @@ class SyncEngine {
             .write(const LocalServiceOrderPartsCompanion(deleted: Value(true)));
     }
   }
-
-  DateTime? _parseDate(Object? value) =>
-      value == null ? null : DateTime.tryParse(value as String);
 
   Future<int> _readCursor() async {
     final row =

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,9 +20,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     // 1ª sincronização do dispositivo para esta organização (bootstrap) ou
     // um pull normal se já houver dado local — `bootstrapIfNeeded` decide.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(syncRunnerProvider.notifier).bootstrapIfNeeded();
-    });
+    // No web não há banco local: cada tela busca do REST sob demanda.
+    if (!kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(syncRunnerProvider.notifier).bootstrapIfNeeded();
+      });
+    }
   }
 
   @override

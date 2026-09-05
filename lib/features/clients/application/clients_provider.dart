@@ -1,25 +1,17 @@
-import 'package:drift/drift.dart' show OrderingTerm;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
-import '../../sync/application/sync_provider.dart';
+import '../data/client_repository.dart';
 
-/// Clientes locais (bootstrap/pull já aplicados), ordenados por nome —
-/// `.watch()` do Drift reemite sozinho a cada escrita na tabela, então a
-/// tela nunca precisa de um `setState` manual pra refletir uma sincronização.
-final clientListProvider = StreamProvider<List<LocalClient>>((ref) {
-  final db = ref.watch(appDatabaseProvider);
-  final query = db.select(db.localClients)
-    ..where((t) => t.deleted.equals(false))
-    ..orderBy([(t) => OrderingTerm(expression: t.name)]);
-  return query.watch();
-});
+export '../data/client_repository.dart' show clientRepositoryProvider;
 
-final clientByIdProvider = StreamProvider.family<LocalClient?, String>((
-  ref,
-  id,
-) {
-  final db = ref.watch(appDatabaseProvider);
-  final query = db.select(db.localClients)..where((t) => t.id.equals(id));
-  return query.watchSingleOrNull();
-});
+/// Lista/detalhe de clientes — delegam ao [clientRepositoryProvider], que no
+/// app lê do cache drift (`.watch()` reativo) e no web do cache REST em
+/// memória. Os dois expõem o mesmo `Stream`, então as telas não mudam.
+final clientListProvider = StreamProvider<List<LocalClient>>(
+  (ref) => ref.watch(clientRepositoryProvider).watchList(),
+);
+
+final clientByIdProvider = StreamProvider.family<LocalClient?, String>(
+  (ref, id) => ref.watch(clientRepositoryProvider).watchById(id),
+);

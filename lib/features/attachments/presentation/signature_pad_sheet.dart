@@ -1,17 +1,12 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:signature/signature.dart';
-import 'package:uuid/uuid.dart';
 
-import '../application/upload_queue_controller.dart';
+import '../application/attachment_controller.dart';
 
 /// Tela cheia de captura de assinatura (GUIA-FLUTTER.md §7/§12) — desenha
-/// no canvas, exporta PNG (único formato aceito pelo servidor) e enfileira
-/// o envio. Funciona sempre, mesmo offline.
+/// no canvas, exporta PNG (único formato aceito pelo servidor) e envia. No
+/// nativo enfileira (funciona offline); no web envia direto.
 class SignaturePadSheet extends ConsumerStatefulWidget {
   const SignaturePadSheet({super.key, required this.serviceOrderId});
 
@@ -41,15 +36,10 @@ class _SignaturePadSheetState extends ConsumerState<SignaturePadSheet> {
     try {
       final bytes = await _controller.toPngBytes();
       if (bytes == null) return;
-      final dir = await getTemporaryDirectory();
-      final file = File(p.join(dir.path, '${const Uuid().v4()}.png'));
-      await file.writeAsBytes(bytes);
-      await ref
-          .read(uploadQueueControllerProvider)
-          .enqueueSignature(
-            serviceOrderId: widget.serviceOrderId,
-            sourceFile: file,
-          );
+      await ref.read(attachmentControllerProvider).submitSignature(
+        orderId: widget.serviceOrderId,
+        bytes: bytes,
+      );
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _saving = false);

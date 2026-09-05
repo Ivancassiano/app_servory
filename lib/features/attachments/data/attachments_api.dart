@@ -1,13 +1,13 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
 import '../../../core/network/api_exception.dart';
 
 /// Fotos e assinatura de ordem de serviço (GUIA-FLUTTER.md §7) — REST puro,
-/// fora do protocolo de sync. Download nunca vem em binário direto: o
-/// servidor sempre devolve uma URL assinada e temporária (§26.4), que
-/// `Image.network` consome normalmente.
+/// fora do protocolo de sync. Recebe **bytes** (não `File`) para funcionar
+/// igual no web e no nativo. Download nunca vem em binário direto: o
+/// servidor sempre devolve uma URL assinada e temporária (§26.4).
 class AttachmentsApi {
   AttachmentsApi(this._dio);
 
@@ -15,7 +15,8 @@ class AttachmentsApi {
 
   Future<Map<String, dynamic>> addPhoto({
     required String serviceOrderId,
-    required File file,
+    required Uint8List bytes,
+    required String filename,
     String? kind,
     String? caption,
   }) async {
@@ -23,7 +24,7 @@ class AttachmentsApi {
       final response = await _dio.post(
         '/v1/service-orders/$serviceOrderId/photos',
         data: FormData.fromMap({
-          'file': await MultipartFile.fromFile(file.path),
+          'file': MultipartFile.fromBytes(bytes, filename: filename),
           'kind': ?kind,
           if (caption != null && caption.isNotEmpty) 'caption': caption,
         }),
@@ -73,13 +74,14 @@ class AttachmentsApi {
 
   Future<Map<String, dynamic>> putSignature({
     required String serviceOrderId,
-    required File file,
+    required Uint8List bytes,
+    String filename = 'signature.png',
   }) async {
     try {
       final response = await _dio.post(
         '/v1/service-orders/$serviceOrderId/signature',
         data: FormData.fromMap({
-          'file': await MultipartFile.fromFile(file.path),
+          'file': MultipartFile.fromBytes(bytes, filename: filename),
         }),
       );
       return response.data as Map<String, dynamic>;
