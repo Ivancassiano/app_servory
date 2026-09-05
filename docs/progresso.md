@@ -5,6 +5,59 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: PDF do laudo (cópia de campo) ✅
+
+Fecha o item §10 do `GUIA-FLUTTER.md` / ADR-0018 ("PDF: continua fora do
+sync"). O `worker` continua gerando a via canônica no servidor quando a
+ordem sincroniza; esta fatia é só a **cópia de campo** que o técnico gera e
+entrega na hora, montada 100% do que já está no dispositivo (banco local +
+arquivos de anexo) — nada aqui toca a rede.
+
+- **`pdf` + `printing`**: `buildServiceOrderPdf(ServiceOrderReportData)`
+  (`service_order_pdf.dart`) é função pura (bytes de entrada → `Uint8List`),
+  sem I/O nem Riverpod, testável direto. `ServiceOrderReportScreen` usa o
+  `PdfPreview` do `printing` (pré-visualização + compartilhar + imprimir; o
+  compartilhar usa a folha nativa do SO e funciona offline). Rota
+  `/service-orders/:id/report`, botão na `ServiceOrderDetailScreen`.
+- **`serviceOrderReportDataProvider`** (`FutureProvider.family`, não Stream —
+  o laudo é um retrato do momento do toque, não algo ao vivo): junta ordem
+  + cliente + local + equipamento + peças do banco local e lê fotos/
+  assinatura **do disco**, não da URL assinada do servidor. Nome do técnico/
+  organização vêm de `identityProvider` *só se já estiver em cache* nesta
+  sessão (`.asData?.value`) — login feito offline simplesmente omite a
+  linha, sem disparar rede.
+- **Anexo agora em subpasta por tipo** (`attachments/{id}/photos/` e
+  `/signature/`): antes tudo caía em `attachments/{id}/` com nome UUID. Como
+  a fila de upload apaga a linha (mas não o arquivo) depois de enviar, o
+  gerador de PDF precisava classificar cada arquivo só pelo caminho — a
+  subpasta deixa a pasta auto-descritiva. `caption`/`photo_kind` só entram
+  no PDF enquanto o item ainda está na fila (metadado some junto com a
+  linha); "Substituir" assinatura usa o arquivo mais recente da pasta.
+- **Rodapé** avisa quando `hasPendingUploads` — deixa explícito que a via
+  oficial no servidor ainda vai divergir desta até sincronizar.
+- **Fontes**: as embutidas do `pdf` (Helvetica) cobrem Latin-1, o que basta
+  pro português — só o travessão `—` (U+2014) não renderiza, então o
+  gerador usa hífen/`·`. Embutir uma TTF Unicode de verdade fica como
+  melhoria de tipografia, não bloqueia.
+- 33 testes (era 30): 3 novos em `service_order_pdf_test.dart` (PDF válido
+  com dados mínimos; com peças/fotos/assinatura; ordem vazia sem estourar).
+  Sem teste do provider (depende de `path_provider`/plataforma — mesmo
+  critério das fatias anteriores: cobertura real vem da verificação ao vivo).
+- **Ainda não verificado ao vivo** no emulador/simulador (build Android +
+  iOS-simulador compilando OK). Fluxo a exercer: capturar foto+assinatura
+  offline → "Gerar PDF" → conferir preview e compartilhar.
+
+### Próximo (app)
+
+- Verificação ao vivo do PDF (capturar anexos offline → gerar → compartilhar).
+- Criar (não só editar) location/equipment — precisa de seletor de
+  cliente/local/tipo na UI.
+- Formulário de ordem: campos REST-only (tipo de ordem, empresa emissora,
+  técnico designado, `scheduled_for`).
+- Etiquetas/QR Code (spec §8–§12) — nada implementado no app ainda.
+- Empresas e Pessoa (`companies`/`people`) — emitente do laudo.
+- l10n via ARB quando houver material de tradução real.
+
 ## `app_servory` — `feature/service-orders`: fotos e assinatura via fila de
 ## upload offline ✅
 

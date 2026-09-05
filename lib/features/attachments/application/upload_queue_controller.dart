@@ -64,11 +64,16 @@ class UploadQueueController {
     final bytes = await sourceFile.readAsBytes();
     final hash = sha256.convert(bytes).toString();
 
+    // Uma subpasta por tipo (`photos/` e `signature/`) deixa a pasta
+    // auto-descritiva: depois que a fila drena e a linha some, o gerador de
+    // PDF local (§10) ainda consegue classificar cada arquivo pelo caminho,
+    // sem depender de metadado que já foi embora.
     final dir = Directory(
       p.join(
         (await getApplicationDocumentsDirectory()).path,
         'attachments',
         serviceOrderId,
+        kind == 'signature' ? 'signature' : 'photos',
       ),
     );
     await dir.create(recursive: true);

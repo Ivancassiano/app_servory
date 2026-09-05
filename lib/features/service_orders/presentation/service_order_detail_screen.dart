@@ -451,6 +451,15 @@ class _ServiceOrderDetailScreenState
                     ),
                     const SizedBox(height: 8),
                     _SignatureSection(serviceOrderId: order.id),
+                    const SizedBox(height: 32),
+                    const Divider(),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: () =>
+                          context.push('/service-orders/${order.id}/report'),
+                      icon: const Icon(Icons.picture_as_pdf_outlined),
+                      label: const Text('Gerar PDF (cópia de campo)'),
+                    ),
                   ],
                 ],
               ),
