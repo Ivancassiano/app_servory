@@ -26,19 +26,30 @@ const offlineSessionTtl = Duration(days: 7);
 
 const _gatedRoutes = {'/login', '/splash', '/unlock', '/offline-expired'};
 
-/// Reconstruído a cada mudança de sessão, conectividade ou trava de app —
-/// as 3 coisas que decidem pra onde redirecionar. Simples o bastante com
-/// esse número de rotas; um `ChangeNotifier` só compensaria com uma árvore
-/// de navegação muito maior.
+/// Instância única de `GoRouter`: sessão, conectividade e trava de app — as 3
+/// coisas que decidem pra onde redirecionar — chegam pelo `refreshListenable`,
+/// que faz o `redirect` rodar de novo sem recriar o router. Recriar o router a
+/// cada mudança de estado desmontava a árvore de navegação inteira e junto com
+/// ela o estado das telas (ex.: a mensagem de erro do login sumia no frame
+/// seguinte a um 401).
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final session = ref.watch(sessionControllerProvider);
-  final online = ref.watch(isOnlineProvider).value;
-  final unlocked = ref.watch(appLockControllerProvider);
-  final store = ref.watch(secureStoreProvider);
+  final refresh = ValueNotifier<int>(0);
+  ref.onDispose(refresh.dispose);
+  void bump(Object? _, Object? _) => refresh.value++;
+  ref.listen(sessionControllerProvider, bump);
+  ref.listen(isOnlineProvider, bump);
+  ref.listen(appLockControllerProvider, bump);
+
+  final store = ref.read(secureStoreProvider);
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: refresh,
     redirect: (context, state) async {
+      final session = ref.read(sessionControllerProvider);
+      final online = ref.read(isOnlineProvider).value;
+      final unlocked = ref.read(appLockControllerProvider);
+
       bool? expired;
       if (session is SessionAuthenticated && online == false) {
         final lastValidation = await store.readLastOnlineValidation();
