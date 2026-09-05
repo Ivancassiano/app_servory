@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -58,6 +59,34 @@ void main() {
     when(
       () => api.bootstrap(
         entityType: 'equipment',
+        page: any(named: 'page'),
+      ),
+    ).thenAnswer(
+      (_) async => const SyncBootstrapPage(
+        items: [],
+        total: 0,
+        page: 1,
+        size: 100,
+        cursor: 5,
+      ),
+    );
+    when(
+      () => api.bootstrap(
+        entityType: 'service_order',
+        page: any(named: 'page'),
+      ),
+    ).thenAnswer(
+      (_) async => const SyncBootstrapPage(
+        items: [],
+        total: 0,
+        page: 1,
+        size: 100,
+        cursor: 5,
+      ),
+    );
+    when(
+      () => api.bootstrap(
+        entityType: 'service_order_part',
         page: any(named: 'page'),
       ),
     ).thenAnswer(
@@ -306,6 +335,187 @@ void main() {
       )..where((t) => t.id.equals('e1'))).getSingle();
       expect(equipment.syncStatus, 'conflict');
       expect(equipment.syncError, 'VERSION_CONFLICT');
+
+      expect(await db.select(db.syncOutbox).get(), isEmpty);
+    },
+  );
+
+  test(
+    'bootstrap também popula service_order e service_order_part',
+    () async {
+      for (final entityType in ['client', 'location', 'equipment']) {
+        when(
+          () => api.bootstrap(entityType: entityType, page: any(named: 'page')),
+        ).thenAnswer(
+          (_) async => const SyncBootstrapPage(
+            items: [],
+            total: 0,
+            page: 1,
+            size: 100,
+            cursor: 7,
+          ),
+        );
+      }
+      when(
+        () => api.bootstrap(
+          entityType: 'service_order',
+          page: any(named: 'page'),
+        ),
+      ).thenAnswer(
+        (_) async => const SyncBootstrapPage(
+          items: [
+            {
+              'id': 'so1',
+              'client_id': 'c1',
+              'status': 'open',
+              'reason': 'Não gela',
+              'version': 1,
+            },
+          ],
+          total: 1,
+          page: 1,
+          size: 100,
+          cursor: 7,
+        ),
+      );
+      when(
+        () => api.bootstrap(
+          entityType: 'service_order_part',
+          page: any(named: 'page'),
+        ),
+      ).thenAnswer(
+        (_) async => const SyncBootstrapPage(
+          items: [
+            {
+              'id': 'p1',
+              'service_order_id': 'so1',
+              'description': 'Filtro',
+              'quantity': '2',
+              'version': 1,
+            },
+          ],
+          total: 1,
+          page: 1,
+          size: 100,
+          cursor: 7,
+        ),
+      );
+
+      await engine.bootstrap();
+
+      final order = await (db.select(
+        db.localServiceOrders,
+      )..where((t) => t.id.equals('so1'))).getSingle();
+      expect(order.clientId, 'c1');
+      expect(order.status, 'open');
+      expect(order.syncStatus, 'synced');
+
+      final part = await (db.select(
+        db.localServiceOrderParts,
+      )..where((t) => t.id.equals('p1'))).getSingle();
+      expect(part.serviceOrderId, 'so1');
+      expect(part.description, 'Filtro');
+      expect(part.quantity, '2');
+    },
+  );
+
+  test(
+    'push: ação nomeada (start) da ordem e create/update/delete de peça '
+    'gravam na tabela certa',
+    () async {
+      final now = DateTime.now();
+      await db.batch((b) {
+        b.insertAll(db.localServiceOrders, [
+          LocalServiceOrdersCompanion.insert(
+            id: 'so1',
+            organizationId: 'org1',
+            clientId: 'c1',
+            status: const Value('open'),
+            localUpdatedAt: now,
+          ),
+        ]);
+        b.insertAll(db.localServiceOrderParts, [
+          LocalServiceOrderPartsCompanion.insert(
+            id: 'p1',
+            organizationId: 'org1',
+            serviceOrderId: 'so1',
+            localUpdatedAt: now,
+          ),
+          LocalServiceOrderPartsCompanion.insert(
+            id: 'p2',
+            organizationId: 'org1',
+            serviceOrderId: 'so1',
+            localUpdatedAt: now,
+          ),
+        ]);
+        b.insertAll(db.syncOutbox, [
+          SyncOutboxCompanion.insert(
+            operationId: 'op-start',
+            organizationId: 'org1',
+            entityType: 'service_order',
+            entityId: 'so1',
+            operationType: 'start',
+            payload: '{}',
+            baseVersion: const Value(null),
+            occurredAt: now,
+          ),
+          SyncOutboxCompanion.insert(
+            operationId: 'op-part-update',
+            organizationId: 'org1',
+            entityType: 'service_order_part',
+            entityId: 'p1',
+            operationType: 'update',
+            payload: '{"description":"Correia"}',
+            occurredAt: now,
+          ),
+          SyncOutboxCompanion.insert(
+            operationId: 'op-part-delete',
+            organizationId: 'org1',
+            entityType: 'service_order_part',
+            entityId: 'p2',
+            operationType: 'delete',
+            payload: '{}',
+            occurredAt: now,
+          ),
+        ]);
+      });
+
+      when(() => api.push(any())).thenAnswer(
+        (_) async => const [
+          SyncOperationResult(
+            operationId: 'op-start',
+            status: 'accepted',
+            version: 2,
+          ),
+          SyncOperationResult(
+            operationId: 'op-part-update',
+            status: 'accepted',
+            version: 2,
+          ),
+          SyncOperationResult(
+            operationId: 'op-part-delete',
+            status: 'accepted',
+          ),
+        ],
+      );
+
+      await engine.pushPending();
+
+      final order = await (db.select(
+        db.localServiceOrders,
+      )..where((t) => t.id.equals('so1'))).getSingle();
+      expect(
+        order.version,
+        2,
+        reason: 'despacho por entityType cobre ação nomeada, não só create/update',
+      );
+      expect(order.syncStatus, 'synced');
+
+      final part1 = await (db.select(
+        db.localServiceOrderParts,
+      )..where((t) => t.id.equals('p1'))).getSingle();
+      expect(part1.version, 2);
+      expect(part1.syncStatus, 'synced');
 
       expect(await db.select(db.syncOutbox).get(), isEmpty);
     },

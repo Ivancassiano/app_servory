@@ -131,6 +131,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               label: 'Equipamentos',
               onTap: () => context.push('/equipments'),
             ),
+            _ShortcutTile(
+              icon: Icons.assignment_outlined,
+              label: 'Ordens de serviço',
+              onTap: () => context.push('/service-orders'),
+            ),
           ],
         ),
       ),

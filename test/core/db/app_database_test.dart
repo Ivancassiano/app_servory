@@ -36,6 +36,47 @@ void main() {
     );
   });
 
+  test('grava e lê ordem de serviço e peça local', () async {
+    final now = DateTime.now();
+    await db
+        .into(db.localServiceOrders)
+        .insert(
+          LocalServiceOrdersCompanion.insert(
+            id: 'so1',
+            organizationId: 'org1',
+            clientId: 'c1',
+            localUpdatedAt: now,
+          ),
+        );
+    await db
+        .into(db.localServiceOrderParts)
+        .insert(
+          LocalServiceOrderPartsCompanion.insert(
+            id: 'p1',
+            organizationId: 'org1',
+            serviceOrderId: 'so1',
+            localUpdatedAt: now,
+          ),
+        );
+
+    final order = await (db.select(
+      db.localServiceOrders,
+    )..where((t) => t.id.equals('so1'))).getSingle();
+    expect(order.status, 'draft');
+    expect(order.clientId, 'c1');
+
+    final part = await (db.select(
+      db.localServiceOrderParts,
+    )..where((t) => t.id.equals('p1'))).getSingle();
+    expect(part.serviceOrderId, 'so1');
+    expect(part.quantity, '1');
+    expect(
+      part.unitCost,
+      isNull,
+      reason: 'campo mascarável ausente = sem permissão, não vazio',
+    );
+  });
+
   test('outbox: grava e drena uma operação pendente', () async {
     await db
         .into(db.syncOutbox)

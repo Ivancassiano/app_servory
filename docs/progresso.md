@@ -5,6 +5,84 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: Ordens de Serviço — cabeçalho
+## + peças via sync ✅
+
+Nova branch (a partir de `feature/offline-storage`, que segue não mergeada em
+`main`). Fatia deliberadamente recortada do item 5 do `GUIA-FLUTTER.md` §11:
+só cabeçalho da ordem (`create`/`update`/`start`/`complete`/`reopen`) + peças
+(`create`/`update`/`delete`) via sync — fotos/assinatura (fila de upload
+binário) e PDF local ficam para a próxima fatia, decisão tomada com o usuário
+para não misturar protocolo JSON de sync com upload multipart na mesma
+entrega.
+
+- **Banco local**: `LocalServiceOrders`/`LocalServiceOrderParts` (mesmo molde
+  `_SyncColumns`; `unit_cost`/`unit_price` nullable — sensíveis, mesmo
+  tratamento de `equipment.cost`). Primeira migração real do schema
+  (`schemaVersion` 1→2, `MigrationStrategy.onUpgrade` só cria as 2 tabelas
+  novas, preserva dado local já sincronizado).
+- **`SyncEngine`**: `service_order`/`service_order_part` somados a
+  `_readEntityTypes`; `_upsert`/`_softDelete`/`_markSynced`/
+  `_markPushFailed` ganham os `case` das duas entidades, mesmo padrão já
+  corrigido na entrega anterior para location/equipment.
+- **UI**: `ServiceOrderListScreen` (join com cliente pra evitar N+1) +
+  `ServiceOrderDetailScreen` (sentinela `'new'`; criar exige cliente,
+  local/equipamento opcionais filtrados em cascata a partir do que já está
+  sincronizado localmente; editar mostra cliente só-leitura — imutável no
+  protocolo — e os botões de transição condicionais ao `status` atual) +
+  seção de peças (bottom sheet reusado para adicionar/editar, exclusão
+  inline). `ServiceOrderEditController`/`ServiceOrderPartController` no
+  mesmo molde local-primeiro dos demais.
+- **Achado real 1, corrigido**: `SyncRunner.runSync()` chamava `pull()`
+  **antes** de `pushPending()`. Numa sequência rápida de ações na mesma
+  ordem (`Iniciar` → `Concluir`), o `push` do `Iniciar` gera no servidor um
+  evento de outbox que só é buscado no próximo `pull` — como esse próximo
+  `pull` roda *antes* do `push` do `Concluir`, ele aplicava o estado
+  "velho" (`in_progress`) por cima da escrita local otimista mais nova
+  (`completed`) que ainda estava só na outbox; o `push` seguinte confirmava
+  a `version` mas não corrigia o `status`, deixando o app mostrando um
+  estado diferente do servidor até o usuário puxar pra atualizar manualmente.
+  Corrigido invertendo a ordem (drena a outbox primeiro, só depois puxa) —
+  `sync_provider.dart`. Coberto por teste novo (`sync_provider_test.dart`,
+  `SyncEngine` mockado via mocktail, confere a ordem das chamadas).
+- **Achado real 2, corrigido**: `ServiceOrderDetailScreen` zerava
+  `_locationId`/`_equipmentId` permanentemente quando a lista filtrada de
+  locais/equipamentos ainda não tinha carregado (1ª renderização depois de
+  abrir o app) — o valor voltando do servidor continuava correto, só a
+  tela local "esquecia" a seleção pra sempre (nada re-seedava depois, o
+  `_seeded` guard já tinha passado). Corrigido com uma guarda de loading
+  (`!locationsAsync.hasValue`) antes de montar o formulário de edição +
+  trocando a mutação direta por um valor de exibição derivado
+  (`displayLocationId`/`displayEquipmentId`) que nunca sobrescreve o estado
+  de verdade.
+- Ambos achados vieram de teste ao vivo no emulador (não de teste
+  automatizado) — cabeçalho + 1 peça criados pela UI, `Iniciar`→`Concluir`
+  em sequência expôs o 1º bug, reabrir o app e reentrar na ordem expôs o 2º.
+  Depois de corrigidos: ciclo completo `Aberta`→`Iniciar`→`Concluir`→
+  `Reabrir`→`Concluir` de novo, cada transição confirmada por `psql` direto
+  no Postgres (status/version bateram em tempo real, sem precisar de pull
+  manual).
+- 29 testes automatizados (era 24): 3 novos em `sync_engine_test.dart`
+  (bootstrap de `service_order`/`service_order_part`, push de ação nomeada +
+  create/update/delete de peça), 1 em `app_database_test.dart`, 2 novos em
+  `sync_provider_test.dart` (ordem push→pull). Todos verdes.
+- **Fora do escopo** (registrado, não é dívida esquecida): fotos/assinatura
+  via fila de upload, PDF local (ADR-0018 §10); `scheduled_for`/
+  `service_order_type_id`/`company_id`/`assigned_user_id` no formulário —
+  dependem de entidades REST-only (tipos de ordem, empresas, membros da
+  org) que o app ainda não busca/cacheia.
+
+### Próximo (app)
+
+- Fotos/assinatura de ordem via fila de upload (§7) + PDF local (§10).
+- Criar (não só editar) location/equipment — precisa de seletor de
+  cliente/local/tipo na UI.
+- Formulário de ordem: campos que dependem de dado REST-only (tipo de
+  ordem, empresa emissora, técnico designado, `scheduled_for`).
+- Etiquetas/QR Code (spec §8–§12) — nada implementado no app ainda.
+- Empresas e Pessoa (`companies`/`people`) — usados como emitente do laudo.
+- l10n via ARB quando houver material de tradução real.
+
 ## `app_servory` — `feature/offline-storage`: outbox/push em location e
 ## equipment (fechando a paridade de escrita das 3 entidades) ✅
 

@@ -7,7 +7,13 @@ import '../data/sync_api.dart';
 
 /// As 3 entidades desta entrega (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`/
 /// `push` tratam as 3 igual.
-const _readEntityTypes = ['client', 'location', 'equipment'];
+const _readEntityTypes = [
+  'client',
+  'location',
+  'equipment',
+  'service_order',
+  'service_order_part',
+];
 
 /// Orquestra `bootstrap`/`pull`/`push` entre o [SyncApi] e o [AppDatabase]
 /// local. Sem regra de negócio aqui — só tradução de shape (igual
@@ -150,6 +156,28 @@ class SyncEngine {
             syncError: const Value(null),
           ),
         );
+      case 'service_order':
+        await (_db.update(
+          _db.localServiceOrders,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrdersCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
+      case 'service_order_part':
+        await (_db.update(
+          _db.localServiceOrderParts,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrderPartsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
     }
   }
 
@@ -177,6 +205,18 @@ class SyncEngine {
           _db.localEquipments,
         )..where((t) => t.id.equals(entityId))).write(
           LocalEquipmentsCompanion(syncStatus: status, syncError: error),
+        );
+      case 'service_order':
+        await (_db.update(
+          _db.localServiceOrders,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrdersCompanion(syncStatus: status, syncError: error),
+        );
+      case 'service_order_part':
+        await (_db.update(
+          _db.localServiceOrderParts,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrderPartsCompanion(syncStatus: status, syncError: error),
         );
     }
   }
@@ -268,6 +308,68 @@ class SyncEngine {
                 deleted: const Value(false),
               ),
             );
+      case 'service_order':
+        await _db
+            .into(_db.localServiceOrders)
+            .insertOnConflictUpdate(
+              LocalServiceOrdersCompanion.insert(
+                id: data['id'] as String,
+                organizationId: _organizationId,
+                clientId: data['client_id'] as String? ?? '',
+                locationId: Value(data['location_id'] as String?),
+                equipmentId: Value(data['equipment_id'] as String?),
+                serviceOrderTypeId: Value(
+                  data['service_order_type_id'] as String?,
+                ),
+                companyId: Value(data['company_id'] as String?),
+                assignedUserId: Value(data['assigned_user_id'] as String?),
+                status: Value(data['status'] as String? ?? 'draft'),
+                reason: Value(data['reason'] as String? ?? ''),
+                diagnosis: Value(data['diagnosis'] as String? ?? ''),
+                workPerformed: Value(data['work_performed'] as String? ?? ''),
+                recommendations: Value(
+                  data['recommendations'] as String? ?? '',
+                ),
+                finalCondition: Value(
+                  data['final_condition'] as String? ?? '',
+                ),
+                notes: Value(data['notes'] as String? ?? ''),
+                scheduledFor: Value(_parseDate(data['scheduled_for'])),
+                startedAt: Value(_parseDate(data['started_at'])),
+                completedAt: Value(_parseDate(data['completed_at'])),
+                version: Value(data['version'] as int?),
+                createdAt: Value(_parseDate(data['created_at'])),
+                updatedAt: Value(_parseDate(data['updated_at'])),
+                localUpdatedAt: now,
+                syncStatus: const Value('synced'),
+                lastSyncedAt: Value(now),
+                deleted: const Value(false),
+              ),
+            );
+      case 'service_order_part':
+        await _db
+            .into(_db.localServiceOrderParts)
+            .insertOnConflictUpdate(
+              LocalServiceOrderPartsCompanion.insert(
+                id: data['id'] as String,
+                organizationId: _organizationId,
+                serviceOrderId: data['service_order_id'] as String? ?? '',
+                description: Value(data['description'] as String? ?? ''),
+                partNumber: Value(data['part_number'] as String? ?? ''),
+                quantity: Value(data['quantity']?.toString() ?? '1'),
+                unit: Value(data['unit'] as String? ?? ''),
+                unitCost: Value(data['unit_cost']?.toString()),
+                unitPrice: Value(data['unit_price']?.toString()),
+                notes: Value(data['notes'] as String? ?? ''),
+                version: Value(data['version'] as int?),
+                createdAt: Value(_parseDate(data['created_at'])),
+                updatedAt: Value(_parseDate(data['updated_at'])),
+                localUpdatedAt: now,
+                syncStatus: const Value('synced'),
+                lastSyncedAt: Value(now),
+                deleted: const Value(false),
+              ),
+            );
     }
   }
 
@@ -285,6 +387,16 @@ class SyncEngine {
         await (_db.update(_db.localEquipments)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalEquipmentsCompanion(deleted: Value(true)));
+      case 'service_order':
+        await (_db.update(_db.localServiceOrders)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalServiceOrdersCompanion(deleted: Value(true)));
+      case 'service_order_part':
+        await (_db.update(_db.localServiceOrderParts)
+              ..where((t) => t.id.equals(entityId)))
+            .write(
+              const LocalServiceOrderPartsCompanion(deleted: Value(true)),
+            );
     }
   }
 

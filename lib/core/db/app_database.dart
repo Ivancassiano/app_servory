@@ -99,6 +99,65 @@ class LocalEquipments extends Table with _SyncColumns {
   Set<Column> get primaryKey => {id};
 }
 
+/// Espelha o cabeçalho de `ServiceOrder` (spec §7.6). `clientId` é imutável
+/// depois de criada (só o `create` aceita, GUIA-FLUTTER.md §8.4);
+/// `serviceOrderTypeId`/`companyId`/`assignedUserId`/`scheduledFor` ficam
+/// fora desta entrega (dependem de entidades REST-only que o app ainda não
+/// cacheia), mas as colunas já existem porque o servidor manda esses campos
+/// no pull/bootstrap normalmente.
+class LocalServiceOrders extends Table with _SyncColumns {
+  TextColumn get id => text()();
+  TextColumn get clientId => text().named('client_id')();
+  TextColumn get locationId => text().named('location_id').nullable()();
+  TextColumn get equipmentId => text().named('equipment_id').nullable()();
+  TextColumn get serviceOrderTypeId =>
+      text().named('service_order_type_id').nullable()();
+  TextColumn get companyId => text().named('company_id').nullable()();
+  TextColumn get assignedUserId =>
+      text().named('assigned_user_id').nullable()();
+  TextColumn get status => text().withDefault(const Constant('draft'))();
+  TextColumn get reason => text().withDefault(const Constant(''))();
+  TextColumn get diagnosis => text().withDefault(const Constant(''))();
+  TextColumn get workPerformed =>
+      text().named('work_performed').withDefault(const Constant(''))();
+  TextColumn get recommendations => text().withDefault(const Constant(''))();
+  TextColumn get finalCondition =>
+      text().named('final_condition').withDefault(const Constant(''))();
+  TextColumn get notes => text().withDefault(const Constant(''))();
+  DateTimeColumn get scheduledFor =>
+      dateTime().named('scheduled_for').nullable()();
+  DateTimeColumn get startedAt => dateTime().named('started_at').nullable()();
+  DateTimeColumn get completedAt =>
+      dateTime().named('completed_at').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at').nullable()();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Peças/materiais de uma ordem (spec §7.6 "Peças e materiais"). `unitCost`/
+/// `unitPrice` são sensíveis (grupo de campo `cost`) — nullable pelo mesmo
+/// motivo de `serialNumber`/`cost` em [LocalEquipments]: ausência no JSON do
+/// servidor é "sem permissão de leitura", não vazio.
+class LocalServiceOrderParts extends Table with _SyncColumns {
+  TextColumn get id => text()();
+  TextColumn get serviceOrderId => text().named('service_order_id')();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  TextColumn get partNumber =>
+      text().named('part_number').withDefault(const Constant(''))();
+  TextColumn get quantity => text().withDefault(const Constant('1'))();
+  TextColumn get unit => text().withDefault(const Constant(''))();
+  TextColumn get unitCost => text().named('unit_cost').nullable()();
+  TextColumn get unitPrice => text().named('unit_price').nullable()();
+  TextColumn get notes => text().withDefault(const Constant(''))();
+  DateTimeColumn get createdAt => dateTime().named('created_at').nullable()();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Outbox local (GUIA-FLUTTER.md §8.1): uma linha por operação pendente de
 /// envio. `payload` é o corpo JSON (mesmo shape do POST/PATCH REST
 /// equivalente) serializado como texto.
@@ -132,6 +191,8 @@ class LocalSyncState extends Table {
     LocalClients,
     LocalLocations,
     LocalEquipments,
+    LocalServiceOrders,
+    LocalServiceOrderParts,
     SyncOutbox,
     LocalSyncState,
   ],
@@ -149,5 +210,16 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(localServiceOrders);
+        await m.createTable(localServiceOrderParts);
+      }
+    },
+  );
 }

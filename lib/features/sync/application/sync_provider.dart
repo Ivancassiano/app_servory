@@ -57,10 +57,18 @@ class SyncRunner extends Notifier<AsyncValue<void>> {
     state = await AsyncValue.guard(() async {
       if (bootstrap) {
         await engine.bootstrap();
-      } else {
-        await engine.pull();
+        await engine.pushPending();
+        return;
       }
+      // Drena a outbox local ANTES de puxar: uma ação recente (ex.: `start`
+      // seguido de `complete` em sequência rápida) gera, no próprio push
+      // anterior, um evento de outbox no servidor que ainda não foi puxado.
+      // Puxar antes de empurrar aplicaria esse estado "velho" por cima de
+      // uma escrita local otimista mais nova que ainda está na outbox,
+      // sobrescrevendo-a sem o push (que só atualiza `version`) corrigir —
+      // achado ao testar start→complete em sequência na mesma ordem.
       await engine.pushPending();
+      await engine.pull();
     });
   }
 }
