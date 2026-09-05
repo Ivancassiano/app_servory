@@ -330,9 +330,7 @@ class SyncEngine {
                 recommendations: Value(
                   data['recommendations'] as String? ?? '',
                 ),
-                finalCondition: Value(
-                  data['final_condition'] as String? ?? '',
-                ),
+                finalCondition: Value(data['final_condition'] as String? ?? ''),
                 notes: Value(data['notes'] as String? ?? ''),
                 scheduledFor: Value(_parseDate(data['scheduled_for'])),
                 startedAt: Value(_parseDate(data['started_at'])),
@@ -394,9 +392,7 @@ class SyncEngine {
       case 'service_order_part':
         await (_db.update(_db.localServiceOrderParts)
               ..where((t) => t.id.equals(entityId)))
-            .write(
-              const LocalServiceOrderPartsCompanion(deleted: Value(true)),
-            );
+            .write(const LocalServiceOrderPartsCompanion(deleted: Value(true)));
     }
   }
 

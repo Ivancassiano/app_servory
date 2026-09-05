@@ -161,14 +161,14 @@ class ServiceOrderPartController {
         _db.localServiceOrderParts,
       )..where((t) => t.id.equals(partId))).getSingle();
 
-      await (_db.update(_db.localServiceOrderParts)
-            ..where((t) => t.id.equals(partId)))
-          .write(
-            const LocalServiceOrderPartsCompanion(
-              deleted: Value(true),
-              syncStatus: Value('pending'),
-            ),
-          );
+      await (_db.update(
+        _db.localServiceOrderParts,
+      )..where((t) => t.id.equals(partId))).write(
+        const LocalServiceOrderPartsCompanion(
+          deleted: Value(true),
+          syncStatus: Value('pending'),
+        ),
+      );
       await _db
           .into(_db.syncOutbox)
           .insert(
@@ -197,7 +197,6 @@ class ServiceOrderPartController {
   }
 }
 
-final serviceOrderPartControllerProvider =
-    Provider<ServiceOrderPartController>(
-      (ref) => ServiceOrderPartController(ref),
-    );
+final serviceOrderPartControllerProvider = Provider<ServiceOrderPartController>(
+  (ref) => ServiceOrderPartController(ref),
+);

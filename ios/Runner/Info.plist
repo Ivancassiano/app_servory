@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Usado para fotografar equipamentos e evidências durante o atendimento.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Usado para anexar fotos já existentes da galeria a uma ordem de serviço.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

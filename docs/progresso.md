@@ -5,6 +5,87 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: fotos e assinatura via fila de
+## upload offline ✅
+
+Fecha a segunda metade do item 5 do `GUIA-FLUTTER.md` §11 (a primeira,
+cabeçalho+peças via sync, é a entrega anterior nesta mesma branch). PDF
+local (§10) fica pra próxima fatia — decisão já tomada de não misturar
+upload binário com geração de PDF na mesma entrega.
+
+- **Fila de upload local** (`UploadQueue`, `schemaVersion` 2→3): captura de
+  foto (`image_picker`, câmera **ou** galeria + classificação
+  `before/after/other` + legenda) e assinatura (pacote `signature`, canvas
+  → PNG) salvam o arquivo local na hora — mesmo offline — e só enfileiram o
+  envio. `UploadQueueController` (grava arquivo em
+  `ApplicationDocuments/attachments/{serviceOrderId}/` + SHA-256 via
+  `crypto`) + `UploadQueueRunner.drain()` (REST puro,
+  `multipart/form-data` — fotos/assinatura **não** fazem parte do
+  protocolo de sync, GUIA-FLUTTER §8.4) + `AttachmentsApi`. Reenvio é do
+  arquivo inteiro (decisão já tomada com o usuário, sem retomada por
+  chunks).
+- **UI**: seções "Fotos" (grade com já enviadas + pendentes) e "Assinatura"
+  (slot único) na `ServiceOrderDetailScreen`; puxar-pra-atualizar drena a
+  fila além de sincronizar as entidades normais.
+- **Achado real 1, corrigido**: depois de um upload bem-sucedido, a seção
+  ficava "presa" no estado de antes (nem mostrava pendente, nem mostrava
+  enviada) até a tela recarregar por outro motivo — `orderPhotosProvider`/
+  `orderSignatureProvider` (REST, `FutureProvider`) não eram invalidados
+  depois do `drain()` remover o item da fila local. Corrigido invalidando
+  o provider certo (por `kind`) dentro do próprio `UploadQueueRunner.drain()`
+  — exigiu extrair `attachmentsApiProvider` pro próprio arquivo
+  (`attachments_api_provider.dart`) pra evitar import circular entre
+  `upload_queue_provider.dart` e `service_order_attachments_provider.dart`.
+- **Achado real 2, corrigido**: `Image.network` sem `errorBuilder` deixava
+  o texto do erro (`SocketException: ...`) sobrepor o layout e causar
+  overflow visual quando a URL de download falhava — agora mostra um
+  ícone de imagem quebrada, sem estourar a tela, independente da causa do
+  erro de rede.
+- **Confirmado, não é bug do app**: a regra de negócio "ordem precisa estar
+  editável" (`draft`/`open`/`in_progress`) também vale pra fotos/assinatura,
+  igual já valia pra peças — testado deixando a ordem `completed` de
+  propósito, viu o erro `NOT_EDITABLE` aparecer corretamente na fila
+  (mensagem de erro exibida por item pendente), reabriu a ordem e o
+  reenvio funcionou.
+- **Limitação de ambiente encontrada, não é bug do app nem do backend**:
+  neste AVD específico (`Pixel9`, API 35), `image_picker` não conseguiu
+  completar nem câmera nem galeria (o app volta pro launcher sem erro
+  visível) — bounds/toques confirmados corretos via `uiautomator dump`, e
+  o intent `android.media.action.IMAGE_CAPTURE` funciona quando disparado
+  direto por `adb shell am start`, então não é falta de app instalado.
+  Verificação ao vivo do envio em si foi feita pelo fluxo de assinatura
+  (canvas interno, sem depender de nenhuma Activity externa do Android) —
+  cobre a mesma fila/API/backend que fotos usam. Adicionado
+  `<queries>` para `IMAGE_CAPTURE` no `AndroidManifest.xml` como boa
+  prática (não resolveu por si só) — se persistir num dispositivo real,
+  investigar como item separado, não bloqueia esta entrega.
+- **Outro achado, é do backend/infra, não deste app**: a URL assinada que o
+  MinIO devolve usa o hostname interno do Docker (`minio`), que não é
+  resolvível fora da rede Docker — então baixar a foto/assinatura pelo
+  emulador falha com `Failed host lookup: 'minio'`. Confirmado ao vivo:
+  upload funcionou (bytes/hash certos no Postgres), só o download pela URL
+  assinada que não resolve neste ambiente. Registrado pro usuário; não é
+  algo pra corrigir no app (o app só usa a URL que o servidor manda) —
+  ajuste seria no `S3_ENDPOINT`/config do MinIO no `docker-compose` do
+  `auth_servory`.
+- 30 testes automatizados (era 29): 1 novo em `app_database_test.dart`
+  (CRUD da `UploadQueue`). Sem teste de API/controller isolado — mesmo
+  padrão já estabelecido (cobertura real vem da verificação ao vivo,
+  captura de câmera/canvas não vale a pena mockar em unidade).
+
+### Próximo (app)
+
+- PDF local (§10) — usa os arquivos já salvos por esta fatia.
+- Investigar `image_picker` em dispositivo real (o problema pareceu ser
+  específico deste AVD).
+- Criar (não só editar) location/equipment — precisa de seletor de
+  cliente/local/tipo na UI.
+- Formulário de ordem: campos que dependem de dado REST-only (tipo de
+  ordem, empresa emissora, técnico designado, `scheduled_for`).
+- Etiquetas/QR Code (spec §8–§12) — nada implementado no app ainda.
+- Empresas e Pessoa (`companies`/`people`) — usados como emitente do laudo.
+- l10n via ARB quando houver material de tradução real.
+
 ## `app_servory` — `feature/service-orders`: Ordens de Serviço — cabeçalho
 ## + peças via sync ✅
 

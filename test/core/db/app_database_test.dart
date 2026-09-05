@@ -77,6 +77,41 @@ void main() {
     );
   });
 
+  test('fila de upload: grava, atualiza tentativa e drena', () async {
+    await db
+        .into(db.uploadQueue)
+        .insert(
+          UploadQueueCompanion.insert(
+            id: 'u1',
+            organizationId: 'org1',
+            serviceOrderId: 'so1',
+            kind: 'photo',
+            filePath: '/tmp/foto.jpg',
+            sha256: 'abc123',
+            photoKind: const Value('before'),
+            createdAt: DateTime.now(),
+          ),
+        );
+
+    var pending = await db.select(db.uploadQueue).get();
+    expect(pending, hasLength(1));
+    expect(pending.single.attempts, 0);
+
+    await (db.update(db.uploadQueue)..where((t) => t.id.equals('u1'))).write(
+      const UploadQueueCompanion(
+        attempts: Value(1),
+        lastError: Value('sem conexão'),
+      ),
+    );
+    pending = await db.select(db.uploadQueue).get();
+    expect(pending.single.attempts, 1);
+    expect(pending.single.lastError, 'sem conexão');
+
+    await (db.delete(db.uploadQueue)..where((t) => t.id.equals('u1'))).go();
+    pending = await db.select(db.uploadQueue).get();
+    expect(pending, isEmpty);
+  });
+
   test('outbox: grava e drena uma operação pendente', () async {
     await db
         .into(db.syncOutbox)

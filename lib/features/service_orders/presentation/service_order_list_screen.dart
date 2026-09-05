@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../attachments/application/upload_queue_provider.dart';
 import '../../sync/application/sync_provider.dart';
 import '../application/service_orders_provider.dart';
 
@@ -22,7 +23,10 @@ class ServiceOrderListScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Ordens de serviço')),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(syncRunnerProvider.notifier).runSync(),
+        onRefresh: () async {
+          await ref.read(syncRunnerProvider.notifier).runSync();
+          await ref.read(uploadQueueRunnerProvider.notifier).drain();
+        },
         child: ordersAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Center(

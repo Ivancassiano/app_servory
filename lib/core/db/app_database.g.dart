@@ -6729,6 +6729,669 @@ class LocalSyncStateCompanion extends UpdateCompanion<LocalSyncStateData> {
   }
 }
 
+class $UploadQueueTable extends UploadQueue
+    with TableInfo<$UploadQueueTable, UploadQueueData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UploadQueueTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serviceOrderIdMeta = const VerificationMeta(
+    'serviceOrderId',
+  );
+  @override
+  late final GeneratedColumn<String> serviceOrderId = GeneratedColumn<String>(
+    'service_order_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _filePathMeta = const VerificationMeta(
+    'filePath',
+  );
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+    'file_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sha256Meta = const VerificationMeta('sha256');
+  @override
+  late final GeneratedColumn<String> sha256 = GeneratedColumn<String>(
+    'sha256',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _photoKindMeta = const VerificationMeta(
+    'photoKind',
+  );
+  @override
+  late final GeneratedColumn<String> photoKind = GeneratedColumn<String>(
+    'photo_kind',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _captionMeta = const VerificationMeta(
+    'caption',
+  );
+  @override
+  late final GeneratedColumn<String> caption = GeneratedColumn<String>(
+    'caption',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _attemptsMeta = const VerificationMeta(
+    'attempts',
+  );
+  @override
+  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
+    'attempts',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    organizationId,
+    serviceOrderId,
+    kind,
+    filePath,
+    sha256,
+    photoKind,
+    caption,
+    createdAt,
+    attempts,
+    lastError,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'upload_queue';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<UploadQueueData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('service_order_id')) {
+      context.handle(
+        _serviceOrderIdMeta,
+        serviceOrderId.isAcceptableOrUnknown(
+          data['service_order_id']!,
+          _serviceOrderIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_serviceOrderIdMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(
+        _filePathMeta,
+        filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_filePathMeta);
+    }
+    if (data.containsKey('sha256')) {
+      context.handle(
+        _sha256Meta,
+        sha256.isAcceptableOrUnknown(data['sha256']!, _sha256Meta),
+      );
+    } else if (isInserting) {
+      context.missing(_sha256Meta);
+    }
+    if (data.containsKey('photo_kind')) {
+      context.handle(
+        _photoKindMeta,
+        photoKind.isAcceptableOrUnknown(data['photo_kind']!, _photoKindMeta),
+      );
+    }
+    if (data.containsKey('caption')) {
+      context.handle(
+        _captionMeta,
+        caption.isAcceptableOrUnknown(data['caption']!, _captionMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('attempts')) {
+      context.handle(
+        _attemptsMeta,
+        attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta),
+      );
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UploadQueueData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UploadQueueData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      serviceOrderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_order_id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      filePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_path'],
+      )!,
+      sha256: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sha256'],
+      )!,
+      photoKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_kind'],
+      ),
+      caption: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}caption'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      attempts: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}attempts'],
+      )!,
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+    );
+  }
+
+  @override
+  $UploadQueueTable createAlias(String alias) {
+    return $UploadQueueTable(attachedDatabase, alias);
+  }
+}
+
+class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
+  final String id;
+  final String organizationId;
+  final String serviceOrderId;
+  final String kind;
+  final String filePath;
+  final String sha256;
+  final String? photoKind;
+  final String? caption;
+  final DateTime createdAt;
+  final int attempts;
+  final String? lastError;
+  const UploadQueueData({
+    required this.id,
+    required this.organizationId,
+    required this.serviceOrderId,
+    required this.kind,
+    required this.filePath,
+    required this.sha256,
+    this.photoKind,
+    this.caption,
+    required this.createdAt,
+    required this.attempts,
+    this.lastError,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['organization_id'] = Variable<String>(organizationId);
+    map['service_order_id'] = Variable<String>(serviceOrderId);
+    map['kind'] = Variable<String>(kind);
+    map['file_path'] = Variable<String>(filePath);
+    map['sha256'] = Variable<String>(sha256);
+    if (!nullToAbsent || photoKind != null) {
+      map['photo_kind'] = Variable<String>(photoKind);
+    }
+    if (!nullToAbsent || caption != null) {
+      map['caption'] = Variable<String>(caption);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['attempts'] = Variable<int>(attempts);
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    return map;
+  }
+
+  UploadQueueCompanion toCompanion(bool nullToAbsent) {
+    return UploadQueueCompanion(
+      id: Value(id),
+      organizationId: Value(organizationId),
+      serviceOrderId: Value(serviceOrderId),
+      kind: Value(kind),
+      filePath: Value(filePath),
+      sha256: Value(sha256),
+      photoKind: photoKind == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoKind),
+      caption: caption == null && nullToAbsent
+          ? const Value.absent()
+          : Value(caption),
+      createdAt: Value(createdAt),
+      attempts: Value(attempts),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+    );
+  }
+
+  factory UploadQueueData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UploadQueueData(
+      id: serializer.fromJson<String>(json['id']),
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      serviceOrderId: serializer.fromJson<String>(json['serviceOrderId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      filePath: serializer.fromJson<String>(json['filePath']),
+      sha256: serializer.fromJson<String>(json['sha256']),
+      photoKind: serializer.fromJson<String?>(json['photoKind']),
+      caption: serializer.fromJson<String?>(json['caption']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      attempts: serializer.fromJson<int>(json['attempts']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'organizationId': serializer.toJson<String>(organizationId),
+      'serviceOrderId': serializer.toJson<String>(serviceOrderId),
+      'kind': serializer.toJson<String>(kind),
+      'filePath': serializer.toJson<String>(filePath),
+      'sha256': serializer.toJson<String>(sha256),
+      'photoKind': serializer.toJson<String?>(photoKind),
+      'caption': serializer.toJson<String?>(caption),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'attempts': serializer.toJson<int>(attempts),
+      'lastError': serializer.toJson<String?>(lastError),
+    };
+  }
+
+  UploadQueueData copyWith({
+    String? id,
+    String? organizationId,
+    String? serviceOrderId,
+    String? kind,
+    String? filePath,
+    String? sha256,
+    Value<String?> photoKind = const Value.absent(),
+    Value<String?> caption = const Value.absent(),
+    DateTime? createdAt,
+    int? attempts,
+    Value<String?> lastError = const Value.absent(),
+  }) => UploadQueueData(
+    id: id ?? this.id,
+    organizationId: organizationId ?? this.organizationId,
+    serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+    kind: kind ?? this.kind,
+    filePath: filePath ?? this.filePath,
+    sha256: sha256 ?? this.sha256,
+    photoKind: photoKind.present ? photoKind.value : this.photoKind,
+    caption: caption.present ? caption.value : this.caption,
+    createdAt: createdAt ?? this.createdAt,
+    attempts: attempts ?? this.attempts,
+    lastError: lastError.present ? lastError.value : this.lastError,
+  );
+  UploadQueueData copyWithCompanion(UploadQueueCompanion data) {
+    return UploadQueueData(
+      id: data.id.present ? data.id.value : this.id,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      serviceOrderId: data.serviceOrderId.present
+          ? data.serviceOrderId.value
+          : this.serviceOrderId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      sha256: data.sha256.present ? data.sha256.value : this.sha256,
+      photoKind: data.photoKind.present ? data.photoKind.value : this.photoKind,
+      caption: data.caption.present ? data.caption.value : this.caption,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      attempts: data.attempts.present ? data.attempts.value : this.attempts,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UploadQueueData(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('kind: $kind, ')
+          ..write('filePath: $filePath, ')
+          ..write('sha256: $sha256, ')
+          ..write('photoKind: $photoKind, ')
+          ..write('caption: $caption, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('attempts: $attempts, ')
+          ..write('lastError: $lastError')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    organizationId,
+    serviceOrderId,
+    kind,
+    filePath,
+    sha256,
+    photoKind,
+    caption,
+    createdAt,
+    attempts,
+    lastError,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UploadQueueData &&
+          other.id == this.id &&
+          other.organizationId == this.organizationId &&
+          other.serviceOrderId == this.serviceOrderId &&
+          other.kind == this.kind &&
+          other.filePath == this.filePath &&
+          other.sha256 == this.sha256 &&
+          other.photoKind == this.photoKind &&
+          other.caption == this.caption &&
+          other.createdAt == this.createdAt &&
+          other.attempts == this.attempts &&
+          other.lastError == this.lastError);
+}
+
+class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
+  final Value<String> id;
+  final Value<String> organizationId;
+  final Value<String> serviceOrderId;
+  final Value<String> kind;
+  final Value<String> filePath;
+  final Value<String> sha256;
+  final Value<String?> photoKind;
+  final Value<String?> caption;
+  final Value<DateTime> createdAt;
+  final Value<int> attempts;
+  final Value<String?> lastError;
+  final Value<int> rowid;
+  const UploadQueueCompanion({
+    this.id = const Value.absent(),
+    this.organizationId = const Value.absent(),
+    this.serviceOrderId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.sha256 = const Value.absent(),
+    this.photoKind = const Value.absent(),
+    this.caption = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  UploadQueueCompanion.insert({
+    required String id,
+    required String organizationId,
+    required String serviceOrderId,
+    required String kind,
+    required String filePath,
+    required String sha256,
+    this.photoKind = const Value.absent(),
+    this.caption = const Value.absent(),
+    required DateTime createdAt,
+    this.attempts = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       organizationId = Value(organizationId),
+       serviceOrderId = Value(serviceOrderId),
+       kind = Value(kind),
+       filePath = Value(filePath),
+       sha256 = Value(sha256),
+       createdAt = Value(createdAt);
+  static Insertable<UploadQueueData> custom({
+    Expression<String>? id,
+    Expression<String>? organizationId,
+    Expression<String>? serviceOrderId,
+    Expression<String>? kind,
+    Expression<String>? filePath,
+    Expression<String>? sha256,
+    Expression<String>? photoKind,
+    Expression<String>? caption,
+    Expression<DateTime>? createdAt,
+    Expression<int>? attempts,
+    Expression<String>? lastError,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (organizationId != null) 'organization_id': organizationId,
+      if (serviceOrderId != null) 'service_order_id': serviceOrderId,
+      if (kind != null) 'kind': kind,
+      if (filePath != null) 'file_path': filePath,
+      if (sha256 != null) 'sha256': sha256,
+      if (photoKind != null) 'photo_kind': photoKind,
+      if (caption != null) 'caption': caption,
+      if (createdAt != null) 'created_at': createdAt,
+      if (attempts != null) 'attempts': attempts,
+      if (lastError != null) 'last_error': lastError,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  UploadQueueCompanion copyWith({
+    Value<String>? id,
+    Value<String>? organizationId,
+    Value<String>? serviceOrderId,
+    Value<String>? kind,
+    Value<String>? filePath,
+    Value<String>? sha256,
+    Value<String?>? photoKind,
+    Value<String?>? caption,
+    Value<DateTime>? createdAt,
+    Value<int>? attempts,
+    Value<String?>? lastError,
+    Value<int>? rowid,
+  }) {
+    return UploadQueueCompanion(
+      id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
+      serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+      kind: kind ?? this.kind,
+      filePath: filePath ?? this.filePath,
+      sha256: sha256 ?? this.sha256,
+      photoKind: photoKind ?? this.photoKind,
+      caption: caption ?? this.caption,
+      createdAt: createdAt ?? this.createdAt,
+      attempts: attempts ?? this.attempts,
+      lastError: lastError ?? this.lastError,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (serviceOrderId.present) {
+      map['service_order_id'] = Variable<String>(serviceOrderId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (sha256.present) {
+      map['sha256'] = Variable<String>(sha256.value);
+    }
+    if (photoKind.present) {
+      map['photo_kind'] = Variable<String>(photoKind.value);
+    }
+    if (caption.present) {
+      map['caption'] = Variable<String>(caption.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (attempts.present) {
+      map['attempts'] = Variable<int>(attempts.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UploadQueueCompanion(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('kind: $kind, ')
+          ..write('filePath: $filePath, ')
+          ..write('sha256: $sha256, ')
+          ..write('photoKind: $photoKind, ')
+          ..write('caption: $caption, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('attempts: $attempts, ')
+          ..write('lastError: $lastError, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6743,6 +7406,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LocalServiceOrderPartsTable(this);
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $LocalSyncStateTable localSyncState = $LocalSyncStateTable(this);
+  late final $UploadQueueTable uploadQueue = $UploadQueueTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6755,6 +7419,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localServiceOrderParts,
     syncOutbox,
     localSyncState,
+    uploadQueue,
   ];
 }
 
@@ -9951,6 +10616,333 @@ typedef $$LocalSyncStateTableProcessedTableManager =
       LocalSyncStateData,
       PrefetchHooks Function()
     >;
+typedef $$UploadQueueTableCreateCompanionBuilder =
+    UploadQueueCompanion Function({
+      required String id,
+      required String organizationId,
+      required String serviceOrderId,
+      required String kind,
+      required String filePath,
+      required String sha256,
+      Value<String?> photoKind,
+      Value<String?> caption,
+      required DateTime createdAt,
+      Value<int> attempts,
+      Value<String?> lastError,
+      Value<int> rowid,
+    });
+typedef $$UploadQueueTableUpdateCompanionBuilder =
+    UploadQueueCompanion Function({
+      Value<String> id,
+      Value<String> organizationId,
+      Value<String> serviceOrderId,
+      Value<String> kind,
+      Value<String> filePath,
+      Value<String> sha256,
+      Value<String?> photoKind,
+      Value<String?> caption,
+      Value<DateTime> createdAt,
+      Value<int> attempts,
+      Value<String?> lastError,
+      Value<int> rowid,
+    });
+
+class $$UploadQueueTableFilterComposer
+    extends Composer<_$AppDatabase, $UploadQueueTable> {
+  $$UploadQueueTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sha256 => $composableBuilder(
+    column: $table.sha256,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoKind => $composableBuilder(
+    column: $table.photoKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get caption => $composableBuilder(
+    column: $table.caption,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$UploadQueueTableOrderingComposer
+    extends Composer<_$AppDatabase, $UploadQueueTable> {
+  $$UploadQueueTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sha256 => $composableBuilder(
+    column: $table.sha256,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get photoKind => $composableBuilder(
+    column: $table.photoKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get caption => $composableBuilder(
+    column: $table.caption,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$UploadQueueTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UploadQueueTable> {
+  $$UploadQueueTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<String> get sha256 =>
+      $composableBuilder(column: $table.sha256, builder: (column) => column);
+
+  GeneratedColumn<String> get photoKind =>
+      $composableBuilder(column: $table.photoKind, builder: (column) => column);
+
+  GeneratedColumn<String> get caption =>
+      $composableBuilder(column: $table.caption, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => column);
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+}
+
+class $$UploadQueueTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $UploadQueueTable,
+          UploadQueueData,
+          $$UploadQueueTableFilterComposer,
+          $$UploadQueueTableOrderingComposer,
+          $$UploadQueueTableAnnotationComposer,
+          $$UploadQueueTableCreateCompanionBuilder,
+          $$UploadQueueTableUpdateCompanionBuilder,
+          (
+            UploadQueueData,
+            BaseReferences<_$AppDatabase, $UploadQueueTable, UploadQueueData>,
+          ),
+          UploadQueueData,
+          PrefetchHooks Function()
+        > {
+  $$UploadQueueTableTableManager(_$AppDatabase db, $UploadQueueTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UploadQueueTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UploadQueueTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UploadQueueTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> organizationId = const Value.absent(),
+                Value<String> serviceOrderId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> filePath = const Value.absent(),
+                Value<String> sha256 = const Value.absent(),
+                Value<String?> photoKind = const Value.absent(),
+                Value<String?> caption = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => UploadQueueCompanion(
+                id: id,
+                organizationId: organizationId,
+                serviceOrderId: serviceOrderId,
+                kind: kind,
+                filePath: filePath,
+                sha256: sha256,
+                photoKind: photoKind,
+                caption: caption,
+                createdAt: createdAt,
+                attempts: attempts,
+                lastError: lastError,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String organizationId,
+                required String serviceOrderId,
+                required String kind,
+                required String filePath,
+                required String sha256,
+                Value<String?> photoKind = const Value.absent(),
+                Value<String?> caption = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> attempts = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => UploadQueueCompanion.insert(
+                id: id,
+                organizationId: organizationId,
+                serviceOrderId: serviceOrderId,
+                kind: kind,
+                filePath: filePath,
+                sha256: sha256,
+                photoKind: photoKind,
+                caption: caption,
+                createdAt: createdAt,
+                attempts: attempts,
+                lastError: lastError,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$UploadQueueTable, UploadQueueData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $UploadQueueTable,
+                    UploadQueueData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$UploadQueueTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $UploadQueueTable,
+      UploadQueueData,
+      $$UploadQueueTableFilterComposer,
+      $$UploadQueueTableOrderingComposer,
+      $$UploadQueueTableAnnotationComposer,
+      $$UploadQueueTableCreateCompanionBuilder,
+      $$UploadQueueTableUpdateCompanionBuilder,
+      (
+        UploadQueueData,
+        BaseReferences<_$AppDatabase, $UploadQueueTable, UploadQueueData>,
+      ),
+      UploadQueueData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9972,4 +10964,6 @@ class $AppDatabaseManager {
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
   $$LocalSyncStateTableTableManager get localSyncState =>
       $$LocalSyncStateTableTableManager(_db, _db.localSyncState);
+  $$UploadQueueTableTableManager get uploadQueue =>
+      $$UploadQueueTableTableManager(_db, _db.uploadQueue);
 }

@@ -18,19 +18,20 @@ final serviceOrderListProvider = StreamProvider<List<ServiceOrderWithClient>>((
   ref,
 ) {
   final db = ref.watch(appDatabaseProvider);
-  final query = db.select(db.localServiceOrders).join([
-    leftOuterJoin(
-      db.localClients,
-      db.localClients.id.equalsExp(db.localServiceOrders.clientId),
-    ),
-  ])
-    ..where(db.localServiceOrders.deleted.equals(false))
-    ..orderBy([
-      OrderingTerm(
-        expression: db.localServiceOrders.localUpdatedAt,
-        mode: OrderingMode.desc,
-      ),
-    ]);
+  final query =
+      db.select(db.localServiceOrders).join([
+          leftOuterJoin(
+            db.localClients,
+            db.localClients.id.equalsExp(db.localServiceOrders.clientId),
+          ),
+        ])
+        ..where(db.localServiceOrders.deleted.equals(false))
+        ..orderBy([
+          OrderingTerm(
+            expression: db.localServiceOrders.localUpdatedAt,
+            mode: OrderingMode.desc,
+          ),
+        ]);
   return query.watch().map(
     (rows) => rows
         .map(
@@ -60,8 +61,7 @@ final servicePartsProvider =
       final query = db.select(db.localServiceOrderParts)
         ..where(
           (t) =>
-              t.serviceOrderId.equals(serviceOrderId) &
-              t.deleted.equals(false),
+              t.serviceOrderId.equals(serviceOrderId) & t.deleted.equals(false),
         )
         ..orderBy([(t) => OrderingTerm(expression: t.localUpdatedAt)]);
       return query.watch();

@@ -234,7 +234,6 @@ class ServiceOrderEditController {
   }
 }
 
-final serviceOrderEditControllerProvider =
-    Provider<ServiceOrderEditController>(
-      (ref) => ServiceOrderEditController(ref),
-    );
+final serviceOrderEditControllerProvider = Provider<ServiceOrderEditController>(
+  (ref) => ServiceOrderEditController(ref),
+);

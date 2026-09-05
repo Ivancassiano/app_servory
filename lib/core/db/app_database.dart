@@ -186,6 +186,30 @@ class LocalSyncState extends Table {
   Set<Column> get primaryKey => {organizationId};
 }
 
+/// Fila de upload de anexo (foto/assinatura, GUIA-FLUTTER.md §7) — fotos e
+/// assinatura não fazem parte do protocolo de sync (upload é
+/// `multipart/form-data`, não JSON via `/v1/sync/push`), então esta fila é
+/// separada da [SyncOutbox]: não tem `operation_type`, é sempre "enviar
+/// este arquivo". `filePath` aponta pro arquivo já salvo localmente (a
+/// captura funciona sempre, mesmo offline); sucesso no envio remove a linha
+/// mas nunca apaga o arquivo (a fatia de PDF local vai precisar dele).
+class UploadQueue extends Table {
+  TextColumn get id => text()();
+  TextColumn get organizationId => text().named('organization_id')();
+  TextColumn get serviceOrderId => text().named('service_order_id')();
+  TextColumn get kind => text()(); // 'photo' | 'signature'
+  TextColumn get filePath => text().named('file_path')();
+  TextColumn get sha256 => text()();
+  TextColumn get photoKind => text().named('photo_kind').nullable()();
+  TextColumn get caption => text().nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  IntColumn get attempts => integer().withDefault(const Constant(0))();
+  TextColumn get lastError => text().named('last_error').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 @DriftDatabase(
   tables: [
     LocalClients,
@@ -195,6 +219,7 @@ class LocalSyncState extends Table {
     LocalServiceOrderParts,
     SyncOutbox,
     LocalSyncState,
+    UploadQueue,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -210,7 +235,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -219,6 +244,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) {
         await m.createTable(localServiceOrders);
         await m.createTable(localServiceOrderParts);
+      }
+      if (from < 3) {
+        await m.createTable(uploadQueue);
       }
     },
   );

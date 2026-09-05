@@ -22,25 +22,27 @@ void main() {
 
   tearDown(() => container.dispose());
 
-  test(
-    'runSync esvazia a outbox (push) ANTES de puxar (pull)',
-    () async {
-      // Ordem importa (achado real): uma ação recente (ex.: `start`) deixa
-      // no servidor um evento de outbox ainda não puxado. Puxar antes de
-      // empurrar aplicaria esse estado "velho" por cima de uma escrita
-      // local otimista mais nova (ex.: `complete`) ainda só na outbox —
-      // o push seguinte só corrigiria `version`, não os outros campos.
-      await container.read(syncRunnerProvider.notifier).runSync();
+  test('runSync esvazia a outbox (push) ANTES de puxar (pull)', () async {
+    // Ordem importa (achado real): uma ação recente (ex.: `start`) deixa
+    // no servidor um evento de outbox ainda não puxado. Puxar antes de
+    // empurrar aplicaria esse estado "velho" por cima de uma escrita
+    // local otimista mais nova (ex.: `complete`) ainda só na outbox —
+    // o push seguinte só corrigiria `version`, não os outros campos.
+    await container.read(syncRunnerProvider.notifier).runSync();
 
-      verifyInOrder([() => engine.pushPending(), () => engine.pull()]);
-      verifyNever(() => engine.bootstrap());
+    verifyInOrder([() => engine.pushPending(), () => engine.pull()]);
+    verifyNever(() => engine.bootstrap());
+  });
+
+  test(
+    'runSync(bootstrap: true) faz bootstrap e depois drena a outbox',
+    () async {
+      await container
+          .read(syncRunnerProvider.notifier)
+          .runSync(bootstrap: true);
+
+      verifyInOrder([() => engine.bootstrap(), () => engine.pushPending()]);
+      verifyNever(() => engine.pull());
     },
   );
-
-  test('runSync(bootstrap: true) faz bootstrap e depois drena a outbox', () async {
-    await container.read(syncRunnerProvider.notifier).runSync(bootstrap: true);
-
-    verifyInOrder([() => engine.bootstrap(), () => engine.pushPending()]);
-    verifyNever(() => engine.pull());
-  });
 }
