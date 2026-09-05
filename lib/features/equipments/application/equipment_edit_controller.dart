@@ -9,6 +9,22 @@ class EquipmentEditController {
   EquipmentEditController(this._ref);
   final Ref _ref;
 
+  Future<String> create({
+    required String locationId,
+    required String equipmentTypeId,
+    required String name,
+    required String brand,
+    required String model,
+    required String notes,
+  }) => _ref.read(equipmentRepositoryProvider).create(
+    locationId: locationId,
+    equipmentTypeId: equipmentTypeId,
+    name: name,
+    brand: brand,
+    model: model,
+    notes: notes,
+  );
+
   Future<void> update({
     required String equipmentId,
     int? baseVersion,

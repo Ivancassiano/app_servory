@@ -177,6 +177,22 @@ class SyncOutbox extends Table {
   Set<Column> get primaryKey => {operationId};
 }
 
+/// Tipos de equipamento (spec §7.5) — dado de referência **REST-only** (não
+/// entra no protocolo de sync, GUIA-FLUTTER.md §8.4). Cacheado localmente só
+/// para o seletor de "novo equipamento" funcionar offline; `cachedAt` marca
+/// a última vez que veio do servidor.
+class LocalEquipmentTypes extends Table {
+  TextColumn get id => text()();
+  TextColumn get organizationId => text().named('organization_id')();
+  TextColumn get name => text()();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  IntColumn get version => integer().nullable()();
+  DateTimeColumn get cachedAt => dateTime().named('cached_at')();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Linha única por organização: cursor do último `pull` bem-sucedido.
 class LocalSyncState extends Table {
   TextColumn get organizationId => text().named('organization_id')();
@@ -217,6 +233,7 @@ class UploadQueue extends Table {
     LocalEquipments,
     LocalServiceOrders,
     LocalServiceOrderParts,
+    LocalEquipmentTypes,
     SyncOutbox,
     LocalSyncState,
     UploadQueue,
@@ -235,7 +252,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -247,6 +264,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await m.createTable(uploadQueue);
+      }
+      if (from < 4) {
+        await m.createTable(localEquipmentTypes);
       }
     },
   );

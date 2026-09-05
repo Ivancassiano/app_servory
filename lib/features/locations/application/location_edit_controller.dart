@@ -8,6 +8,22 @@ class LocationEditController {
   LocationEditController(this._ref);
   final Ref _ref;
 
+  Future<String> create({
+    required String clientId,
+    String? parentLocationId,
+    required String name,
+    required String contactPerson,
+    required String phone,
+    required String notes,
+  }) => _ref.read(locationRepositoryProvider).create(
+    clientId: clientId,
+    parentLocationId: parentLocationId,
+    name: name,
+    contactPerson: contactPerson,
+    phone: phone,
+    notes: notes,
+  );
+
   Future<void> update({
     required String locationId,
     int? baseVersion,

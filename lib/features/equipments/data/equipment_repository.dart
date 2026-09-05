@@ -4,22 +4,33 @@ import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
-import '../../sync/data/local_first_repository.dart';
 import '../../../core/data/remote_collection.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/rest.dart';
 import '../../../core/providers.dart';
 import '../../auth/application/session_controller.dart';
+import '../../sync/data/local_first_repository.dart';
 import 'equipment_mapper.dart';
 
-/// Ver [ClientRepository]. Criar equipamento: Fatia 2 (exige seletor de
-/// local + tipo de equipamento).
+/// Ver [ClientRepository]. Criar exige local + tipo de equipamento
+/// (seletores nas telas; tipos via `equipmentTypeRepositoryProvider`).
 abstract interface class EquipmentRepository {
   Stream<List<LocalEquipment>> watchList();
   Stream<LocalEquipment?> watchById(String id);
   Future<void> refresh();
+
+  Future<String> create({
+    required String locationId,
+    required String equipmentTypeId,
+    required String name,
+    required String brand,
+    required String model,
+    required String notes,
+  });
+
   Future<void> update({
     required String id,
     required int? baseVersion,
@@ -64,6 +75,66 @@ class LocalFirstEquipmentRepository extends LocalFirstRepositoryBase
 
   @override
   Future<void> refresh() => runSync();
+
+  @override
+  Future<String> create({
+    required String locationId,
+    required String equipmentTypeId,
+    required String name,
+    required String brand,
+    required String model,
+    required String notes,
+  }) async {
+    final body = equipmentCreateBody(
+      locationId: locationId,
+      equipmentTypeId: equipmentTypeId,
+      name: name,
+      brand: brand,
+      model: model,
+      notes: notes,
+    );
+    if (online) {
+      try {
+        final r = await restCall(
+          () => dio.post('/v1/equipments', data: body),
+        );
+        final eq = equipmentFromApiJson(
+          r.data as Map<String, dynamic>,
+          organizationId: orgId,
+        );
+        await db.into(db.localEquipments).insertOnConflictUpdate(eq);
+        return eq.id;
+      } on ApiException catch (e) {
+        if (!isOfflineError(e)) rethrow;
+      }
+    }
+    final id = const Uuid().v4();
+    await db.transaction(() async {
+      await db.into(db.localEquipments).insert(
+            LocalEquipmentsCompanion.insert(
+              id: id,
+              organizationId: orgId,
+              locationId: locationId,
+              equipmentTypeId: equipmentTypeId,
+              name: name,
+              brand: Value(brand),
+              model: Value(model),
+              notes: Value(notes),
+              localUpdatedAt: DateTime.now(),
+              syncStatus: const Value('pending'),
+              lastSyncedAt: const Value(null),
+            ),
+          );
+      await enqueue(
+        entityType: 'equipment',
+        entityId: id,
+        operationType: 'create',
+        payload: body,
+      );
+    });
+    unawaited(trySyncNow());
+    return id;
+  }
 
   @override
   Future<void> update({
@@ -146,6 +217,28 @@ class RemoteEquipmentRepository implements EquipmentRepository {
 
   @override
   Future<void> refresh() => _collection.refresh();
+
+  @override
+  Future<String> create({
+    required String locationId,
+    required String equipmentTypeId,
+    required String name,
+    required String brand,
+    required String model,
+    required String notes,
+  }) async {
+    final eq = await _collection.create(
+      equipmentCreateBody(
+        locationId: locationId,
+        equipmentTypeId: equipmentTypeId,
+        name: name,
+        brand: brand,
+        model: model,
+        notes: notes,
+      ),
+    );
+    return eq.id;
+  }
 
   @override
   Future<void> update({

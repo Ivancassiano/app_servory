@@ -75,6 +75,11 @@ class LocationListScreen extends ConsumerWidget {
           },
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/locations/new'),
+        tooltip: 'Novo local',
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

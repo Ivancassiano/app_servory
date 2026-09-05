@@ -4,22 +4,32 @@ import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
-import '../../sync/data/local_first_repository.dart';
 import '../../../core/data/remote_collection.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/rest.dart';
 import '../../../core/providers.dart';
 import '../../auth/application/session_controller.dart';
+import '../../sync/data/local_first_repository.dart';
 import 'location_mapper.dart';
 
 /// Ver [ClientRepository] para o racional das duas implementações.
-/// Criar local fica pra Fatia 2 (exige seletor de cliente/pai).
 abstract interface class LocationRepository {
   Stream<List<LocalLocation>> watchList();
   Stream<LocalLocation?> watchById(String id);
   Future<void> refresh();
+
+  Future<String> create({
+    required String clientId,
+    String? parentLocationId,
+    required String name,
+    required String contactPerson,
+    required String phone,
+    required String notes,
+  });
+
   Future<void> update({
     required String id,
     required int? baseVersion,
@@ -64,6 +74,66 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
 
   @override
   Future<void> refresh() => runSync();
+
+  @override
+  Future<String> create({
+    required String clientId,
+    String? parentLocationId,
+    required String name,
+    required String contactPerson,
+    required String phone,
+    required String notes,
+  }) async {
+    final body = locationCreateBody(
+      clientId: clientId,
+      parentLocationId: parentLocationId,
+      name: name,
+      contactPerson: contactPerson,
+      phone: phone,
+      notes: notes,
+    );
+    if (online) {
+      try {
+        final r = await restCall(
+          () => dio.post('/v1/locations', data: body),
+        );
+        final loc = locationFromApiJson(
+          r.data as Map<String, dynamic>,
+          organizationId: orgId,
+        );
+        await db.into(db.localLocations).insertOnConflictUpdate(loc);
+        return loc.id;
+      } on ApiException catch (e) {
+        if (!isOfflineError(e)) rethrow;
+      }
+    }
+    final id = const Uuid().v4();
+    await db.transaction(() async {
+      await db.into(db.localLocations).insert(
+            LocalLocationsCompanion.insert(
+              id: id,
+              organizationId: orgId,
+              clientId: clientId,
+              parentLocationId: Value(parentLocationId),
+              name: name,
+              contactPerson: Value(contactPerson),
+              phone: Value(phone),
+              notes: Value(notes),
+              localUpdatedAt: DateTime.now(),
+              syncStatus: const Value('pending'),
+              lastSyncedAt: const Value(null),
+            ),
+          );
+      await enqueue(
+        entityType: 'location',
+        entityId: id,
+        operationType: 'create',
+        payload: body,
+      );
+    });
+    unawaited(trySyncNow());
+    return id;
+  }
 
   @override
   Future<void> update({
@@ -146,6 +216,28 @@ class RemoteLocationRepository implements LocationRepository {
 
   @override
   Future<void> refresh() => _collection.refresh();
+
+  @override
+  Future<String> create({
+    required String clientId,
+    String? parentLocationId,
+    required String name,
+    required String contactPerson,
+    required String phone,
+    required String notes,
+  }) async {
+    final loc = await _collection.create(
+      locationCreateBody(
+        clientId: clientId,
+        parentLocationId: parentLocationId,
+        name: name,
+        contactPerson: contactPerson,
+        phone: phone,
+        notes: notes,
+      ),
+    );
+    return loc.id;
+  }
 
   @override
   Future<void> update({

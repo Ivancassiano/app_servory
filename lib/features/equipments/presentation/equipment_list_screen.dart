@@ -77,6 +77,11 @@ class EquipmentListScreen extends ConsumerWidget {
           },
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/equipments/new'),
+        tooltip: 'Novo equipamento',
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

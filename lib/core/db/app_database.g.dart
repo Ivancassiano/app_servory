@@ -5869,6 +5869,424 @@ class LocalServiceOrderPartsCompanion
   }
 }
 
+class $LocalEquipmentTypesTable extends LocalEquipmentTypes
+    with TableInfo<$LocalEquipmentTypesTable, LocalEquipmentType> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalEquipmentTypesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    organizationId,
+    name,
+    description,
+    version,
+    cachedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_equipment_types';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalEquipmentType> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalEquipmentType map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalEquipmentType(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalEquipmentTypesTable createAlias(String alias) {
+    return $LocalEquipmentTypesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalEquipmentType extends DataClass
+    implements Insertable<LocalEquipmentType> {
+  final String id;
+  final String organizationId;
+  final String name;
+  final String description;
+  final int? version;
+  final DateTime cachedAt;
+  const LocalEquipmentType({
+    required this.id,
+    required this.organizationId,
+    required this.name,
+    required this.description,
+    this.version,
+    required this.cachedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['organization_id'] = Variable<String>(organizationId);
+    map['name'] = Variable<String>(name);
+    map['description'] = Variable<String>(description);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  LocalEquipmentTypesCompanion toCompanion(bool nullToAbsent) {
+    return LocalEquipmentTypesCompanion(
+      id: Value(id),
+      organizationId: Value(organizationId),
+      name: Value(name),
+      description: Value(description),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory LocalEquipmentType.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalEquipmentType(
+      id: serializer.fromJson<String>(json['id']),
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String>(json['description']),
+      version: serializer.fromJson<int?>(json['version']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'organizationId': serializer.toJson<String>(organizationId),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String>(description),
+      'version': serializer.toJson<int?>(version),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  LocalEquipmentType copyWith({
+    String? id,
+    String? organizationId,
+    String? name,
+    String? description,
+    Value<int?> version = const Value.absent(),
+    DateTime? cachedAt,
+  }) => LocalEquipmentType(
+    id: id ?? this.id,
+    organizationId: organizationId ?? this.organizationId,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    version: version.present ? version.value : this.version,
+    cachedAt: cachedAt ?? this.cachedAt,
+  );
+  LocalEquipmentType copyWithCompanion(LocalEquipmentTypesCompanion data) {
+    return LocalEquipmentType(
+      id: data.id.present ? data.id.value : this.id,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      version: data.version.present ? data.version.value : this.version,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalEquipmentType(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('version: $version, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, organizationId, name, description, version, cachedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalEquipmentType &&
+          other.id == this.id &&
+          other.organizationId == this.organizationId &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.version == this.version &&
+          other.cachedAt == this.cachedAt);
+}
+
+class LocalEquipmentTypesCompanion extends UpdateCompanion<LocalEquipmentType> {
+  final Value<String> id;
+  final Value<String> organizationId;
+  final Value<String> name;
+  final Value<String> description;
+  final Value<int?> version;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const LocalEquipmentTypesCompanion({
+    this.id = const Value.absent(),
+    this.organizationId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.version = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalEquipmentTypesCompanion.insert({
+    required String id,
+    required String organizationId,
+    required String name,
+    this.description = const Value.absent(),
+    this.version = const Value.absent(),
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       organizationId = Value(organizationId),
+       name = Value(name),
+       cachedAt = Value(cachedAt);
+  static Insertable<LocalEquipmentType> custom({
+    Expression<String>? id,
+    Expression<String>? organizationId,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<int>? version,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (organizationId != null) 'organization_id': organizationId,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (version != null) 'version': version,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalEquipmentTypesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? organizationId,
+    Value<String>? name,
+    Value<String>? description,
+    Value<int?>? version,
+    Value<DateTime>? cachedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalEquipmentTypesCompanion(
+      id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      version: version ?? this.version,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalEquipmentTypesCompanion(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('version: $version, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncOutboxTable extends SyncOutbox
     with TableInfo<$SyncOutboxTable, SyncOutboxData> {
   @override
@@ -7404,6 +7822,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LocalServiceOrdersTable(this);
   late final $LocalServiceOrderPartsTable localServiceOrderParts =
       $LocalServiceOrderPartsTable(this);
+  late final $LocalEquipmentTypesTable localEquipmentTypes =
+      $LocalEquipmentTypesTable(this);
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $LocalSyncStateTable localSyncState = $LocalSyncStateTable(this);
   late final $UploadQueueTable uploadQueue = $UploadQueueTable(this);
@@ -7417,6 +7837,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localEquipments,
     localServiceOrders,
     localServiceOrderParts,
+    localEquipmentTypes,
     syncOutbox,
     localSyncState,
     uploadQueue,
@@ -10140,6 +10561,256 @@ typedef $$LocalServiceOrderPartsTableProcessedTableManager =
       LocalServiceOrderPart,
       PrefetchHooks Function()
     >;
+typedef $$LocalEquipmentTypesTableCreateCompanionBuilder =
+    LocalEquipmentTypesCompanion Function({
+      required String id,
+      required String organizationId,
+      required String name,
+      Value<String> description,
+      Value<int?> version,
+      required DateTime cachedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalEquipmentTypesTableUpdateCompanionBuilder =
+    LocalEquipmentTypesCompanion Function({
+      Value<String> id,
+      Value<String> organizationId,
+      Value<String> name,
+      Value<String> description,
+      Value<int?> version,
+      Value<DateTime> cachedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalEquipmentTypesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalEquipmentTypesTable> {
+  $$LocalEquipmentTypesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalEquipmentTypesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalEquipmentTypesTable> {
+  $$LocalEquipmentTypesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalEquipmentTypesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalEquipmentTypesTable> {
+  $$LocalEquipmentTypesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$LocalEquipmentTypesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalEquipmentTypesTable,
+          LocalEquipmentType,
+          $$LocalEquipmentTypesTableFilterComposer,
+          $$LocalEquipmentTypesTableOrderingComposer,
+          $$LocalEquipmentTypesTableAnnotationComposer,
+          $$LocalEquipmentTypesTableCreateCompanionBuilder,
+          $$LocalEquipmentTypesTableUpdateCompanionBuilder,
+          (
+            LocalEquipmentType,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalEquipmentTypesTable,
+              LocalEquipmentType
+            >,
+          ),
+          LocalEquipmentType,
+          PrefetchHooks Function()
+        > {
+  $$LocalEquipmentTypesTableTableManager(
+    _$AppDatabase db,
+    $LocalEquipmentTypesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalEquipmentTypesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalEquipmentTypesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalEquipmentTypesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> organizationId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalEquipmentTypesCompanion(
+                id: id,
+                organizationId: organizationId,
+                name: name,
+                description: description,
+                version: version,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String organizationId,
+                required String name,
+                Value<String> description = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                required DateTime cachedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalEquipmentTypesCompanion.insert(
+                id: id,
+                organizationId: organizationId,
+                name: name,
+                description: description,
+                version: version,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalEquipmentTypesTable, LocalEquipmentType>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalEquipmentTypesTable,
+                    LocalEquipmentType
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalEquipmentTypesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalEquipmentTypesTable,
+      LocalEquipmentType,
+      $$LocalEquipmentTypesTableFilterComposer,
+      $$LocalEquipmentTypesTableOrderingComposer,
+      $$LocalEquipmentTypesTableAnnotationComposer,
+      $$LocalEquipmentTypesTableCreateCompanionBuilder,
+      $$LocalEquipmentTypesTableUpdateCompanionBuilder,
+      (
+        LocalEquipmentType,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalEquipmentTypesTable,
+          LocalEquipmentType
+        >,
+      ),
+      LocalEquipmentType,
+      PrefetchHooks Function()
+    >;
 typedef $$SyncOutboxTableCreateCompanionBuilder =
     SyncOutboxCompanion Function({
       required String operationId,
@@ -10960,6 +11631,8 @@ class $AppDatabaseManager {
         _db,
         _db.localServiceOrderParts,
       );
+  $$LocalEquipmentTypesTableTableManager get localEquipmentTypes =>
+      $$LocalEquipmentTypesTableTableManager(_db, _db.localEquipmentTypes);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
   $$LocalSyncStateTableTableManager get localSyncState =>

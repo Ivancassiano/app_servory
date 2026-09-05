@@ -36,14 +36,31 @@ LocalLocation locationFromApiJson(
   );
 }
 
-/// Campos alteráveis pelo formulário nesta fatia (endereço fica pra Fatia 2).
-/// Estes são campos de topo do `LocationInput`, não de `address`.
+/// Campos de topo do `LocationInput` (endereço estruturado fica pra depois).
 Map<String, dynamic> locationUpdateBody({
   required String name,
   required String contactPerson,
   required String phone,
   required String notes,
 }) => {
+  'name': name,
+  'contact_person': contactPerson,
+  'phone': phone,
+  'notes': notes,
+};
+
+/// `POST /v1/locations` — `client_id` e `name` obrigatórios; `parent_location_id`
+/// opcional (hierarquia).
+Map<String, dynamic> locationCreateBody({
+  required String clientId,
+  String? parentLocationId,
+  required String name,
+  required String contactPerson,
+  required String phone,
+  required String notes,
+}) => {
+  'client_id': clientId,
+  'parent_location_id': ?parentLocationId,
   'name': name,
   'contact_person': contactPerson,
   'phone': phone,
