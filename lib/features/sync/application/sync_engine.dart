@@ -5,9 +5,8 @@ import 'package:drift/drift.dart' show Value;
 import '../../../core/db/app_database.dart';
 import '../data/sync_api.dart';
 
-/// As 3 entidades desta entrega (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`
-/// leem as 3; `push` só escreve `client` de volta (spec §7.6 "criar/editar
-/// offline" fica pra próxima fatia nas outras duas).
+/// As 3 entidades desta entrega (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`/
+/// `push` tratam as 3 igual.
 const _readEntityTypes = ['client', 'location', 'equipment'];
 
 /// Orquestra `bootstrap`/`pull`/`push` entre o [SyncApi] e o [AppDatabase]
@@ -67,8 +66,8 @@ class SyncEngine {
     }
   }
 
-  /// Envia a outbox pendente. Só `client` está ligado nesta entrega —
-  /// `location`/`equipment` ficam só-leitura por ora (contexto no plano).
+  /// Envia a outbox pendente. As 3 entidades passam por aqui igual —
+  /// `entityType` decide em qual tabela local o resultado é gravado.
   Future<void> pushPending() async {
     final pending = await _db.select(_db.syncOutbox).get();
     if (pending.isEmpty) return;
@@ -91,27 +90,16 @@ class SyncEngine {
     for (final result in results) {
       final op = pending.firstWhere((p) => p.operationId == result.operationId);
       if (result.accepted) {
-        await (_db.update(
-          _db.localClients,
-        )..where((t) => t.id.equals(op.entityId))).write(
-          LocalClientsCompanion(
-            version: Value(result.version),
-            syncStatus: const Value('synced'),
-            lastSyncedAt: Value(DateTime.now()),
-            syncError: const Value(null),
-          ),
-        );
+        await _markSynced(op.entityType, op.entityId, result.version);
         await (_db.delete(
           _db.syncOutbox,
         )..where((t) => t.operationId.equals(op.operationId))).go();
       } else {
-        await (_db.update(
-          _db.localClients,
-        )..where((t) => t.id.equals(op.entityId))).write(
-          LocalClientsCompanion(
-            syncStatus: Value(result.conflict ? 'conflict' : 'pending'),
-            syncError: Value(result.errorCode),
-          ),
+        await _markPushFailed(
+          op.entityType,
+          op.entityId,
+          result.conflict,
+          result.errorCode,
         );
         if (!result.conflict)
           continue; // erro transitório: mantém na outbox p/ tentar de novo
@@ -119,6 +107,77 @@ class SyncEngine {
           _db.syncOutbox,
         )..where((t) => t.operationId.equals(op.operationId))).go();
       }
+    }
+  }
+
+  Future<void> _markSynced(
+    String entityType,
+    String entityId,
+    int? version,
+  ) async {
+    final now = DateTime.now();
+    switch (entityType) {
+      case 'client':
+        await (_db.update(
+          _db.localClients,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalClientsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
+      case 'location':
+        await (_db.update(
+          _db.localLocations,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalLocationsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
+      case 'equipment':
+        await (_db.update(
+          _db.localEquipments,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalEquipmentsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
+    }
+  }
+
+  Future<void> _markPushFailed(
+    String entityType,
+    String entityId,
+    bool conflict,
+    String? errorCode,
+  ) async {
+    final status = Value(conflict ? 'conflict' : 'pending');
+    final error = Value(errorCode);
+    switch (entityType) {
+      case 'client':
+        await (_db.update(_db.localClients)
+              ..where((t) => t.id.equals(entityId)))
+            .write(LocalClientsCompanion(syncStatus: status, syncError: error));
+      case 'location':
+        await (_db.update(
+          _db.localLocations,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalLocationsCompanion(syncStatus: status, syncError: error),
+        );
+      case 'equipment':
+        await (_db.update(
+          _db.localEquipments,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalEquipmentsCompanion(syncStatus: status, syncError: error),
+        );
     }
   }
 

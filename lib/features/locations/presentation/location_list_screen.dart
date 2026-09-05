@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../sync/application/sync_provider.dart';
 import '../application/locations_provider.dart';
@@ -56,6 +57,19 @@ class LocationListScreen extends ConsumerWidget {
                               ? location.contactPerson
                               : '—'),
                   ),
+                  trailing: switch (location.syncStatus) {
+                    'pending' => const Icon(
+                      Icons.cloud_upload_outlined,
+                      size: 20,
+                    ),
+                    'conflict' => Icon(
+                      Icons.warning_amber,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    _ => null,
+                  },
+                  onTap: () => context.push('/locations/${location.id}'),
                 );
               },
             );

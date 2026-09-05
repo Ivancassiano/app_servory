@@ -5,6 +5,47 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/offline-storage`: outbox/push em location e
+## equipment (fechando a paridade de escrita das 3 entidades) ✅
+
+Fatia pequena e mecânica, fechando o item deixado pendente na entrega
+anterior. Só edição (criar exige seletor de cliente/pai ou de local/tipo —
+UI que ainda não existe; editar um registro já sincronizado não precisa).
+
+- **Achado real, corrigido**: `SyncEngine.pushPending()` estava
+  hardcoded pra só escrever de volta em `localClients`, mesmo recebendo
+  resultado de push de `location`/`equipment` — o resultado seria
+  descartado silenciosamente pras outras duas. Generalizado com
+  `_markSynced`/`_markPushFailed` despachando pelo `entityType`, igual o
+  `_upsert`/`_softDelete` já faziam. Achado *antes* de escrever a UI, ao
+  planejar a fatia — coberto por teste novo em `sync_engine_test.dart`
+  que grava outbox de `location`+`equipment` junto e confirma que cada um
+  atualiza a tabela certa.
+- `LocationEditController`/`EquipmentEditController` (só `update`, mesmo
+  padrão local-primeiro do `ClientEditController`) + `LocationDetailScreen`/
+  `EquipmentDetailScreen` (formulário de edição) + `locationByIdProvider`/
+  `equipmentByIdProvider`. Campos sensíveis (`serial_number`, `cost`) ficam
+  de fora do formulário de equipamento — o app não verifica permissão de
+  escrita por campo ainda.
+- **Verificado ao vivo**: criei um local ("Cozinha Central") e um
+  equipamento via `curl` direto no backend (para ter dado real pra
+  editar, já que criar pela UI ainda não existe pras duas), sincronizei no
+  app, editei as observações do local pela UI do emulador, salvou sem
+  ícone de pendência, e confirmei por `curl` que `notes: "Revisada"` e
+  `version: 2` chegaram no servidor. `equipment` usa exatamente o mesmo
+  código (`_markSynced`/`_markPushFailed`) e está coberto pelo teste
+  automatizado; não repeti o mesmo passo a passo manual pra não gastar
+  tempo repetindo uma verificação que já é redundante com o teste.
+- 24 testes automatizados (era 23), todos verdes.
+
+### Próximo (app)
+
+- Ordens de serviço — a próxima fatia funcional de peso (cabeçalho, peças,
+  fotos/assinatura via fila de upload, PDF local, GUIA-FLUTTER §7/§10).
+- Criar (não só editar) location/equipment — precisa de seletor de
+  cliente/local/tipo na UI.
+- l10n via ARB quando houver material de tradução real.
+
 ## `app_servory` — branch `feature/offline-storage`: banco local + sessão
 ## offline + sync (client/location/equipment) ✅
 
@@ -52,7 +93,7 @@ update) para `client` — provado ponta a ponta contra o backend real.
   editar, grava local e tenta sincronizar na hora — outbox garante retry se
   offline) e `LocationListScreen`/`EquipmentListScreen` (só leitura).
   `HomeScreen` ganha os 3 atalhos.
-- **Testes** (32, todos verdes): schema Drift (`NativeDatabase.memory()`),
+- **Testes** (23, todos verdes): schema Drift (`NativeDatabase.memory()`),
   `SyncEngine` (bootstrap/pull/push com `SyncApi` fake), lógica de redirect
   do router (7 casos), suíte anterior (23) intacta.
 - **Verificado ao vivo no emulador Android** (não só testes automatizados):

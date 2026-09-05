@@ -231,4 +231,83 @@ void main() {
       );
     },
   );
+
+  test(
+    'push: location e equipment também gravam de volta na tabela certa (não só client)',
+    () async {
+      final now = DateTime.now();
+      await db.batch((b) {
+        b.insertAll(db.localLocations, [
+          LocalLocationsCompanion.insert(
+            id: 'l1',
+            organizationId: 'org1',
+            clientId: 'c1',
+            name: 'Filial',
+            localUpdatedAt: now,
+          ),
+        ]);
+        b.insertAll(db.localEquipments, [
+          LocalEquipmentsCompanion.insert(
+            id: 'e1',
+            organizationId: 'org1',
+            locationId: 'l1',
+            equipmentTypeId: 't1',
+            name: 'Ar-condicionado',
+            localUpdatedAt: now,
+          ),
+        ]);
+        b.insertAll(db.syncOutbox, [
+          SyncOutboxCompanion.insert(
+            operationId: 'op-loc',
+            organizationId: 'org1',
+            entityType: 'location',
+            entityId: 'l1',
+            operationType: 'update',
+            payload: '{"name":"Filial 2"}',
+            occurredAt: now,
+          ),
+          SyncOutboxCompanion.insert(
+            operationId: 'op-eq',
+            organizationId: 'org1',
+            entityType: 'equipment',
+            entityId: 'e1',
+            operationType: 'update',
+            payload: '{"notes":"revisado"}',
+            occurredAt: now,
+          ),
+        ]);
+      });
+
+      when(() => api.push(any())).thenAnswer(
+        (_) async => const [
+          SyncOperationResult(
+            operationId: 'op-loc',
+            status: 'accepted',
+            version: 2,
+          ),
+          SyncOperationResult(
+            operationId: 'op-eq',
+            status: 'conflict',
+            errorCode: 'VERSION_CONFLICT',
+          ),
+        ],
+      );
+
+      await engine.pushPending();
+
+      final location = await (db.select(
+        db.localLocations,
+      )..where((t) => t.id.equals('l1'))).getSingle();
+      expect(location.version, 2);
+      expect(location.syncStatus, 'synced');
+
+      final equipment = await (db.select(
+        db.localEquipments,
+      )..where((t) => t.id.equals('e1'))).getSingle();
+      expect(equipment.syncStatus, 'conflict');
+      expect(equipment.syncError, 'VERSION_CONFLICT');
+
+      expect(await db.select(db.syncOutbox).get(), isEmpty);
+    },
+  );
 }

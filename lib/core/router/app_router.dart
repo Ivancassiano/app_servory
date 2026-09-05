@@ -9,7 +9,9 @@ import '../../features/auth/presentation/offline_expired_screen.dart';
 import '../../features/auth/presentation/unlock_screen.dart';
 import '../../features/clients/presentation/client_detail_screen.dart';
 import '../../features/clients/presentation/client_list_screen.dart';
+import '../../features/equipments/presentation/equipment_detail_screen.dart';
 import '../../features/equipments/presentation/equipment_list_screen.dart';
+import '../../features/locations/presentation/location_detail_screen.dart';
 import '../../features/locations/presentation/location_list_screen.dart';
 import '../../features/me/presentation/home_screen.dart';
 import '../connectivity/connectivity_provider.dart';
@@ -72,10 +74,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/locations',
         builder: (_, _) => const LocationListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, state) =>
+                LocationDetailScreen(locationId: state.pathParameters['id']!),
+          ),
+        ],
       ),
       GoRoute(
         path: '/equipments',
         builder: (_, _) => const EquipmentListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, state) =>
+                EquipmentDetailScreen(equipmentId: state.pathParameters['id']!),
+          ),
+        ],
       ),
     ],
   );
