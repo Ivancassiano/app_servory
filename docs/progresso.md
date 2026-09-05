@@ -5,6 +5,85 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — branch `feature/offline-storage`: banco local + sessão
+## offline + sync (client/location/equipment) ✅
+
+Segunda entrega do app, sobre a fundação (login) já em `main`. Banco local
+criptografado, sessão offline por biometria/PIN do aparelho, bootstrap/pull
+somente-leitura para `location`/`equipment`, e outbox/push completo (create +
+update) para `client` — provado ponta a ponta contra o backend real.
+
+- **Achado real, resolvido antes de implementar**: o pacote recomendado no
+  início (`sqlcipher_flutter_libs`) está obsoleto — a partir do `sqlite3` v3
+  o próprio mantenedor do drift descontinuou esse caminho a favor de um
+  sistema de hooks de build (`hooks: user_defines: sqlite3: source:
+  sqlite3mc`, SQLite3 Multiple Ciphers). Validado com um spike isolado antes
+  de construir o resto: teste real gravando um arquivo `.sqlite` com `PRAGMA
+  key`, confirmando `PRAGMA cipher; -> chacha20` e que o conteúdo não
+  aparece em texto claro no disco — rodado tanto no host (`flutter test`)
+  quanto de verdade no emulador Android (`flutter run`), antes de comprometer
+  a arquitetura da fatia inteira a essa dependência.
+- **Banco local** (`lib/core/db/`): `AppDatabase` (Drift) com `LocalClients`,
+  `LocalLocations`, `LocalEquipments` (espelham os schemas do OpenAPI, campos
+  mascaráveis nullable — ausência = sem permissão, não vazio),
+  `SyncOutbox`, `LocalSyncState` (cursor por organização). Conexão
+  condicional (`connection.dart` exporta `connection_native.dart` via
+  `dart.library.io`, ou `connection_web.dart` — um stub que nunca roda,
+  já que o Chrome não usa nada disto) — arquivo
+  `servory-{organization_id}.sqlite` em `getApplicationSupportDirectory()`,
+  chave AES de 256 bits gerada uma vez por `DbKeyStore` e guardada no
+  Keychain/Keystore via `SecureStore` (nunca sai do aparelho).
+- **Sincronização** (`lib/features/sync/`): `SyncApi` (push/pull/bootstrap
+  tipados) + `SyncEngine` (bootstrap pagina os 3 tipos; pull aplica
+  update/delete e avança o cursor até estabilizar; pushPending drena a
+  outbox — `accepted` grava version+synced, `conflict` marca e drena,
+  erro transitório mantém pra retry). `SyncRunner` (Riverpod) dispara
+  bootstrap no primeiro login da organização e pull/push depois disso.
+- **Sessão offline** (spec §18.3): `SessionController` grava
+  `lastOnlineValidationAt` a cada login/refresh; `AppLockController`
+  re-trava ao ir para segundo plano; `AppRouter` ganha `/unlock` (biometria
+  OU PIN/padrão do aparelho via `local_auth`, `biometricOnly: false` — cobre
+  a spec sem precisar construir um PIN próprio do app) e
+  `/offline-expired` (offline + mais de 7 dias sem confirmar com o
+  servidor — bloqueia sem apagar dado local). Lógica de redirect extraída
+  em `decideRedirect` (função pura, testável sem GoRouter/widget de
+  verdade).
+- **UI mínima**: `ClientListScreen`/`ClientDetailScreen` (lista + criar/
+  editar, grava local e tenta sincronizar na hora — outbox garante retry se
+  offline) e `LocationListScreen`/`EquipmentListScreen` (só leitura).
+  `HomeScreen` ganha os 3 atalhos.
+- **Testes** (32, todos verdes): schema Drift (`NativeDatabase.memory()`),
+  `SyncEngine` (bootstrap/pull/push com `SyncApi` fake), lógica de redirect
+  do router (7 casos), suíte anterior (23) intacta.
+- **Verificado ao vivo no emulador Android** (não só testes automatizados):
+  login real → bootstrap rodando (listas vazias sem erro) → criado um
+  cliente pela UI → apareceu sem ícone de pendência (sincronizou na hora) →
+  confirmado por `curl` direto no `servicelog-api` que o registro existe no
+  servidor com `version: 1`. Depois: wifi/dados desligados
+  (`adb shell svc wifi disable` / `svc data disable`) → app relançado →
+  tela de "Você está offline" apareceu corretamente e, como este emulador
+  não tem biometria/PIN configurado, mostrou a mensagem de "conecte-se"
+  (branch da spec §18.3 para aparelho sem lock configurado) em vez de tentar
+  um `local_auth.authenticate` que falharia — religar a rede voltou pra Home
+  sozinho, sem reabrir o app.
+  - Achado à parte, sem relação com o código do app: o emulador ficou
+    reabrindo um diálogo do sistema Android ("Try out your stylus") por
+    cima da tela durante os testes de digitação — atrapalhou a automação via
+    `adb shell input text`, não é um bug do ServiceLog. Contornado
+    desligando via `adb shell settings put secure stylus_handwriting_enabled 0`
+    (mudança só no emulador local, não no app).
+- **Fora do escopo desta entrega** (registrado no plano, não é dívida
+  esquecida): outbox/push para `location`/`equipment` (só leitura por
+  ora — mesma receita de `client` quando entrar); cache de
+  `equipment_type` (REST-only); qualquer coisa no Chrome (decisão já
+  tomada: sempre-online).
+
+### Próximo (app)
+
+- Ligar outbox/push em `location`/`equipment` no mesmo molde de `client`.
+- Fotos/assinatura de ordem de serviço (fila de upload, GUIA-FLUTTER §7).
+- l10n via ARB quando houver material de tradução real.
+
 ## `app_servory` — fundação do app Flutter (iOS, Android, Chrome) ✅
 
 Primeira entrega do app (repo antes só com documentação). Login real, `/v1/me`

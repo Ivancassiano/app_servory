@@ -34,6 +34,7 @@ void main() {
       ),
     ).thenAnswer((_) async {});
     when(() => store.clearSession()).thenAnswer((_) async {});
+    when(() => store.saveLastOnlineValidation(any())).thenAnswer((_) async {});
 
     container = ProviderContainer(
       overrides: [
@@ -49,7 +50,10 @@ void main() {
     container.read(sessionControllerProvider);
     await Future<void>.delayed(Duration.zero);
 
-    expect(container.read(sessionControllerProvider), isA<SessionUnauthenticated>());
+    expect(
+      container.read(sessionControllerProvider),
+      isA<SessionUnauthenticated>(),
+    );
   });
 
   test('login com sucesso autentica e salva a sessão', () async {
@@ -87,36 +91,46 @@ void main() {
     ).called(1);
   });
 
-  test('login com credenciais inválidas mantém não-autenticado e propaga o erro', () async {
-    when(
-      () => authApi.login(
-        email: any(named: 'email'),
-        password: any(named: 'password'),
-        deviceId: any(named: 'deviceId'),
-        deviceName: any(named: 'deviceName'),
-        devicePlatform: any(named: 'devicePlatform'),
-      ),
-    ).thenThrow(
-      const ApiException(code: 'INVALID_CREDENTIALS', message: 'invalid', statusCode: 401),
-    );
+  test(
+    'login com credenciais inválidas mantém não-autenticado e propaga o erro',
+    () async {
+      when(
+        () => authApi.login(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+          deviceId: any(named: 'deviceId'),
+          deviceName: any(named: 'deviceName'),
+          devicePlatform: any(named: 'devicePlatform'),
+        ),
+      ).thenThrow(
+        const ApiException(
+          code: 'INVALID_CREDENTIALS',
+          message: 'invalid',
+          statusCode: 401,
+        ),
+      );
 
-    final notifier = container.read(sessionControllerProvider.notifier);
+      final notifier = container.read(sessionControllerProvider.notifier);
 
-    await expectLater(
-      notifier.login(email: 'tech@example.com', password: 'errada'),
-      throwsA(isA<ApiException>()),
-    );
+      await expectLater(
+        notifier.login(email: 'tech@example.com', password: 'errada'),
+        throwsA(isA<ApiException>()),
+      );
 
-    expect(container.read(sessionControllerProvider), isA<SessionUnauthenticated>());
-    verifyNever(
-      () => store.saveSession(
-        accessToken: any(named: 'accessToken'),
-        refreshToken: any(named: 'refreshToken'),
-        organizationId: any(named: 'organizationId'),
-        userId: any(named: 'userId'),
-      ),
-    );
-  });
+      expect(
+        container.read(sessionControllerProvider),
+        isA<SessionUnauthenticated>(),
+      );
+      verifyNever(
+        () => store.saveSession(
+          accessToken: any(named: 'accessToken'),
+          refreshToken: any(named: 'refreshToken'),
+          organizationId: any(named: 'organizationId'),
+          userId: any(named: 'userId'),
+        ),
+      );
+    },
+  );
 
   test('sessão expirada (porta de refresh) limpa a sessão e desloga', () async {
     container.read(sessionControllerProvider);
@@ -124,7 +138,10 @@ void main() {
 
     container.read(sessionExpiredPortProvider).notify();
 
-    expect(container.read(sessionControllerProvider), isA<SessionUnauthenticated>());
+    expect(
+      container.read(sessionControllerProvider),
+      isA<SessionUnauthenticated>(),
+    );
     verify(() => store.clearSession()).called(1);
   });
 }

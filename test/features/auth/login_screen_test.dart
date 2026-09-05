@@ -31,6 +31,7 @@ void main() {
         userId: any(named: 'userId'),
       ),
     ).thenAnswer((_) async {});
+    when(() => store.saveLastOnlineValidation(any())).thenAnswer((_) async {});
   });
 
   Widget buildApp() {
@@ -51,7 +52,9 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Entrar'), findsOneWidget);
   });
 
-  testWidgets('submit com campos vazios mostra validação e não chama o login', (tester) async {
+  testWidgets('submit com campos vazios mostra validação e não chama o login', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildApp());
 
     await tester.tap(find.widgetWithText(FilledButton, 'Entrar'));
@@ -70,7 +73,9 @@ void main() {
     );
   });
 
-  testWidgets('submit com credenciais válidas chama o controller de sessão', (tester) async {
+  testWidgets('submit com credenciais válidas chama o controller de sessão', (
+    tester,
+  ) async {
     when(
       () => authApi.login(
         email: any(named: 'email'),
@@ -90,7 +95,10 @@ void main() {
 
     await tester.pumpWidget(buildApp());
 
-    await tester.enterText(find.byType(TextFormField).at(0), 'tech@example.com');
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'tech@example.com',
+    );
     await tester.enterText(find.byType(TextFormField).at(1), 'senha123');
     await tester.tap(find.widgetWithText(FilledButton, 'Entrar'));
     await tester.pumpAndSettle();

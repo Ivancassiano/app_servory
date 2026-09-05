@@ -27,7 +27,10 @@ class SessionAuthenticating extends SessionState {
 }
 
 class SessionAuthenticated extends SessionState {
-  const SessionAuthenticated({required this.userId, required this.organizationId});
+  const SessionAuthenticated({
+    required this.userId,
+    required this.organizationId,
+  });
   final String userId;
   final String organizationId;
 }
@@ -53,7 +56,8 @@ class SessionController extends Notifier<SessionState> {
     final organizationId = await store.readOrganizationId();
     final userId = await store.readUserId();
 
-    final hasSession = accessToken != null &&
+    final hasSession =
+        accessToken != null &&
         refreshToken != null &&
         organizationId != null &&
         userId != null;
@@ -87,8 +91,12 @@ class SessionController extends Notifier<SessionState> {
         organizationId: pair.organizationId,
         userId: pair.userId,
       );
+      await store.saveLastOnlineValidation(DateTime.now());
       if (!ref.mounted) return;
-      state = SessionAuthenticated(userId: pair.userId, organizationId: pair.organizationId);
+      state = SessionAuthenticated(
+        userId: pair.userId,
+        organizationId: pair.organizationId,
+      );
     } catch (_) {
       if (ref.mounted) state = const SessionUnauthenticated();
       rethrow;
@@ -135,6 +143,5 @@ class SessionController extends Notifier<SessionState> {
   }
 }
 
-final sessionControllerProvider = NotifierProvider<SessionController, SessionState>(
-  SessionController.new,
-);
+final sessionControllerProvider =
+    NotifierProvider<SessionController, SessionState>(SessionController.new);

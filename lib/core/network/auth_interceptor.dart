@@ -106,6 +106,9 @@ class AuthInterceptor extends Interceptor {
         organizationId: (data['organization_id'] as String?) ?? orgId ?? '',
         userId: (data['user_id'] as String?) ?? userId ?? '',
       );
+      // Um refresh bem-sucedido é, por definição, uma confirmação com o
+      // servidor — reinicia o prazo de 7 dias da sessão offline (spec §18.3).
+      await _store.saveLastOnlineValidation(DateTime.now());
       return true;
     } on DioException {
       await _store.clearSession();

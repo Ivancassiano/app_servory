@@ -78,4 +78,6 @@ class AuthApi {
   }
 }
 
-final authApiProvider = Provider<AuthApi>((ref) => AuthApi(ref.watch(apiClientProvider).authDio));
+final authApiProvider = Provider<AuthApi>(
+  (ref) => AuthApi(ref.watch(apiClientProvider).authDio),
+);

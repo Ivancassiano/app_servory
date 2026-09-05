@@ -44,13 +44,15 @@ class ApiException implements Exception {
   /// código novo no backend nunca deve travar o app).
   String get friendlyMessage => _friendlyByCode[code] ?? _genericMessage;
 
-  static const _genericMessage = 'Não foi possível completar a ação. Tente novamente.';
+  static const _genericMessage =
+      'Não foi possível completar a ação. Tente novamente.';
 
   static const _friendlyByCode = <String, String>{
     'INVALID_CREDENTIALS': 'E-mail ou senha inválidos.',
     'USER_INACTIVE': 'Este usuário está inativo. Fale com um administrador.',
     'NO_ACTIVE_ORGANIZATION': 'Nenhuma organização ativa para este usuário.',
-    'ORGANIZATION_NOT_RESOLVED': 'Não foi possível determinar a organização ativa.',
+    'ORGANIZATION_NOT_RESOLVED':
+        'Não foi possível determinar a organização ativa.',
     'INVALID_REFRESH_TOKEN': 'Sua sessão expirou. Entre novamente.',
     'INVALID_RESET_TOKEN': 'Link de redefinição inválido ou expirado.',
     'INVALID_INVITATION': 'Convite inválido ou já utilizado.',
@@ -59,8 +61,10 @@ class ApiException implements Exception {
     'FORBIDDEN': 'Você não tem permissão para fazer isso.',
     'UNAUTHORIZED': 'Sua sessão expirou. Entre novamente.',
     'NOT_FOUND': 'Registro não encontrado.',
-    'VERSION_CONFLICT': 'Este registro foi alterado por outra pessoa. Recarregue e tente de novo.',
-    'NETWORK_ERROR': 'Não foi possível conectar ao servidor. Verifique sua conexão.',
+    'VERSION_CONFLICT':
+        'Este registro foi alterado por outra pessoa. Recarregue e tente de novo.',
+    'NETWORK_ERROR':
+        'Não foi possível conectar ao servidor. Verifique sua conexão.',
     'INTERNAL': _genericMessage,
   };
 

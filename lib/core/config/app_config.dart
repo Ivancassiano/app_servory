@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 
 /// Endereços base dos dois hosts do backend (GUIA-FLUTTER.md §2):
 /// `auth-api` (login/refresh/sessões) e `servicelog-api` (tudo mais).
@@ -29,9 +30,7 @@ class AppConfig {
       authBaseUrl: authOverride.isNotEmpty
           ? authOverride
           : 'http://$devHost:8080',
-      apiBaseUrl: apiOverride.isNotEmpty
-          ? apiOverride
-          : 'http://$devHost:8081',
+      apiBaseUrl: apiOverride.isNotEmpty ? apiOverride : 'http://$devHost:8081',
     );
   }
 
