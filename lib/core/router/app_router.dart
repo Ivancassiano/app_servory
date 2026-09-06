@@ -27,6 +27,7 @@ import '../../features/service_orders/presentation/service_order_list_screen.dar
 import '../../features/service_orders/presentation/service_order_report_screen.dart';
 import '../connectivity/connectivity_provider.dart';
 import '../providers.dart';
+import '../widgets/splash_screen.dart';
 
 /// Spec §18.3: uma sessão offline vale por 7 dias desde a última vez que o
 /// aparelho confirmou com o servidor (login ou refresh bem-sucedido).
@@ -74,7 +75,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       );
     },
     routes: [
-      GoRoute(path: '/splash', builder: (_, _) => const _SplashScreen()),
+      GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       GoRoute(path: '/unlock', builder: (_, _) => const UnlockScreen()),
       GoRoute(
@@ -220,11 +221,3 @@ String? decideRedirect({
   }
 }
 
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-}

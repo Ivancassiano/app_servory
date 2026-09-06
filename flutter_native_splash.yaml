@@ -1,0 +1,15 @@
+# Splash nativa (cold start) do ServiceReport. Regenerar após mudar:
+#   dart run flutter_native_splash:create
+# A tela /splash em Flutter (com o pulso das faixas) é separada — esta é só
+# o frame que o SO mostra antes do engine subir.
+flutter_native_splash:
+  color: "#12151A"
+  image: assets/icon/splash-icon.png
+  android_12:
+    color: "#12151A"
+    image: assets/icon/splash-icon.png
+    icon_background_color: "#12151A"
+  web: false
+  fullscreen: true
+  android_gravity: center
+  ios_content_mode: center
