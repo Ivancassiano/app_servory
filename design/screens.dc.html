@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+  @keyframes srBar { 0%, 100% { opacity: 0.22 } 45% { opacity: 1 } }
+  body { margin: 0; background: #EDEEF0; }
+  a { color: #3A61C4; text-decoration: none; }
+  a:hover { color: #12151A; }
+</style>
+</helmet>
+
+<section style="display:flex; flex-direction:column; gap:36px; padding:48px 40px 72px; font-family:'Space Grotesk', Helvetica, sans-serif; color:#12151A">
+
+  <header style="display:flex; flex-direction:column; gap:10px; max-width:760px">
+    <div style="font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:#71757C">app_servory · desenho das telas</div>
+    <h1 style="margin:0; font-size:30px; font-weight:500; letter-spacing:-0.015em; line-height:1.2">ServiceReport em iOS e Android</h1>
+    <p style="margin:0; font-size:14px; line-height:1.65; color:#4C5057; text-wrap:pretty">Telas montadas a partir do código — rotas, campos e textos vindos de <span style="font-family:'IBM Plex Mono', monospace; font-size:12.5px">login_screen</span>, <span style="font-family:'IBM Plex Mono', monospace; font-size:12.5px">home_screen</span>, <span style="font-family:'IBM Plex Mono', monospace; font-size:12.5px">service_order_list_screen</span>, <span style="font-family:'IBM Plex Mono', monospace; font-size:12.5px">service_order_detail_screen</span> e <span style="font-family:'IBM Plex Mono', monospace; font-size:12.5px">signature_pad_sheet</span>. Mesma UI nas duas plataformas; muda o que é do sistema — barras, navegação e os controles nativos.</p>
+    <p style="margin:0; font-size:13px; line-height:1.6; color:#71757C; text-wrap:pretty">O título “ServiceLog” do código passa a ser <strong style="color:#12151A; font-weight:600">ServiceReport</strong> em toda a interface. Não há apontamento de horas no app; a ordem tem peças, recomendações, fotos e assinatura.</p>
+  </header>
+
+  <div style="display:flex; flex-direction:column; gap:14px">
+    <div style="display:flex; align-items:baseline; gap:12px">
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em; color:#3A61C4">01</span>
+      <h2 style="margin:0; font-size:17px; font-weight:600">Splash · /splash</h2>
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">bootstrap da sincronização</span>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start">
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ 344 }}" height="{{ 748 }}" dark="{{ true }}" hint-size="344px,748px">
+          <div style="box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:space-between; height:100%; padding:66px 32px 56px; background:#12151A; color:#FFFFFF">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:20px; margin:auto 0">
+              <svg width="80" height="80" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="2" width="14" height="4" fill="#FFFFFF" style="animation:srBar 1.6s ease-in-out infinite"></rect>
+                <rect x="4" y="7.5" width="8" height="4" fill="#618DF3" style="animation:srBar 1.6s ease-in-out 0.2s infinite"></rect>
+                <rect x="10" y="13" width="8" height="4" fill="#FFFFFF" style="animation:srBar 1.6s ease-in-out 0.4s infinite"></rect>
+                <rect x="4" y="18.5" width="14" height="4" fill="#618DF3" style="animation:srBar 1.6s ease-in-out 0.6s infinite"></rect>
+              </svg>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:7px">
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.3em; color:#8A8F98">leiano</span>
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:21px; font-weight:500; letter-spacing:-0.03em">servicereport</span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px">
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:10.5px; letter-spacing:0.1em; color:#B4B9C1">preparando dados do dispositivo</span>
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; color:#71757C">versão 1.0.4</span>
+            </div>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">iOS</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" width="{{ 348 }}" height="{{ 748 }}" dark="{{ true }}" hint-size="348px,748px">
+          <div style="box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:space-between; height:100%; padding:24px 32px 20px; background:#12151A; color:#FFFFFF">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:20px; margin:auto 0">
+              <svg width="80" height="80" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="2" width="14" height="4" fill="#FFFFFF" style="animation:srBar 1.6s ease-in-out infinite"></rect>
+                <rect x="4" y="7.5" width="8" height="4" fill="#618DF3" style="animation:srBar 1.6s ease-in-out 0.2s infinite"></rect>
+                <rect x="10" y="13" width="8" height="4" fill="#FFFFFF" style="animation:srBar 1.6s ease-in-out 0.4s infinite"></rect>
+                <rect x="4" y="18.5" width="14" height="4" fill="#618DF3" style="animation:srBar 1.6s ease-in-out 0.6s infinite"></rect>
+              </svg>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:7px">
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.3em; color:#8A8F98">leiano</span>
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:21px; font-weight:500; letter-spacing:-0.03em">servicereport</span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:14px; width:100%">
+              <div style="position:relative; width:100%; height:3px; background:#262A31; overflow:hidden">
+                <span style="position:absolute; top:0; bottom:0; left:0; width:62%; background:#618DF3"></span>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:center; gap:8px">
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:10.5px; letter-spacing:0.1em; color:#B4B9C1">preparando dados do dispositivo</span>
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; color:#71757C">versão 1.0.4</span>
+              </div>
+            </div>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Android · progresso linear M3</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:14px">
+    <div style="display:flex; align-items:baseline; gap:12px">
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em; color:#3A61C4">02</span>
+      <h2 style="margin:0; font-size:17px; font-weight:600">Login · /login</h2>
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">e-mail, senha e erro da API</span>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start">
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ 344 }}" height="{{ 748 }}" hint-size="344px,748px">
+          <div style="box-sizing:border-box; display:flex; flex-direction:column; height:100%; padding:66px 24px 56px; background:#EDEEF0; color:#12151A">
+            <div style="display:flex; flex-direction:column; gap:26px; margin:auto 0">
+              <div style="display:flex; flex-direction:column; align-items:center; gap:14px">
+                <div style="display:flex; align-items:center; justify-content:center; width:54px; height:54px; background:#12151A">
+                  <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="4" y="2" width="14" height="4" fill="#FFFFFF"></rect>
+                    <rect x="4" y="7.5" width="8" height="4" fill="#618DF3"></rect>
+                    <rect x="10" y="13" width="8" height="4" fill="#FFFFFF"></rect>
+                    <rect x="4" y="18.5" width="14" height="4" fill="#618DF3"></rect>
+                  </svg>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:6px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:19px; font-weight:500; letter-spacing:-0.03em">servicereport</span>
+                  <span style="font-size:12.5px; line-height:1.5; color:#4C5057; text-align:center; text-wrap:pretty">Histórico de manutenção dos seus equipamentos</span>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:14px">
+                <label style="display:flex; flex-direction:column; gap:6px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#71757C">E-mail</span>
+                  <input type="email" value="ivan@leiano.com.br" style="box-sizing:border-box; width:100%; padding:14px; border:1px solid #12151A; background:#FFFFFF; font-family:'IBM Plex Mono', monospace; font-size:13.5px; color:#12151A">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:6px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#71757C">Senha</span>
+                  <div style="display:flex; align-items:stretch; border:1px solid #DCDEE2; background:#FFFFFF">
+                    <input type="password" value="••••••••••" style="flex:1; min-width:0; padding:14px; border:none; outline:none; font-family:'IBM Plex Mono', monospace; font-size:13.5px; color:#12151A">
+                    <button style="display:flex; align-items:center; justify-content:center; width:46px; border:none; background:transparent; cursor:pointer" style-hover="background:#F0F1F3">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#71757C" stroke-width="1.9" aria-hidden="true"><path d="M1.5,12 C4,7 8,4.5 12,4.5 C16,4.5 20,7 22.5,12 C20,17 16,19.5 12,19.5 C8,19.5 4,17 1.5,12 Z"></path><circle cx="12" cy="12" r="3.2"></circle></svg>
+                    </button>
+                  </div>
+                </label>
+                <div style="padding:12px 14px; background:#FBEDEA; border-left:3px solid #A3372A">
+                  <span style="font-size:12.5px; line-height:1.5; color:#7C2A20">E-mail ou senha incorretos.</span>
+                </div>
+                <button style="padding:16px; border:none; background:#12151A; color:#FFFFFF; font-family:'Space Grotesk', sans-serif; font-size:15px; font-weight:500; cursor:pointer" style-hover="background:#1C2029">Entrar</button>
+              </div>
+            </div>
+            <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-align:center; color:#8A8F98">sessão offline válida por 7 dias</span>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">iOS</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" width="{{ 348 }}" height="{{ 748 }}" hint-size="348px,748px">
+          <div style="box-sizing:border-box; display:flex; flex-direction:column; height:100%; padding:24px 24px 20px; background:#EDEEF0; color:#12151A">
+            <div style="display:flex; flex-direction:column; gap:26px; margin:auto 0">
+              <div style="display:flex; flex-direction:column; align-items:center; gap:14px">
+                <div style="display:flex; align-items:center; justify-content:center; width:54px; height:54px; background:#12151A">
+                  <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="4" y="2" width="14" height="4" fill="#FFFFFF"></rect>
+                    <rect x="4" y="7.5" width="8" height="4" fill="#618DF3"></rect>
+                    <rect x="10" y="13" width="8" height="4" fill="#FFFFFF"></rect>
+                    <rect x="4" y="18.5" width="14" height="4" fill="#618DF3"></rect>
+                  </svg>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:6px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:19px; font-weight:500; letter-spacing:-0.03em">servicereport</span>
+                  <span style="font-size:12.5px; line-height:1.5; color:#4C5057; text-align:center; text-wrap:pretty">Histórico de manutenção dos seus equipamentos</span>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:20px">
+                <div style="position:relative; padding:14px; border:1px solid #12151A; background:#FFFFFF">
+                  <span style="position:absolute; top:-7px; left:10px; padding:0 5px; background:#EDEEF0; font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.1em; color:#12151A">E-mail</span>
+                  <input type="email" value="ivan@leiano.com.br" style="box-sizing:border-box; width:100%; border:none; outline:none; background:transparent; font-family:'IBM Plex Mono', monospace; font-size:13.5px; color:#12151A">
+                </div>
+                <div style="position:relative; display:flex; align-items:center; gap:10px; padding:14px; border:1px solid #DCDEE2; background:#FFFFFF">
+                  <span style="position:absolute; top:-7px; left:10px; padding:0 5px; background:#EDEEF0; font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.1em; color:#71757C">Senha</span>
+                  <input type="password" value="••••••••••" style="flex:1; min-width:0; border:none; outline:none; background:transparent; font-family:'IBM Plex Mono', monospace; font-size:13.5px; color:#12151A">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#71757C" stroke-width="1.9" aria-hidden="true"><path d="M1.5,12 C4,7 8,4.5 12,4.5 C16,4.5 20,7 22.5,12 C20,17 16,19.5 12,19.5 C8,19.5 4,17 1.5,12 Z"></path><circle cx="12" cy="12" r="3.2"></circle></svg>
+                </div>
+                <div style="padding:12px 14px; background:#FBEDEA; border-left:3px solid #A3372A">
+                  <span style="font-size:12.5px; line-height:1.5; color:#7C2A20">E-mail ou senha incorretos.</span>
+                </div>
+                <button style="padding:16px; border:none; background:#12151A; color:#FFFFFF; font-family:'Space Grotesk', sans-serif; font-size:15px; font-weight:500; cursor:pointer" style-hover="background:#1C2029">Entrar</button>
+              </div>
+            </div>
+            <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-align:center; color:#8A8F98">sessão offline válida por 7 dias</span>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Android · rótulo flutuante M3</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:14px">
+    <div style="display:flex; align-items:baseline; gap:12px">
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em; color:#3A61C4">03</span>
+      <h2 style="margin:0; font-size:17px; font-weight:600">Início e menu · /</h2>
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">identidade, sincronização e atalhos</span>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start">
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ 344 }}" height="{{ 748 }}" dark="{{ true }}" hint-size="344px,748px">
+          <div style="box-sizing:border-box; display:flex; flex-direction:column; height:100%; background:#EDEEF0; color:#12151A">
+            <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding:66px 20px 16px; background:#12151A; color:#FFFFFF">
+              <div style="display:flex; align-items:center; gap:10px">
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="4" y="2" width="14" height="4" fill="#FFFFFF"></rect>
+                  <rect x="4" y="7.5" width="8" height="4" fill="#618DF3"></rect>
+                  <rect x="10" y="13" width="8" height="4" fill="#FFFFFF"></rect>
+                  <rect x="4" y="18.5" width="14" height="4" fill="#618DF3"></rect>
+                </svg>
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:15px; font-weight:500; letter-spacing:-0.03em">servicereport</span>
+              </div>
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#B4B9C1">sair</span>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:12px; padding:14px; overflow:auto">
+              <div style="display:flex; flex-direction:column; gap:12px; padding:18px; background:#FFFFFF; border:1px solid #DCDEE2">
+                <div style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-size:16px; font-weight:600">Ivan Cassiano</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:#71757C">ivan@leiano.com.br</span>
+                </div>
+                <div style="height:1px; background:#F0F1F3"></div>
+                <div style="display:grid; grid-template-columns:auto 1fr; gap:8px 14px; font-size:12.5px; align-items:center">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Organização</span>
+                  <span>Leiano Sistemas</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Perfil</span>
+                  <span>Administrador</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:9px; padding-top:4px">
+                  <span style="width:8px; height:8px; background:#3A61C4"></span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#4C5057">sincronizando…</span>
+                </div>
+              </div>
+
+              <div style="display:flex; gap:11px; padding:14px; background:#FBEDEA; border-left:3px solid #A3372A">
+                <div style="display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:13px; font-weight:600; color:#7C2A20">2 etiquetas precisam ser substituídas</span>
+                  <span style="font-size:11.5px; line-height:1.5; color:#8A4034; text-wrap:pretty">Outro dispositivo confirmou o mesmo código primeiro.</span>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; background:#FFFFFF; border:1px solid #DCDEE2">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px; border-bottom:1px solid #F0F1F3">
+                  <span style="font-size:14px; font-weight:500">Ordens de serviço</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#3A61C4">14</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px; border-bottom:1px solid #F0F1F3">
+                  <span style="font-size:14px; font-weight:500">Clientes</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B4B9C1">›</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px; border-bottom:1px solid #F0F1F3">
+                  <span style="font-size:14px; font-weight:500">Locais</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B4B9C1">›</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px; border-bottom:1px solid #F0F1F3">
+                  <span style="font-size:14px; font-weight:500">Equipamentos</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B4B9C1">›</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px; border-bottom:1px solid #F0F1F3">
+                  <span style="font-size:14px; font-weight:500">Etiquetas</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B4B9C1">›</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px">
+                  <span style="font-size:14px; font-weight:500">Empresas</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B4B9C1">›</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">iOS</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" width="{{ 348 }}" height="{{ 748 }}" hint-size="348px,748px">
+          <div style="box-sizing:border-box; display:flex; flex-direction:column; height:100%; background:#EDEEF0; color:#12151A">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; background:#12151A; color:#FFFFFF">
+              <div style="display:flex; align-items:center; gap:10px">
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="4" y="2" width="14" height="4" fill="#FFFFFF"></rect>
+                  <rect x="4" y="7.5" width="8" height="4" fill="#618DF3"></rect>
+                  <rect x="10" y="13" width="8" height="4" fill="#FFFFFF"></rect>
+                  <rect x="4" y="18.5" width="14" height="4" fill="#618DF3"></rect>
+                </svg>
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:15px; font-weight:500; letter-spacing:-0.03em">servicereport</span>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><path d="M15,4 H19 V20 H15"></path><path d="M10,8 L14,12 L10,16"></path><line x1="3" y1="12" x2="14" y2="12"></line></svg>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:12px; padding:14px; overflow:auto">
+              <div style="display:flex; flex-direction:column; gap:12px; padding:18px; background:#FFFFFF; border:1px solid #DCDEE2">
+                <div style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-size:16px; font-weight:600">Ivan Cassiano</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:#71757C">ivan@leiano.com.br</span>
+                </div>
+                <div style="height:1px; background:#F0F1F3"></div>
+                <div style="display:grid; grid-template-columns:auto 1fr; gap:8px 14px; font-size:12.5px; align-items:center">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Organização</span>
+                  <span>Leiano Sistemas</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Perfil</span>
+                  <span>Administrador</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:9px; padding-top:4px">
+                  <span style="width:8px; height:8px; background:#3A61C4"></span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#4C5057">sincronizando…</span>
+                </div>
+              </div>
+              <div style="display:flex; gap:11px; padding:14px; background:#FBEDEA; border-left:3px solid #A3372A">
+                <div style="display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:13px; font-weight:600; color:#7C2A20">2 etiquetas precisam ser substituídas</span>
+                  <span style="font-size:11.5px; line-height:1.5; color:#8A4034; text-wrap:pretty">Outro dispositivo confirmou o mesmo código primeiro.</span>
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:1px; background:#DCDEE2; border:1px solid #DCDEE2">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px; background:#FFFFFF">
+                  <span style="font-size:14px; font-weight:500">Ordens de serviço</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#3A61C4">14</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px; background:#FFFFFF">
+                  <span style="font-size:14px; font-weight:500">Clientes</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B4B9C1">›</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px; background:#FFFFFF">
+                  <span style="font-size:14px; font-weight:500">Locais</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B4B9C1">›</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px; background:#FFFFFF">
+                  <span style="font-size:14px; font-weight:500">Equipamentos</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B4B9C1">›</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px; background:#FFFFFF">
+                  <span style="font-size:14px; font-weight:500">Etiquetas</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B4B9C1">›</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px; background:#FFFFFF">
+                  <span style="font-size:14px; font-weight:500">Empresas</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#B4B9C1">›</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Android · app bar com ação de sair</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:14px">
+    <div style="display:flex; align-items:baseline; gap:12px">
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em; color:#3A61C4">04</span>
+      <h2 style="margin:0; font-size:17px; font-weight:600">Ordens de serviço · /service-orders</h2>
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">status, sync pendente e conflito</span>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start">
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ 344 }}" height="{{ 748 }}" dark="{{ true }}" hint-size="344px,748px">
+          <div style="box-sizing:border-box; position:relative; display:flex; flex-direction:column; height:100%; background:#EDEEF0; color:#12151A">
+            <div style="display:flex; flex-direction:column; gap:14px; padding:66px 20px 16px; background:#12151A; color:#FFFFFF">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#B4B9C1">‹ início</span>
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; color:#8A8F98">TIPOS</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:#8A8F98">14 ordens</span>
+                <span style="font-size:21px; font-weight:500; letter-spacing:-0.015em">Ordens de serviço</span>
+              </div>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; background:#FFFFFF; overflow:auto">
+              <div style="display:flex; align-items:center; gap:12px; padding:15px 20px; border-bottom:1px solid #F0F1F3">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:14px; font-weight:500">Cooperativa Vale</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">Em andamento · compressor parado</span>
+                </div>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3A61C4" stroke-width="1.9" aria-hidden="true"><path d="M4,16 A5,5 0 0 1 7,7 A6,6 0 0 1 18.5,8 A4.5,4.5 0 0 1 19,16.5"></path><polyline points="9,13 12,10 15,13"></polyline><line x1="12" y1="10" x2="12" y2="19"></line></svg>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; padding:15px 20px; border-bottom:1px solid #F0F1F3">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:14px; font-weight:500">Transportes Aracê</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">Aberta · revisão preventiva</span>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; padding:15px 20px; border-bottom:1px solid #F0F1F3">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:14px; font-weight:500">Clínica Serena</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">Concluída · troca de filtro</span>
+                </div>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#A3372A" stroke-width="1.9" aria-hidden="true"><path d="M12,3 L22,20 H2 Z"></path><line x1="12" y1="9" x2="12" y2="14"></line><line x1="12" y1="16.5" x2="12" y2="17"></line></svg>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; padding:15px 20px; border-bottom:1px solid #F0F1F3">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:14px; font-weight:500">Metalúrgica Pontal</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">Rascunho</span>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; padding:15px 20px; border-bottom:1px solid #F0F1F3">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:14px; font-weight:500">Distribuidora Norte</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">Aberta · painel elétrico</span>
+                </div>
+              </div>
+            </div>
+            <button style="position:absolute; right:20px; bottom:66px; width:56px; height:56px; border:none; background:#12151A; color:#FFFFFF; font-size:26px; line-height:1; cursor:pointer" style-hover="background:#1C2029">+</button>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">iOS · voltar no topo</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" width="{{ 348 }}" height="{{ 748 }}" hint-size="348px,748px">
+          <div style="box-sizing:border-box; position:relative; display:flex; flex-direction:column; height:100%; background:#EDEEF0; color:#12151A">
+            <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; background:#12151A; color:#FFFFFF">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12"></line><polyline points="10,6 4,12 10,18"></polyline></svg>
+              <span style="flex:1; font-size:17px; font-weight:500">Ordens de serviço</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="7" height="7"></rect><rect x="14" y="4" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; background:#FFFFFF; overflow:auto">
+              <div style="display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid #F0F1F3">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:14px; font-weight:500">Cooperativa Vale</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">Em andamento · compressor parado</span>
+                </div>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3A61C4" stroke-width="1.9" aria-hidden="true"><path d="M4,16 A5,5 0 0 1 7,7 A6,6 0 0 1 18.5,8 A4.5,4.5 0 0 1 19,16.5"></path><polyline points="9,13 12,10 15,13"></polyline><line x1="12" y1="10" x2="12" y2="19"></line></svg>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid #F0F1F3">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:14px; font-weight:500">Transportes Aracê</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">Aberta · revisão preventiva</span>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid #F0F1F3">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:14px; font-weight:500">Clínica Serena</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">Concluída · troca de filtro</span>
+                </div>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#A3372A" stroke-width="1.9" aria-hidden="true"><path d="M12,3 L22,20 H2 Z"></path><line x1="12" y1="9" x2="12" y2="14"></line><line x1="12" y1="16.5" x2="12" y2="17"></line></svg>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid #F0F1F3">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:14px; font-weight:500">Metalúrgica Pontal</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">Rascunho</span>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid #F0F1F3">
+                <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+                  <span style="font-size:14px; font-weight:500">Distribuidora Norte</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">Aberta · painel elétrico</span>
+                </div>
+              </div>
+            </div>
+            <button style="position:absolute; right:16px; bottom:38px; display:flex; align-items:center; gap:9px; padding:17px 20px; border:none; background:#12151A; color:#FFFFFF; font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:500; cursor:pointer" style-hover="background:#1C2029">
+              <span style="font-size:18px; line-height:1">+</span>
+              <span>Nova ordem</span>
+            </button>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Android · FAB estendido</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:14px">
+    <div style="display:flex; align-items:baseline; gap:12px">
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em; color:#3A61C4">05</span>
+      <h2 style="margin:0; font-size:17px; font-weight:600">Detalhe da ordem · /service-orders/:id</h2>
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">transições, campos do relatório, peças, fotos, assinatura</span>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start">
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ 344 }}" height="{{ 748 }}" dark="{{ true }}" hint-size="344px,748px">
+          <div style="box-sizing:border-box; display:flex; flex-direction:column; height:100%; background:#EDEEF0; color:#12151A">
+            <div style="display:flex; flex-direction:column; gap:14px; padding:66px 20px 16px; background:#12151A; color:#FFFFFF">
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#B4B9C1">‹ ordens</span>
+              <div style="display:flex; flex-direction:column; gap:7px">
+                <span style="font-size:20px; font-weight:500; letter-spacing:-0.015em">Cooperativa Vale</span>
+                <div style="display:flex; align-items:center; gap:9px">
+                  <span style="padding:4px 9px; background:#618DF3; color:#12151A; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.1em">EM ANDAMENTO</span>
+                  <span style="padding:4px 10px; border:1px solid #4C5259; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em; color:#FFFFFF">CONCLUIR</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="flex:1; display:flex; flex-direction:column; gap:14px; padding:14px; overflow:auto">
+              <div style="display:flex; flex-direction:column; gap:1px; background:#DCDEE2; border:1px solid #DCDEE2">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; background:#FFFFFF">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Local</span>
+                  <span style="font-size:13px">Unidade Industrial</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; background:#FFFFFF">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Equipamento</span>
+                  <span style="font-size:13px">Compressor CP-14</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; background:#FFFFFF">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Agendamento</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12.5px">09/09/2026 08:00</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; background:#FFFFFF">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Técnico</span>
+                  <span style="font-size:13px">Ivan Cassiano</span>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px; padding:16px; background:#FFFFFF; border:1px solid #DCDEE2">
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#71757C">Relatório</span>
+                <label style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.1em; color:#71757C">Motivo</span>
+                  <span style="padding:11px 12px; border:1px solid #DCDEE2; font-size:13px; line-height:1.45">Compressor parado desde a madrugada</span>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.1em; color:#12151A">Diagnóstico</span>
+                  <span style="padding:11px 12px; border:1px solid #12151A; font-size:13px; line-height:1.45; min-height:44px">Pressostato com contato queimado.</span>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.1em; color:#71757C">Serviço realizado</span>
+                  <span style="padding:11px 12px; border:1px solid #DCDEE2; font-size:13px; color:#8A8F98; min-height:44px">—</span>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.1em; color:#71757C">Condição final</span>
+                  <span style="padding:11px 12px; border:1px solid #DCDEE2; font-size:13px; color:#8A8F98">—</span>
+                </label>
+                <button style="padding:15px; border:none; background:#12151A; color:#FFFFFF; font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:500; cursor:pointer" style-hover="background:#1C2029">Salvar</button>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px; padding:16px; background:#FFFFFF; border:1px solid #DCDEE2">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#71757C">Peças e materiais</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#3A61C4">+ adicionar</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:10px; border-bottom:1px solid #F0F1F3">
+                  <span style="font-size:13px">Pressostato 1/4”</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#4C5057">1 un</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+                  <span style="font-size:13px">Cabo flexível 1,5 mm</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#4C5057">3 m</span>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px; padding:16px; background:#FFFFFF; border:1px solid #DCDEE2">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#71757C">Fotos</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#3A61C4">+ câmera</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px">
+                  <div style="aspect-ratio:1; background:#E3E5E8; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono', monospace; font-size:9px; color:#8A8F98">foto</div>
+                  <div style="aspect-ratio:1; background:#E3E5E8; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono', monospace; font-size:9px; color:#8A8F98">foto</div>
+                  <div style="aspect-ratio:1; border:1px dashed #B9BEC7; display:flex; align-items:center; justify-content:center; font-size:19px; color:#8A8F98">+</div>
+                </div>
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; color:#3A61C4">1 envio pendente</span>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px; padding:16px; background:#FFFFFF; border:1px solid #DCDEE2">
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#71757C">Assinatura</span>
+                <div style="display:flex; align-items:center; justify-content:center; height:74px; border:1px dashed #B9BEC7">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#8A8F98">sem assinatura</span>
+                </div>
+                <button style="padding:14px; border:1px solid #12151A; background:#FFFFFF; color:#12151A; font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:500; cursor:pointer" style-hover="background:#F0F1F3">Coletar assinatura</button>
+              </div>
+
+              <button style="display:flex; align-items:center; justify-content:center; gap:9px; padding:15px; border:1px solid #12151A; background:#FFFFFF; color:#12151A; font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:500; cursor:pointer" style-hover="background:#F0F1F3">Gerar PDF (cópia de campo)</button>
+            </div>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">iOS</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" width="{{ 348 }}" height="{{ 748 }}" hint-size="348px,748px">
+          <div style="box-sizing:border-box; display:flex; flex-direction:column; height:100%; background:#EDEEF0; color:#12151A">
+            <div style="display:flex; flex-direction:column; gap:14px; padding:14px 16px 18px; background:#12151A; color:#FFFFFF">
+              <div style="display:flex; align-items:center; gap:14px">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><line x1="4" y1="12" x2="20" y2="12"></line><polyline points="10,6 4,12 10,18"></polyline></svg>
+                <span style="flex:1; font-size:17px; font-weight:500">Cooperativa Vale</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:9px">
+                <span style="padding:5px 11px; background:#618DF3; color:#12151A; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.1em">EM ANDAMENTO</span>
+                <span style="padding:5px 12px; border:1px solid #4C5259; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.08em">CONCLUIR</span>
+              </div>
+            </div>
+
+            <div style="flex:1; display:flex; flex-direction:column; gap:14px; padding:14px; overflow:auto">
+              <div style="display:flex; flex-direction:column; gap:1px; background:#DCDEE2; border:1px solid #DCDEE2">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 15px; background:#FFFFFF">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Local</span>
+                  <span style="font-size:13px">Unidade Industrial</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 15px; background:#FFFFFF">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Equipamento</span>
+                  <span style="font-size:13px">Compressor CP-14</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 15px; background:#FFFFFF">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Agendamento</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12.5px">09/09/2026 08:00</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 15px; background:#FFFFFF">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Técnico</span>
+                  <span style="font-size:13px">Ivan Cassiano</span>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:18px; padding:16px; background:#FFFFFF; border:1px solid #DCDEE2">
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#71757C">Relatório</span>
+                <div style="position:relative; padding:13px 12px; border:1px solid #DCDEE2">
+                  <span style="position:absolute; top:-7px; left:9px; padding:0 5px; background:#FFFFFF; font-family:'IBM Plex Mono', monospace; font-size:9.5px; color:#71757C">Motivo</span>
+                  <span style="font-size:13px; line-height:1.45">Compressor parado desde a madrugada</span>
+                </div>
+                <div style="position:relative; padding:13px 12px; border:1px solid #12151A">
+                  <span style="position:absolute; top:-7px; left:9px; padding:0 5px; background:#FFFFFF; font-family:'IBM Plex Mono', monospace; font-size:9.5px; color:#12151A">Diagnóstico</span>
+                  <span style="font-size:13px; line-height:1.45">Pressostato com contato queimado.</span>
+                </div>
+                <div style="position:relative; padding:13px 12px; border:1px solid #DCDEE2; min-height:44px">
+                  <span style="position:absolute; top:-7px; left:9px; padding:0 5px; background:#FFFFFF; font-family:'IBM Plex Mono', monospace; font-size:9.5px; color:#71757C">Serviço realizado</span>
+                  <span style="font-size:13px; color:#8A8F98">—</span>
+                </div>
+                <div style="position:relative; padding:13px 12px; border:1px solid #DCDEE2">
+                  <span style="position:absolute; top:-7px; left:9px; padding:0 5px; background:#FFFFFF; font-family:'IBM Plex Mono', monospace; font-size:9.5px; color:#71757C">Condição final</span>
+                  <span style="font-size:13px; color:#8A8F98">—</span>
+                </div>
+                <button style="padding:15px; border:none; background:#12151A; color:#FFFFFF; font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:500; cursor:pointer" style-hover="background:#1C2029">Salvar</button>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px; padding:16px; background:#FFFFFF; border:1px solid #DCDEE2">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#71757C">Peças e materiais</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#3A61C4">+ adicionar</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:10px; border-bottom:1px solid #F0F1F3">
+                  <span style="font-size:13px">Pressostato 1/4”</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#4C5057">1 un</span>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+                  <span style="font-size:13px">Cabo flexível 1,5 mm</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:12px; color:#4C5057">3 m</span>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px; padding:16px; background:#FFFFFF; border:1px solid #DCDEE2">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#71757C">Fotos</span>
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#3A61C4">+ câmera</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px">
+                  <div style="aspect-ratio:1; background:#E3E5E8; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono', monospace; font-size:9px; color:#8A8F98">foto</div>
+                  <div style="aspect-ratio:1; background:#E3E5E8; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono', monospace; font-size:9px; color:#8A8F98">foto</div>
+                  <div style="aspect-ratio:1; border:1px dashed #B9BEC7; display:flex; align-items:center; justify-content:center; font-size:19px; color:#8A8F98">+</div>
+                </div>
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; color:#3A61C4">1 envio pendente</span>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:12px; padding:16px; background:#FFFFFF; border:1px solid #DCDEE2">
+                <span style="font-family:'IBM Plex Mono', monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color:#71757C">Assinatura</span>
+                <div style="display:flex; align-items:center; justify-content:center; height:74px; border:1px dashed #B9BEC7">
+                  <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#8A8F98">sem assinatura</span>
+                </div>
+                <button style="padding:14px; border:1px solid #12151A; background:#FFFFFF; color:#12151A; font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:500; cursor:pointer" style-hover="background:#F0F1F3">Coletar assinatura</button>
+              </div>
+
+              <button style="display:flex; align-items:center; justify-content:center; gap:9px; padding:15px; border:1px solid #12151A; background:#FFFFFF; color:#12151A; font-family:'Space Grotesk', sans-serif; font-size:14px; font-weight:500; cursor:pointer" style-hover="background:#F0F1F3">Gerar PDF (cópia de campo)</button>
+            </div>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Android · rótulo flutuante nos campos</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:14px">
+    <div style="display:flex; align-items:baseline; gap:12px">
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em; color:#3A61C4">06</span>
+      <h2 style="margin:0; font-size:17px; font-weight:600">Assinatura do cliente</h2>
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#71757C">canvas exportado em PNG</span>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start">
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ 344 }}" height="{{ 748 }}" dark="{{ true }}" hint-size="344px,748px">
+          <div style="box-sizing:border-box; display:flex; flex-direction:column; height:100%; background:#EDEEF0; color:#12151A">
+            <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding:66px 20px 16px; background:#12151A; color:#FFFFFF">
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#B4B9C1">cancelar</span>
+              <span style="font-size:15px; font-weight:500">Assinatura do cliente</span>
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:11px; color:#618DF3">limpar</span>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:14px; padding:16px">
+              <span style="font-size:13.5px; line-height:1.55; color:#4C5057">Peça para o cliente assinar abaixo.</span>
+              <div style="flex:1; position:relative; background:#FFFFFF; border:1px solid #DCDEE2">
+                <svg viewBox="0 0 280 380" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%" aria-hidden="true">
+                  <path d="M40,230 C70,180 85,265 110,215 C130,175 140,245 165,205 C185,175 200,225 235,195" fill="none" stroke="#12151A" stroke-width="3.4" stroke-linecap="round"></path>
+                </svg>
+                <span style="position:absolute; left:24px; right:24px; bottom:120px; height:1px; background:#E3E5E8"></span>
+              </div>
+              <button style="padding:16px; border:none; background:#12151A; color:#FFFFFF; font-family:'Space Grotesk', sans-serif; font-size:15px; font-weight:500; cursor:pointer" style-hover="background:#1C2029">Salvar assinatura</button>
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.1em; text-align:center; color:#8A8F98; padding-bottom:34px">envio enfileirado — funciona offline</span>
+            </div>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">iOS</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px">
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" width="{{ 348 }}" height="{{ 748 }}" hint-size="348px,748px">
+          <div style="box-sizing:border-box; display:flex; flex-direction:column; height:100%; background:#EDEEF0; color:#12151A">
+            <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; background:#12151A; color:#FFFFFF">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>
+              <span style="flex:1; font-size:17px; font-weight:500">Assinatura do cliente</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><polyline points="4,7 20,7"></polyline><path d="M7,7 V20 H17 V7"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:14px; padding:16px">
+              <span style="font-size:13.5px; line-height:1.55; color:#4C5057">Peça para o cliente assinar abaixo.</span>
+              <div style="flex:1; position:relative; background:#FFFFFF; border:1px solid #DCDEE2">
+                <svg viewBox="0 0 280 380" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%" aria-hidden="true">
+                  <path d="M40,230 C70,180 85,265 110,215 C130,175 140,245 165,205 C185,175 200,225 235,195" fill="none" stroke="#12151A" stroke-width="3.4" stroke-linecap="round"></path>
+                </svg>
+                <span style="position:absolute; left:24px; right:24px; bottom:120px; height:1px; background:#E3E5E8"></span>
+              </div>
+              <button style="padding:16px; border:none; background:#12151A; color:#FFFFFF; font-family:'Space Grotesk', sans-serif; font-size:15px; font-weight:500; cursor:pointer" style-hover="background:#1C2029">Salvar assinatura</button>
+              <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.1em; text-align:center; color:#8A8F98">envio enfileirado — funciona offline</span>
+            </div>
+          </div>
+        </x-import>
+        <span style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:#71757C">Android · fechar e limpar na app bar</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}"></script>
+</body>
+</html>

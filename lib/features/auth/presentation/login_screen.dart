@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/brand_mark.dart';
 import '../application/session_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -66,17 +68,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.build_circle_outlined,
-                      size: 56,
-                      color: Theme.of(context).colorScheme.primary,
+                    Center(
+                      child: Container(
+                        width: 54,
+                        height: 54,
+                        color: BrandColor.ink,
+                        alignment: Alignment.center,
+                        child: const BrandIcon(
+                          size: 26,
+                          onDark: true,
+                          mono: false,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     Text(
-                      'ServiceLog',
+                      'servicereport',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      style: BrandText.brandWord.copyWith(fontSize: 19),
                     ),
+                    const SizedBox(height: 6),
                     Text(
                       'Histórico de manutenção dos seus equipamentos',
                       textAlign: TextAlign.center,

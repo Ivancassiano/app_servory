@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/brand_mark.dart';
 import '../../auth/application/session_controller.dart';
 import '../../labels/data/label_batch_repository.dart';
 import '../../service_orders/presentation/agenda_card.dart';
@@ -37,7 +39,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ServiceLog'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const BrandIcon(size: 18, onDark: true, mono: true),
+            const SizedBox(width: 8),
+            Text(
+              'servicereport',
+              style: BrandText.brandWord.copyWith(
+                fontSize: 15,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
