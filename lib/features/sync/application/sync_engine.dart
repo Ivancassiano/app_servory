@@ -1,3 +1,6 @@
+// Campos privados vindos de parâmetro nomeado público — o padrão do projeto
+// (ver remote_collection.dart) é atribuir na lista de inicialização.
+// ignore_for_file: prefer_initializing_formals
 import 'dart:convert';
 
 import 'package:drift/drift.dart' show Value;
@@ -118,8 +121,9 @@ class SyncEngine {
           result.conflict,
           result.errorCode,
         );
-        if (!result.conflict)
+        if (!result.conflict) {
           continue; // erro transitório: mantém na outbox p/ tentar de novo
+        }
         await (_db.delete(
           _db.syncOutbox,
         )..where((t) => t.operationId.equals(op.operationId))).go();

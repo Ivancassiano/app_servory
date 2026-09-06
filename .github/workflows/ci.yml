@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+# Só a execução mais recente de cada ref importa.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          # Manter em sincronia com o ambiente local (ver README / .tool-versions).
+          flutter-version: 3.47.2
+          channel: stable
+          cache: true
+
+      - run: flutter --version
+
+      - name: Dependências
+        run: flutter pub get
+
+      - name: Código gerado (drift/etc) está atualizado
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          git diff --exit-code -- '*.g.dart' \
+            || (echo '::error::Código gerado desatualizado — rode "dart run build_runner build" e commite.' && exit 1)
+
+      - name: Análise estática
+        run: flutter analyze
+
+      - name: Testes
+        run: flutter test
+
+      - name: Build web
+        run: flutter build web

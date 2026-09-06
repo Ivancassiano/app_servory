@@ -89,8 +89,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       autofillHints: const [AutofillHints.email],
                       decoration: const InputDecoration(labelText: 'E-mail'),
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty)
+                        if (value == null || value.trim().isEmpty) {
                           return 'Informe o e-mail.';
+                        }
                         if (!value.contains('@')) return 'E-mail inválido.';
                         return null;
                       },
@@ -114,8 +115,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return 'Informe a senha.';
+                        }
                         return null;
                       },
                       onFieldSubmitted: (_) => _submit(),
