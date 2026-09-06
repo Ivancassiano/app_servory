@@ -147,6 +147,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               label: 'Etiquetas',
               onTap: () => context.push('/label-batches'),
             ),
+            _ShortcutTile(
+              icon: Icons.business_outlined,
+              label: 'Empresas',
+              onTap: () => context.push('/companies'),
+            ),
           ],
         ),
       ),
