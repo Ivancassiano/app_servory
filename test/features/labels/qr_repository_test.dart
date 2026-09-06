@@ -4,6 +4,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:servory/core/db/app_database.dart';
+import 'package:servory/core/connectivity/connectivity_provider.dart';
 import 'package:servory/core/network/api_client.dart';
 import 'package:servory/core/providers.dart';
 import 'package:servory/features/auth/application/session_controller.dart';
@@ -106,6 +107,118 @@ void main() {
         .first;
     expect(active?.id, 'q1');
     expect(active?.publicCode, 'SL-AAAA-BBBB-CCCC-DDDD-E');
+  });
+
+  group('ações offline (app)', () {
+    Future<ProviderContainer> container(AppDatabase db, StubDio stub) async {
+      final c = ProviderContainer(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(db),
+          apiClientProvider.overrideWithValue(_FakeApiClient(stub.dio)),
+          isOnlineProvider.overrideWith((ref) => Stream.value(false)),
+          sessionControllerProvider.overrideWith(_FakeSession.new),
+        ],
+      );
+      addTearDown(c.dispose);
+      c.listen(isOnlineProvider, (_, _) {});
+      await pumpEventQueue();
+      return c;
+    }
+
+    test('assign de código desconhecido offline → QrActionException', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      final stub = StubDio((_) => (status: 200, body: {'results': <dynamic>[]}));
+      final c = await container(db, stub);
+
+      expect(
+        () => c.read(qrRepositoryProvider).assign(
+              codeId: 'nao-conheco',
+              target: const QrTarget.client('c1'),
+            ),
+        throwsA(isA<QrActionException>()),
+      );
+    });
+
+    test('assign de código no inventário local → drift pending + outbox', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      await db.into(db.localQrCodes).insert(
+            LocalQrCodesCompanion.insert(
+              id: 'q1',
+              organizationId: 'org1',
+              status: 'reserved',
+              publicCode: const Value('SL-Z'),
+              version: const Value(1),
+              localUpdatedAt: DateTime.now(),
+            ),
+          );
+      final stub = StubDio((_) => (status: 200, body: {'results': <dynamic>[]}));
+      final c = await container(db, stub);
+
+      await c.read(qrRepositoryProvider).assign(
+            codeId: 'q1',
+            target: const QrTarget.equipment('e9'),
+            baseVersion: 1,
+          );
+
+      final row =
+          await (db.select(db.localQrCodes)..where((t) => t.id.equals('q1')))
+              .getSingle();
+      expect(row.status, 'assigned');
+      expect(row.equipmentId, 'e9');
+      expect(row.syncStatus, 'pending');
+      final outbox = await db.select(db.syncOutbox).getSingle();
+      expect(outbox.entityType, 'qr_code');
+      expect(outbox.operationType, 'assign');
+      expect(outbox.baseVersion, 1);
+    });
+
+    test('deactivate offline → drift + outbox', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      await db.into(db.localQrCodes).insert(
+            LocalQrCodesCompanion.insert(
+              id: 'q2',
+              organizationId: 'org1',
+              status: 'assigned',
+              equipmentId: const Value('e1'),
+              localUpdatedAt: DateTime.now(),
+            ),
+          );
+      final stub = StubDio((_) => (status: 200, body: {'results': <dynamic>[]}));
+      final c = await container(db, stub);
+
+      await c.read(qrRepositoryProvider).deactivate(codeId: 'q2');
+
+      final row =
+          await (db.select(db.localQrCodes)..where((t) => t.id.equals('q2')))
+              .getSingle();
+      expect(row.status, 'deactivated');
+      final outbox = await db.select(db.syncOutbox).getSingle();
+      expect(outbox.operationType, 'deactivate');
+    });
+
+    test('replace sem newCodeId offline → QrActionException', () async {
+      final db = AppDatabase.forTesting(NativeDatabase.memory());
+      addTearDown(db.close);
+      await db.into(db.localQrCodes).insert(
+            LocalQrCodesCompanion.insert(
+              id: 'q3',
+              organizationId: 'org1',
+              status: 'assigned',
+              clientId: const Value('c1'),
+              localUpdatedAt: DateTime.now(),
+            ),
+          );
+      final stub = StubDio((_) => (status: 200, body: {'results': <dynamic>[]}));
+      final c = await container(db, stub);
+
+      expect(
+        () => c.read(qrRepositoryProvider).replace(codeId: 'q3'),
+        throwsA(isA<QrActionException>()),
+      );
+    });
   });
 
   test('resolve: GET /v1/qr-codes/resolve/{code}', () async {
