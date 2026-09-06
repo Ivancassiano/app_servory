@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../core/network/api_exception.dart';
+import '../../contacts/data/contact_repository.dart';
+import '../../contacts/presentation/contact_section.dart';
+import '../../labels/data/qr_mapper.dart';
+import '../../labels/presentation/qr_label_section.dart';
 import '../application/client_edit_controller.dart';
 import '../application/clients_provider.dart';
 
@@ -23,6 +28,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   String _kind = 'legal';
+  int? _version;
   bool _seeded = false;
   bool _saving = false;
   String? _error;
@@ -39,6 +45,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
     _nameController.text = client.name;
     _phoneController.text = client.phone;
     _kind = client.kind;
+    _version = client.version;
     _seeded = true;
   }
 
@@ -59,13 +66,17 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
       } else {
         await controller.update(
           clientId: widget.clientId,
+          baseVersion: _version,
           name: _nameController.text.trim(),
           phone: _phoneController.text.trim(),
         );
       }
       if (!mounted) return;
       Navigator.of(context).pop();
-    } catch (e) {
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.friendlyMessage);
+    } catch (_) {
       if (!mounted) return;
       setState(
         () => _error =
@@ -165,6 +176,19 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
                         )
                       : const Text('Salvar'),
                 ),
+                if (!widget.isNew) ...[
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  ContactSection(
+                    scope: ContactScope.client,
+                    parentId: widget.clientId,
+                  ),
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  QrLabelSection(target: QrTarget.client(widget.clientId)),
+                ],
               ],
             ),
           ),

@@ -1,0 +1,20 @@
+# Ícones do app ServiceReport. Regenerar após mudar os PNGs:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/icon/icon-master.png"
+
+  android: true
+  min_sdk_android: 21
+  adaptive_icon_background: "#12151A"
+  adaptive_icon_foreground: "assets/icon/icon-foreground.png"
+  adaptive_icon_monochrome: "assets/icon/icon-foreground.png"
+
+  ios: true
+  remove_alpha_ios: true
+  background_color_ios: "#12151A"
+
+  web:
+    generate: true
+    image_path: "assets/icon/icon-master.png"
+    background_color: "#12151A"
+    theme_color: "#12151A"

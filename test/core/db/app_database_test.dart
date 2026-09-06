@@ -36,6 +36,82 @@ void main() {
     );
   });
 
+  test('grava e lê ordem de serviço e peça local', () async {
+    final now = DateTime.now();
+    await db
+        .into(db.localServiceOrders)
+        .insert(
+          LocalServiceOrdersCompanion.insert(
+            id: 'so1',
+            organizationId: 'org1',
+            clientId: 'c1',
+            localUpdatedAt: now,
+          ),
+        );
+    await db
+        .into(db.localServiceOrderParts)
+        .insert(
+          LocalServiceOrderPartsCompanion.insert(
+            id: 'p1',
+            organizationId: 'org1',
+            serviceOrderId: 'so1',
+            localUpdatedAt: now,
+          ),
+        );
+
+    final order = await (db.select(
+      db.localServiceOrders,
+    )..where((t) => t.id.equals('so1'))).getSingle();
+    expect(order.status, 'draft');
+    expect(order.clientId, 'c1');
+
+    final part = await (db.select(
+      db.localServiceOrderParts,
+    )..where((t) => t.id.equals('p1'))).getSingle();
+    expect(part.serviceOrderId, 'so1');
+    expect(part.quantity, '1');
+    expect(
+      part.unitCost,
+      isNull,
+      reason: 'campo mascarável ausente = sem permissão, não vazio',
+    );
+  });
+
+  test('fila de upload: grava, atualiza tentativa e drena', () async {
+    await db
+        .into(db.uploadQueue)
+        .insert(
+          UploadQueueCompanion.insert(
+            id: 'u1',
+            organizationId: 'org1',
+            serviceOrderId: 'so1',
+            kind: 'photo',
+            filePath: '/tmp/foto.jpg',
+            sha256: 'abc123',
+            photoKind: const Value('before'),
+            createdAt: DateTime.now(),
+          ),
+        );
+
+    var pending = await db.select(db.uploadQueue).get();
+    expect(pending, hasLength(1));
+    expect(pending.single.attempts, 0);
+
+    await (db.update(db.uploadQueue)..where((t) => t.id.equals('u1'))).write(
+      const UploadQueueCompanion(
+        attempts: Value(1),
+        lastError: Value('sem conexão'),
+      ),
+    );
+    pending = await db.select(db.uploadQueue).get();
+    expect(pending.single.attempts, 1);
+    expect(pending.single.lastError, 'sem conexão');
+
+    await (db.delete(db.uploadQueue)..where((t) => t.id.equals('u1'))).go();
+    pending = await db.select(db.uploadQueue).get();
+    expect(pending, isEmpty);
+  });
+
   test('outbox: grava e drena uma operação pendente', () async {
     await db
         .into(db.syncOutbox)

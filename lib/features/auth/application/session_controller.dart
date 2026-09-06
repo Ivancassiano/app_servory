@@ -145,3 +145,12 @@ class SessionController extends Notifier<SessionState> {
 
 final sessionControllerProvider =
     NotifierProvider<SessionController, SessionState>(SessionController.new);
+
+/// Organização ativa — conveniência para repositórios/mapeadores que
+/// precisam do `organization_id` (o backend não o devolve em todo payload
+/// REST). Lança se lido sem sessão autenticada, igual a `appDatabaseProvider`.
+final organizationIdProvider = Provider<String>((ref) {
+  final session = ref.watch(sessionControllerProvider);
+  if (session is SessionAuthenticated) return session.organizationId;
+  throw StateError('organizationIdProvider lido sem sessão autenticada');
+});

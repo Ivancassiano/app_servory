@@ -13,7 +13,7 @@ class ServoryApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'ServiceLog',
+      title: 'servicereport',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       // Só pt-BR por ora (spec §25 pede pt/it/en/es no não-funcional; isso é

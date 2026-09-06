@@ -9,13 +9,25 @@ import '../../features/auth/presentation/offline_expired_screen.dart';
 import '../../features/auth/presentation/unlock_screen.dart';
 import '../../features/clients/presentation/client_detail_screen.dart';
 import '../../features/clients/presentation/client_list_screen.dart';
+import '../../features/companies/presentation/company_detail_screen.dart';
+import '../../features/companies/presentation/company_list_screen.dart';
 import '../../features/equipments/presentation/equipment_detail_screen.dart';
 import '../../features/equipments/presentation/equipment_list_screen.dart';
+import '../../features/labels/presentation/label_batch_detail_screen.dart';
+import '../../features/labels/presentation/label_batch_list_screen.dart';
+import '../../features/labels/presentation/label_template_edit_screen.dart';
+import '../../features/labels/presentation/label_template_list_screen.dart';
 import '../../features/locations/presentation/location_detail_screen.dart';
 import '../../features/locations/presentation/location_list_screen.dart';
 import '../../features/me/presentation/home_screen.dart';
+import '../../features/reference/data/type_catalog_repository.dart';
+import '../../features/reference/presentation/type_catalog_screen.dart';
+import '../../features/service_orders/presentation/service_order_detail_screen.dart';
+import '../../features/service_orders/presentation/service_order_list_screen.dart';
+import '../../features/service_orders/presentation/service_order_report_screen.dart';
 import '../connectivity/connectivity_provider.dart';
 import '../providers.dart';
+import '../widgets/splash_screen.dart';
 
 /// Spec §18.3: uma sessão offline vale por 7 dias desde a última vez que o
 /// aparelho confirmou com o servidor (login ou refresh bem-sucedido).
@@ -23,19 +35,30 @@ const offlineSessionTtl = Duration(days: 7);
 
 const _gatedRoutes = {'/login', '/splash', '/unlock', '/offline-expired'};
 
-/// Reconstruído a cada mudança de sessão, conectividade ou trava de app —
-/// as 3 coisas que decidem pra onde redirecionar. Simples o bastante com
-/// esse número de rotas; um `ChangeNotifier` só compensaria com uma árvore
-/// de navegação muito maior.
+/// Instância única de `GoRouter`: sessão, conectividade e trava de app — as 3
+/// coisas que decidem pra onde redirecionar — chegam pelo `refreshListenable`,
+/// que faz o `redirect` rodar de novo sem recriar o router. Recriar o router a
+/// cada mudança de estado desmontava a árvore de navegação inteira e junto com
+/// ela o estado das telas (ex.: a mensagem de erro do login sumia no frame
+/// seguinte a um 401).
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final session = ref.watch(sessionControllerProvider);
-  final online = ref.watch(isOnlineProvider).value;
-  final unlocked = ref.watch(appLockControllerProvider);
-  final store = ref.watch(secureStoreProvider);
+  final refresh = ValueNotifier<int>(0);
+  ref.onDispose(refresh.dispose);
+  void bump(Object? _, Object? _) => refresh.value++;
+  ref.listen(sessionControllerProvider, bump);
+  ref.listen(isOnlineProvider, bump);
+  ref.listen(appLockControllerProvider, bump);
+
+  final store = ref.read(secureStoreProvider);
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: refresh,
     redirect: (context, state) async {
+      final session = ref.read(sessionControllerProvider);
+      final online = ref.read(isOnlineProvider).value;
+      final unlocked = ref.read(appLockControllerProvider);
+
       bool? expired;
       if (session is SessionAuthenticated && online == false) {
         final lastValidation = await store.readLastOnlineValidation();
@@ -52,7 +75,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       );
     },
     routes: [
-      GoRoute(path: '/splash', builder: (_, _) => const _SplashScreen()),
+      GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
       GoRoute(path: '/unlock', builder: (_, _) => const UnlockScreen()),
       GoRoute(
@@ -90,6 +113,68 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: ':id',
             builder: (_, state) =>
                 EquipmentDetailScreen(equipmentId: state.pathParameters['id']!),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/companies',
+        builder: (_, _) => const CompanyListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, state) =>
+                CompanyDetailScreen(companyId: state.pathParameters['id']!),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/label-batches',
+        builder: (_, _) => const LabelBatchListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, state) =>
+                LabelBatchDetailScreen(batchId: state.pathParameters['id']!),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/type-catalog',
+        builder: (_, state) => TypeCatalogScreen(
+          initial: state.uri.queryParameters['kind'] == 'service-order'
+              ? TypeCatalog.serviceOrderType
+              : TypeCatalog.equipmentType,
+        ),
+      ),
+      GoRoute(
+        path: '/label-templates',
+        builder: (_, _) => const LabelTemplateListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, state) => LabelTemplateEditScreen(
+              templateId: state.pathParameters['id']!,
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/service-orders',
+        builder: (_, _) => const ServiceOrderListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, state) => ServiceOrderDetailScreen(
+              serviceOrderId: state.pathParameters['id']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'report',
+                builder: (_, state) => ServiceOrderReportScreen(
+                  serviceOrderId: state.pathParameters['id']!,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -136,11 +221,3 @@ String? decideRedirect({
   }
 }
 
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-}

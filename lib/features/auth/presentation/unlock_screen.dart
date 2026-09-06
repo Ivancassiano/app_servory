@@ -42,7 +42,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
       final ok = await ref
           .read(biometricGateProvider)
           .authenticate(
-            'Autentique-se para continuar usando o ServiceLog offline',
+            'Autentique-se para continuar usando o ServiceReport offline',
           );
       if (!mounted) return;
       if (ok) {
@@ -82,7 +82,7 @@ class _UnlockScreenState extends ConsumerState<UnlockScreen> {
                 if (_supported == false) ...[
                   const Text(
                     'Este aparelho não tem biometria nem PIN/padrão configurado. '
-                    'Conecte-se à internet para continuar usando o ServiceLog.',
+                    'Conecte-se à internet para continuar usando o ServiceReport.',
                     textAlign: TextAlign.center,
                   ),
                 ] else ...[

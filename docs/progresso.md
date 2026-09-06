@@ -5,6 +5,218 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: PDF do laudo (cópia de campo) ✅
+
+Fecha o item §10 do `GUIA-FLUTTER.md` / ADR-0018 ("PDF: continua fora do
+sync"). O `worker` continua gerando a via canônica no servidor quando a
+ordem sincroniza; esta fatia é só a **cópia de campo** que o técnico gera e
+entrega na hora, montada 100% do que já está no dispositivo (banco local +
+arquivos de anexo) — nada aqui toca a rede.
+
+- **`pdf` + `printing`**: `buildServiceOrderPdf(ServiceOrderReportData)`
+  (`service_order_pdf.dart`) é função pura (bytes de entrada → `Uint8List`),
+  sem I/O nem Riverpod, testável direto. `ServiceOrderReportScreen` usa o
+  `PdfPreview` do `printing` (pré-visualização + compartilhar + imprimir; o
+  compartilhar usa a folha nativa do SO e funciona offline). Rota
+  `/service-orders/:id/report`, botão na `ServiceOrderDetailScreen`.
+- **`serviceOrderReportDataProvider`** (`FutureProvider.family`, não Stream —
+  o laudo é um retrato do momento do toque, não algo ao vivo): junta ordem
+  + cliente + local + equipamento + peças do banco local e lê fotos/
+  assinatura **do disco**, não da URL assinada do servidor. Nome do técnico/
+  organização vêm de `identityProvider` *só se já estiver em cache* nesta
+  sessão (`.asData?.value`) — login feito offline simplesmente omite a
+  linha, sem disparar rede.
+- **Anexo agora em subpasta por tipo** (`attachments/{id}/photos/` e
+  `/signature/`): antes tudo caía em `attachments/{id}/` com nome UUID. Como
+  a fila de upload apaga a linha (mas não o arquivo) depois de enviar, o
+  gerador de PDF precisava classificar cada arquivo só pelo caminho — a
+  subpasta deixa a pasta auto-descritiva. `caption`/`photo_kind` só entram
+  no PDF enquanto o item ainda está na fila (metadado some junto com a
+  linha); "Substituir" assinatura usa o arquivo mais recente da pasta.
+- **Rodapé** avisa quando `hasPendingUploads` — deixa explícito que a via
+  oficial no servidor ainda vai divergir desta até sincronizar.
+- **Fontes**: as embutidas do `pdf` (Helvetica) cobrem Latin-1, o que basta
+  pro português — só o travessão `—` (U+2014) não renderiza, então o
+  gerador usa hífen/`·`. Embutir uma TTF Unicode de verdade fica como
+  melhoria de tipografia, não bloqueia.
+- 33 testes (era 30): 3 novos em `service_order_pdf_test.dart` (PDF válido
+  com dados mínimos; com peças/fotos/assinatura; ordem vazia sem estourar).
+  Sem teste do provider (depende de `path_provider`/plataforma — mesmo
+  critério das fatias anteriores: cobertura real vem da verificação ao vivo).
+- **Ainda não verificado ao vivo** no emulador/simulador (build Android +
+  iOS-simulador compilando OK). Fluxo a exercer: capturar foto+assinatura
+  offline → "Gerar PDF" → conferir preview e compartilhar.
+
+### Próximo (app)
+
+- Verificação ao vivo do PDF (capturar anexos offline → gerar → compartilhar).
+- Criar (não só editar) location/equipment — precisa de seletor de
+  cliente/local/tipo na UI.
+- Formulário de ordem: campos REST-only (tipo de ordem, empresa emissora,
+  técnico designado, `scheduled_for`).
+- Etiquetas/QR Code (spec §8–§12) — nada implementado no app ainda.
+- Empresas e Pessoa (`companies`/`people`) — emitente do laudo.
+- l10n via ARB quando houver material de tradução real.
+
+## `app_servory` — `feature/service-orders`: fotos e assinatura via fila de
+## upload offline ✅
+
+Fecha a segunda metade do item 5 do `GUIA-FLUTTER.md` §11 (a primeira,
+cabeçalho+peças via sync, é a entrega anterior nesta mesma branch). PDF
+local (§10) fica pra próxima fatia — decisão já tomada de não misturar
+upload binário com geração de PDF na mesma entrega.
+
+- **Fila de upload local** (`UploadQueue`, `schemaVersion` 2→3): captura de
+  foto (`image_picker`, câmera **ou** galeria + classificação
+  `before/after/other` + legenda) e assinatura (pacote `signature`, canvas
+  → PNG) salvam o arquivo local na hora — mesmo offline — e só enfileiram o
+  envio. `UploadQueueController` (grava arquivo em
+  `ApplicationDocuments/attachments/{serviceOrderId}/` + SHA-256 via
+  `crypto`) + `UploadQueueRunner.drain()` (REST puro,
+  `multipart/form-data` — fotos/assinatura **não** fazem parte do
+  protocolo de sync, GUIA-FLUTTER §8.4) + `AttachmentsApi`. Reenvio é do
+  arquivo inteiro (decisão já tomada com o usuário, sem retomada por
+  chunks).
+- **UI**: seções "Fotos" (grade com já enviadas + pendentes) e "Assinatura"
+  (slot único) na `ServiceOrderDetailScreen`; puxar-pra-atualizar drena a
+  fila além de sincronizar as entidades normais.
+- **Achado real 1, corrigido**: depois de um upload bem-sucedido, a seção
+  ficava "presa" no estado de antes (nem mostrava pendente, nem mostrava
+  enviada) até a tela recarregar por outro motivo — `orderPhotosProvider`/
+  `orderSignatureProvider` (REST, `FutureProvider`) não eram invalidados
+  depois do `drain()` remover o item da fila local. Corrigido invalidando
+  o provider certo (por `kind`) dentro do próprio `UploadQueueRunner.drain()`
+  — exigiu extrair `attachmentsApiProvider` pro próprio arquivo
+  (`attachments_api_provider.dart`) pra evitar import circular entre
+  `upload_queue_provider.dart` e `service_order_attachments_provider.dart`.
+- **Achado real 2, corrigido**: `Image.network` sem `errorBuilder` deixava
+  o texto do erro (`SocketException: ...`) sobrepor o layout e causar
+  overflow visual quando a URL de download falhava — agora mostra um
+  ícone de imagem quebrada, sem estourar a tela, independente da causa do
+  erro de rede.
+- **Confirmado, não é bug do app**: a regra de negócio "ordem precisa estar
+  editável" (`draft`/`open`/`in_progress`) também vale pra fotos/assinatura,
+  igual já valia pra peças — testado deixando a ordem `completed` de
+  propósito, viu o erro `NOT_EDITABLE` aparecer corretamente na fila
+  (mensagem de erro exibida por item pendente), reabriu a ordem e o
+  reenvio funcionou.
+- **Limitação de ambiente encontrada, não é bug do app nem do backend**:
+  neste AVD específico (`Pixel9`, API 35), `image_picker` não conseguiu
+  completar nem câmera nem galeria (o app volta pro launcher sem erro
+  visível) — bounds/toques confirmados corretos via `uiautomator dump`, e
+  o intent `android.media.action.IMAGE_CAPTURE` funciona quando disparado
+  direto por `adb shell am start`, então não é falta de app instalado.
+  Verificação ao vivo do envio em si foi feita pelo fluxo de assinatura
+  (canvas interno, sem depender de nenhuma Activity externa do Android) —
+  cobre a mesma fila/API/backend que fotos usam. Adicionado
+  `<queries>` para `IMAGE_CAPTURE` no `AndroidManifest.xml` como boa
+  prática (não resolveu por si só) — se persistir num dispositivo real,
+  investigar como item separado, não bloqueia esta entrega.
+- **Outro achado, é do backend/infra, não deste app**: a URL assinada que o
+  MinIO devolve usa o hostname interno do Docker (`minio`), que não é
+  resolvível fora da rede Docker — então baixar a foto/assinatura pelo
+  emulador falha com `Failed host lookup: 'minio'`. Confirmado ao vivo:
+  upload funcionou (bytes/hash certos no Postgres), só o download pela URL
+  assinada que não resolve neste ambiente. Registrado pro usuário; não é
+  algo pra corrigir no app (o app só usa a URL que o servidor manda) —
+  ajuste seria no `S3_ENDPOINT`/config do MinIO no `docker-compose` do
+  `auth_servory`.
+- 30 testes automatizados (era 29): 1 novo em `app_database_test.dart`
+  (CRUD da `UploadQueue`). Sem teste de API/controller isolado — mesmo
+  padrão já estabelecido (cobertura real vem da verificação ao vivo,
+  captura de câmera/canvas não vale a pena mockar em unidade).
+
+### Próximo (app)
+
+- PDF local (§10) — usa os arquivos já salvos por esta fatia.
+- Investigar `image_picker` em dispositivo real (o problema pareceu ser
+  específico deste AVD).
+- Criar (não só editar) location/equipment — precisa de seletor de
+  cliente/local/tipo na UI.
+- Formulário de ordem: campos que dependem de dado REST-only (tipo de
+  ordem, empresa emissora, técnico designado, `scheduled_for`).
+- Etiquetas/QR Code (spec §8–§12) — nada implementado no app ainda.
+- Empresas e Pessoa (`companies`/`people`) — usados como emitente do laudo.
+- l10n via ARB quando houver material de tradução real.
+
+## `app_servory` — `feature/service-orders`: Ordens de Serviço — cabeçalho
+## + peças via sync ✅
+
+Nova branch (a partir de `feature/offline-storage`, que segue não mergeada em
+`main`). Fatia deliberadamente recortada do item 5 do `GUIA-FLUTTER.md` §11:
+só cabeçalho da ordem (`create`/`update`/`start`/`complete`/`reopen`) + peças
+(`create`/`update`/`delete`) via sync — fotos/assinatura (fila de upload
+binário) e PDF local ficam para a próxima fatia, decisão tomada com o usuário
+para não misturar protocolo JSON de sync com upload multipart na mesma
+entrega.
+
+- **Banco local**: `LocalServiceOrders`/`LocalServiceOrderParts` (mesmo molde
+  `_SyncColumns`; `unit_cost`/`unit_price` nullable — sensíveis, mesmo
+  tratamento de `equipment.cost`). Primeira migração real do schema
+  (`schemaVersion` 1→2, `MigrationStrategy.onUpgrade` só cria as 2 tabelas
+  novas, preserva dado local já sincronizado).
+- **`SyncEngine`**: `service_order`/`service_order_part` somados a
+  `_readEntityTypes`; `_upsert`/`_softDelete`/`_markSynced`/
+  `_markPushFailed` ganham os `case` das duas entidades, mesmo padrão já
+  corrigido na entrega anterior para location/equipment.
+- **UI**: `ServiceOrderListScreen` (join com cliente pra evitar N+1) +
+  `ServiceOrderDetailScreen` (sentinela `'new'`; criar exige cliente,
+  local/equipamento opcionais filtrados em cascata a partir do que já está
+  sincronizado localmente; editar mostra cliente só-leitura — imutável no
+  protocolo — e os botões de transição condicionais ao `status` atual) +
+  seção de peças (bottom sheet reusado para adicionar/editar, exclusão
+  inline). `ServiceOrderEditController`/`ServiceOrderPartController` no
+  mesmo molde local-primeiro dos demais.
+- **Achado real 1, corrigido**: `SyncRunner.runSync()` chamava `pull()`
+  **antes** de `pushPending()`. Numa sequência rápida de ações na mesma
+  ordem (`Iniciar` → `Concluir`), o `push` do `Iniciar` gera no servidor um
+  evento de outbox que só é buscado no próximo `pull` — como esse próximo
+  `pull` roda *antes* do `push` do `Concluir`, ele aplicava o estado
+  "velho" (`in_progress`) por cima da escrita local otimista mais nova
+  (`completed`) que ainda estava só na outbox; o `push` seguinte confirmava
+  a `version` mas não corrigia o `status`, deixando o app mostrando um
+  estado diferente do servidor até o usuário puxar pra atualizar manualmente.
+  Corrigido invertendo a ordem (drena a outbox primeiro, só depois puxa) —
+  `sync_provider.dart`. Coberto por teste novo (`sync_provider_test.dart`,
+  `SyncEngine` mockado via mocktail, confere a ordem das chamadas).
+- **Achado real 2, corrigido**: `ServiceOrderDetailScreen` zerava
+  `_locationId`/`_equipmentId` permanentemente quando a lista filtrada de
+  locais/equipamentos ainda não tinha carregado (1ª renderização depois de
+  abrir o app) — o valor voltando do servidor continuava correto, só a
+  tela local "esquecia" a seleção pra sempre (nada re-seedava depois, o
+  `_seeded` guard já tinha passado). Corrigido com uma guarda de loading
+  (`!locationsAsync.hasValue`) antes de montar o formulário de edição +
+  trocando a mutação direta por um valor de exibição derivado
+  (`displayLocationId`/`displayEquipmentId`) que nunca sobrescreve o estado
+  de verdade.
+- Ambos achados vieram de teste ao vivo no emulador (não de teste
+  automatizado) — cabeçalho + 1 peça criados pela UI, `Iniciar`→`Concluir`
+  em sequência expôs o 1º bug, reabrir o app e reentrar na ordem expôs o 2º.
+  Depois de corrigidos: ciclo completo `Aberta`→`Iniciar`→`Concluir`→
+  `Reabrir`→`Concluir` de novo, cada transição confirmada por `psql` direto
+  no Postgres (status/version bateram em tempo real, sem precisar de pull
+  manual).
+- 29 testes automatizados (era 24): 3 novos em `sync_engine_test.dart`
+  (bootstrap de `service_order`/`service_order_part`, push de ação nomeada +
+  create/update/delete de peça), 1 em `app_database_test.dart`, 2 novos em
+  `sync_provider_test.dart` (ordem push→pull). Todos verdes.
+- **Fora do escopo** (registrado, não é dívida esquecida): fotos/assinatura
+  via fila de upload, PDF local (ADR-0018 §10); `scheduled_for`/
+  `service_order_type_id`/`company_id`/`assigned_user_id` no formulário —
+  dependem de entidades REST-only (tipos de ordem, empresas, membros da
+  org) que o app ainda não busca/cacheia.
+
+### Próximo (app)
+
+- Fotos/assinatura de ordem via fila de upload (§7) + PDF local (§10).
+- Criar (não só editar) location/equipment — precisa de seletor de
+  cliente/local/tipo na UI.
+- Formulário de ordem: campos que dependem de dado REST-only (tipo de
+  ordem, empresa emissora, técnico designado, `scheduled_for`).
+- Etiquetas/QR Code (spec §8–§12) — nada implementado no app ainda.
+- Empresas e Pessoa (`companies`/`people`) — usados como emitente do laudo.
+- l10n via ARB quando houver material de tradução real.
+
 ## `app_servory` — `feature/offline-storage`: outbox/push em location e
 ## equipment (fechando a paridade de escrita das 3 entidades) ✅
 

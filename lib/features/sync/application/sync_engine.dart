@@ -1,13 +1,30 @@
+// Campos privados vindos de parâmetro nomeado público — o padrão do projeto
+// (ver remote_collection.dart) é atribuir na lista de inicialização.
+// ignore_for_file: prefer_initializing_formals
 import 'dart:convert';
 
 import 'package:drift/drift.dart' show Value;
 
 import '../../../core/db/app_database.dart';
+import '../../clients/data/client_mapper.dart';
+import '../../equipments/data/equipment_mapper.dart';
+import '../../labels/data/qr_mapper.dart';
+import '../../locations/data/location_mapper.dart';
+import '../../service_orders/data/service_order_mapper.dart';
 import '../data/sync_api.dart';
 
-/// As 3 entidades desta entrega (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`/
-/// `push` tratam as 3 igual.
-const _readEntityTypes = ['client', 'location', 'equipment'];
+/// As 7 entidades sincronizáveis (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`
+/// leem todas; `push` só as que têm operações de escrita. `qr_batch` é
+/// somente leitura; `qr_code` não usa `version` de verdade (§9.3).
+const _readEntityTypes = [
+  'client',
+  'location',
+  'equipment',
+  'service_order',
+  'service_order_part',
+  'qr_code',
+  'qr_batch',
+];
 
 /// Orquestra `bootstrap`/`pull`/`push` entre o [SyncApi] e o [AppDatabase]
 /// local. Sem regra de negócio aqui — só tradução de shape (igual
@@ -28,7 +45,7 @@ class SyncEngine {
   /// Dump completo paginado, uma vez por organização (quando o banco local
   /// ainda não tinha nada) — GUIA-FLUTTER.md §8.2.
   Future<void> bootstrap() async {
-    int? finalCursor;
+    var maxCursor = 0;
     for (final entityType in _readEntityTypes) {
       var page = 1;
       while (true) {
@@ -36,12 +53,15 @@ class SyncEngine {
         for (final item in result.items) {
           await _upsert(entityType, item);
         }
-        finalCursor = result.cursor;
+        // Cada bootstrap de entidade tira sua foto num instante diferente;
+        // o `pull` seguinte deve partir da marca mais alta vista (reprocessar
+        // é idempotente; pular uma mudança não é).
+        if (result.cursor > maxCursor) maxCursor = result.cursor;
         if (!result.hasMore) break;
         page++;
       }
     }
-    await _saveCursor(finalCursor ?? 0);
+    await _saveCursor(maxCursor);
   }
 
   /// Mudanças desde o cursor salvo, em loop até `next_cursor` parar de
@@ -101,8 +121,9 @@ class SyncEngine {
           result.conflict,
           result.errorCode,
         );
-        if (!result.conflict)
+        if (!result.conflict) {
           continue; // erro transitório: mantém na outbox p/ tentar de novo
+        }
         await (_db.delete(
           _db.syncOutbox,
         )..where((t) => t.operationId.equals(op.operationId))).go();
@@ -150,6 +171,41 @@ class SyncEngine {
             syncError: const Value(null),
           ),
         );
+      case 'service_order':
+        await (_db.update(
+          _db.localServiceOrders,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrdersCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
+      case 'service_order_part':
+        await (_db.update(
+          _db.localServiceOrderParts,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrderPartsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
+      case 'qr_code':
+        // A etiqueta certa vem no próximo `pull` (§9.4); aqui só limpamos o
+        // estado pendente da linha que enviamos.
+        await (_db.update(
+          _db.localQrCodes,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalQrCodesCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
     }
   }
 
@@ -178,95 +234,74 @@ class SyncEngine {
         )..where((t) => t.id.equals(entityId))).write(
           LocalEquipmentsCompanion(syncStatus: status, syncError: error),
         );
+      case 'service_order':
+        await (_db.update(
+          _db.localServiceOrders,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrdersCompanion(syncStatus: status, syncError: error),
+        );
+      case 'service_order_part':
+        await (_db.update(
+          _db.localServiceOrderParts,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrderPartsCompanion(syncStatus: status, syncError: error),
+        );
+      case 'qr_code':
+        await (_db.update(
+          _db.localQrCodes,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalQrCodesCompanion(syncStatus: status, syncError: error),
+        );
     }
   }
 
+  /// Grava o estado atual de uma entidade vindo de `pull`/`bootstrap`. O
+  /// mapeamento JSON→`Local*` é o mesmo do caminho REST direto
+  /// (`lib/features/*/data/*_mapper.dart`) — o shape é idêntico.
   Future<void> _upsert(String entityType, Map<String, dynamic> data) async {
-    final now = DateTime.now();
+    final org = _organizationId;
     switch (entityType) {
       case 'client':
         await _db
             .into(_db.localClients)
             .insertOnConflictUpdate(
-              LocalClientsCompanion.insert(
-                id: data['id'] as String,
-                organizationId: _organizationId,
-                kind: data['kind'] as String? ?? 'legal',
-                name: data['name'] as String? ?? '',
-                legalName: Value(data['legal_name'] as String? ?? ''),
-                taxId: Value(data['tax_id'] as String? ?? ''),
-                phone: Value(data['phone'] as String? ?? ''),
-                email: Value(data['email'] as String? ?? ''),
-                contactPerson: Value(data['contact_person'] as String? ?? ''),
-                internalNotes: Value(data['internal_notes'] as String?),
-                version: Value(data['version'] as int?),
-                createdAt: Value(_parseDate(data['created_at'])),
-                updatedAt: Value(_parseDate(data['updated_at'])),
-                localUpdatedAt: now,
-                syncStatus: const Value('synced'),
-                lastSyncedAt: Value(now),
-                deleted: const Value(false),
-              ),
+              clientFromApiJson(data, organizationId: org),
             );
       case 'location':
         await _db
             .into(_db.localLocations)
             .insertOnConflictUpdate(
-              LocalLocationsCompanion.insert(
-                id: data['id'] as String,
-                organizationId: _organizationId,
-                clientId: data['client_id'] as String? ?? '',
-                parentLocationId: Value(data['parent_location_id'] as String?),
-                name: data['name'] as String? ?? '',
-                postalCode: Value(data['postal_code'] as String? ?? ''),
-                street: Value(data['street'] as String? ?? ''),
-                number: Value(data['number'] as String? ?? ''),
-                complement: Value(data['complement'] as String? ?? ''),
-                district: Value(data['district'] as String? ?? ''),
-                city: Value(data['city'] as String? ?? ''),
-                state: Value(data['state'] as String? ?? ''),
-                contactPerson: Value(data['contact_person'] as String? ?? ''),
-                phone: Value(data['phone'] as String? ?? ''),
-                accessInstructions: Value(
-                  data['access_instructions'] as String? ?? '',
-                ),
-                notes: Value(data['notes'] as String? ?? ''),
-                version: Value(data['version'] as int?),
-                createdAt: Value(_parseDate(data['created_at'])),
-                updatedAt: Value(_parseDate(data['updated_at'])),
-                localUpdatedAt: now,
-                syncStatus: const Value('synced'),
-                lastSyncedAt: Value(now),
-                deleted: const Value(false),
-              ),
+              locationFromApiJson(data, organizationId: org),
             );
       case 'equipment':
         await _db
             .into(_db.localEquipments)
             .insertOnConflictUpdate(
-              LocalEquipmentsCompanion.insert(
-                id: data['id'] as String,
-                organizationId: _organizationId,
-                locationId: data['location_id'] as String? ?? '',
-                equipmentTypeId: data['equipment_type_id'] as String? ?? '',
-                name: data['name'] as String? ?? '',
-                brand: Value(data['brand'] as String? ?? ''),
-                model: Value(data['model'] as String? ?? ''),
-                serialNumber: Value(data['serial_number'] as String?),
-                internalLocation: Value(
-                  data['internal_location'] as String? ?? '',
-                ),
-                installedAt: Value(data['installed_at'] as String?),
-                cost: Value(data['cost'] as String?),
-                notes: Value(data['notes'] as String? ?? ''),
-                version: Value(data['version'] as int?),
-                createdAt: Value(_parseDate(data['created_at'])),
-                updatedAt: Value(_parseDate(data['updated_at'])),
-                localUpdatedAt: now,
-                syncStatus: const Value('synced'),
-                lastSyncedAt: Value(now),
-                deleted: const Value(false),
-              ),
+              equipmentFromApiJson(data, organizationId: org),
+            );
+      case 'service_order':
+        await _db
+            .into(_db.localServiceOrders)
+            .insertOnConflictUpdate(
+              serviceOrderFromApiJson(data, organizationId: org),
+            );
+      case 'service_order_part':
+        await _db
+            .into(_db.localServiceOrderParts)
+            .insertOnConflictUpdate(
+              servicePartFromApiJson(data, organizationId: org),
+            );
+      case 'qr_code':
+        await _db
+            .into(_db.localQrCodes)
+            .insertOnConflictUpdate(
+              qrCodeFromApiJson(data, organizationId: org),
+            );
+      case 'qr_batch':
+        await _db
+            .into(_db.localQrBatches)
+            .insertOnConflictUpdate(
+              qrBatchFromApiJson(data, organizationId: org),
             );
     }
   }
@@ -285,11 +320,24 @@ class SyncEngine {
         await (_db.update(_db.localEquipments)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalEquipmentsCompanion(deleted: Value(true)));
+      case 'service_order':
+        await (_db.update(_db.localServiceOrders)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalServiceOrdersCompanion(deleted: Value(true)));
+      case 'service_order_part':
+        await (_db.update(_db.localServiceOrderParts)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalServiceOrderPartsCompanion(deleted: Value(true)));
+      case 'qr_code':
+        await (_db.update(_db.localQrCodes)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalQrCodesCompanion(deleted: Value(true)));
+      case 'qr_batch':
+        await (_db.update(_db.localQrBatches)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalQrBatchesCompanion(deleted: Value(true)));
     }
   }
-
-  DateTime? _parseDate(Object? value) =>
-      value == null ? null : DateTime.tryParse(value as String);
 
   Future<int> _readCursor() async {
     final row =

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../sync/application/sync_provider.dart';
+import '../../../core/db/app_database.dart';
+import '../../../core/widgets/brand_app_bar.dart';
+import '../../../core/widgets/searchable_list_view.dart';
 import '../application/clients_provider.dart';
 
 class ClientListScreen extends ConsumerWidget {
@@ -10,70 +12,45 @@ class ClientListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final clientsAsync = ref.watch(clientListProvider);
-
+    final async = ref.watch(clientListProvider);
+    final total = async.value?.length;
     return Scaffold(
-      appBar: AppBar(title: const Text('Clientes')),
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(syncRunnerProvider.notifier).runSync(),
-        child: clientsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(
-            child: Text(
-              'Não foi possível carregar os clientes.\n$error',
-              textAlign: TextAlign.center,
-            ),
+      appBar: brandAppBar(
+        title: 'Clientes',
+        count: total == null
+            ? null
+            : '$total ${total == 1 ? 'cliente' : 'clientes'}',
+      ),
+      body: SearchableListView<LocalClient>(
+        async: async,
+        onRefresh: () => ref.read(clientRepositoryProvider).refresh(),
+        hintText: 'Buscar cliente',
+        emptyMessage: 'Nenhum cliente ainda. Puxe pra baixo para sincronizar.',
+        errorMessage: 'Não foi possível carregar os clientes.',
+        searchText: (c) => '${c.name} ${c.phone} ${c.email}',
+        itemBuilder: (context, client) => ListTile(
+          title: Text(client.name),
+          subtitle: Text(
+            client.phone.isNotEmpty
+                ? client.phone
+                : (client.email.isNotEmpty ? client.email : '—'),
           ),
-          data: (clients) {
-            if (clients.isEmpty) {
-              return ListView(
-                children: const [
-                  Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(
-                      child: Text(
-                        'Nenhum cliente ainda. Puxe pra baixo para sincronizar.',
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            }
-            return ListView.separated(
-              itemCount: clients.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
-              itemBuilder: (context, index) {
-                final client = clients[index];
-                return ListTile(
-                  title: Text(client.name),
-                  subtitle: Text(
-                    client.phone.isNotEmpty
-                        ? client.phone
-                        : (client.email.isNotEmpty ? client.email : '—'),
-                  ),
-                  trailing: switch (client.syncStatus) {
-                    'pending' => const Icon(
-                      Icons.cloud_upload_outlined,
-                      size: 20,
-                    ),
-                    'conflict' => Icon(
-                      Icons.warning_amber,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    _ => null,
-                  },
-                  onTap: () => context.push('/clients/${client.id}'),
-                );
-              },
-            );
+          trailing: switch (client.syncStatus) {
+            'pending' => const Icon(Icons.cloud_upload_outlined, size: 20),
+            'conflict' => Icon(
+              Icons.warning_amber,
+              size: 20,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            _ => null,
           },
+          onTap: () => context.push('/clients/${client.id}'),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/clients/new'),
-        tooltip: 'Novo cliente',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Novo cliente'),
       ),
     );
   }

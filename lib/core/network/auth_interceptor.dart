@@ -1,3 +1,6 @@
+// Campos privados vindos de parâmetro nomeado público — o padrão do projeto
+// (ver remote_collection.dart) é atribuir na lista de inicialização.
+// ignore_for_file: prefer_initializing_formals
 import 'package:dio/dio.dart';
 
 import '../storage/secure_store.dart';
