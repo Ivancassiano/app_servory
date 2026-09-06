@@ -12,7 +12,16 @@ class EquipmentListScreen extends ConsumerWidget {
     final equipmentsAsync = ref.watch(equipmentListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Equipamentos')),
+      appBar: AppBar(
+        title: const Text('Equipamentos'),
+        actions: [
+          IconButton(
+            tooltip: 'Tipos de equipamento',
+            icon: const Icon(Icons.category_outlined),
+            onPressed: () => context.push('/type-catalog?kind=equipment'),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(equipmentRepositoryProvider).refresh(),
         child: equipmentsAsync.when(

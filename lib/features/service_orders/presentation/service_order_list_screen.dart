@@ -20,7 +20,16 @@ class ServiceOrderListScreen extends ConsumerWidget {
     final ordersAsync = ref.watch(serviceOrderListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ordens de serviço')),
+      appBar: AppBar(
+        title: const Text('Ordens de serviço'),
+        actions: [
+          IconButton(
+            tooltip: 'Tipos de ordem',
+            icon: const Icon(Icons.category_outlined),
+            onPressed: () => context.push('/type-catalog?kind=service-order'),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           await ref.read(serviceOrderRepositoryProvider).refresh();
