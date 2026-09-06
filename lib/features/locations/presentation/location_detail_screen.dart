@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../clients/application/clients_provider.dart';
+import '../../contacts/data/contact_repository.dart';
+import '../../contacts/presentation/contact_section.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
 import '../application/location_edit_controller.dart';
@@ -344,6 +346,13 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                 ),
                 if (!widget.isNew) ...[
                   const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  ContactSection(
+                    scope: ContactScope.location,
+                    parentId: widget.locationId,
+                  ),
+                  const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 8),
                   QrLabelSection(

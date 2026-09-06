@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
+import '../../contacts/data/contact_repository.dart';
+import '../../contacts/presentation/contact_section.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
 import '../application/client_edit_controller.dart';
@@ -176,6 +178,13 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
                 ),
                 if (!widget.isNew) ...[
                   const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  ContactSection(
+                    scope: ContactScope.client,
+                    parentId: widget.clientId,
+                  ),
+                  const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 8),
                   QrLabelSection(target: QrTarget.client(widget.clientId)),
