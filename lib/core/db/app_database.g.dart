@@ -6698,6 +6698,1818 @@ class LocalReferenceDataCompanion
   }
 }
 
+class $LocalQrCodesTable extends LocalQrCodes
+    with TableInfo<$LocalQrCodesTable, LocalQrCode> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalQrCodesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('synced'),
+  );
+  static const VerificationMeta _localUpdatedAtMeta = const VerificationMeta(
+    'localUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> localUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'local_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _publicCodeMeta = const VerificationMeta(
+    'publicCode',
+  );
+  @override
+  late final GeneratedColumn<String> publicCode = GeneratedColumn<String>(
+    'public_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _batchIdMeta = const VerificationMeta(
+    'batchId',
+  );
+  @override
+  late final GeneratedColumn<String> batchId = GeneratedColumn<String>(
+    'batch_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _locationIdMeta = const VerificationMeta(
+    'locationId',
+  );
+  @override
+  late final GeneratedColumn<String> locationId = GeneratedColumn<String>(
+    'location_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _equipmentIdMeta = const VerificationMeta(
+    'equipmentId',
+  );
+  @override
+  late final GeneratedColumn<String> equipmentId = GeneratedColumn<String>(
+    'equipment_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _assignedAtMeta = const VerificationMeta(
+    'assignedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> assignedAt = GeneratedColumn<DateTime>(
+    'assigned_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    publicCode,
+    status,
+    batchId,
+    clientId,
+    locationId,
+    equipmentId,
+    assignedAt,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_qr_codes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalQrCode> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('local_updated_at')) {
+      context.handle(
+        _localUpdatedAtMeta,
+        localUpdatedAt.isAcceptableOrUnknown(
+          data['local_updated_at']!,
+          _localUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_localUpdatedAtMeta);
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('public_code')) {
+      context.handle(
+        _publicCodeMeta,
+        publicCode.isAcceptableOrUnknown(data['public_code']!, _publicCodeMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('batch_id')) {
+      context.handle(
+        _batchIdMeta,
+        batchId.isAcceptableOrUnknown(data['batch_id']!, _batchIdMeta),
+      );
+    }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    }
+    if (data.containsKey('location_id')) {
+      context.handle(
+        _locationIdMeta,
+        locationId.isAcceptableOrUnknown(data['location_id']!, _locationIdMeta),
+      );
+    }
+    if (data.containsKey('equipment_id')) {
+      context.handle(
+        _equipmentIdMeta,
+        equipmentId.isAcceptableOrUnknown(
+          data['equipment_id']!,
+          _equipmentIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('assigned_at')) {
+      context.handle(
+        _assignedAtMeta,
+        assignedAt.isAcceptableOrUnknown(data['assigned_at']!, _assignedAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalQrCode map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalQrCode(
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      localUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}local_updated_at'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      ),
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      publicCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}public_code'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      batchId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}batch_id'],
+      ),
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      ),
+      locationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location_id'],
+      ),
+      equipmentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}equipment_id'],
+      ),
+      assignedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}assigned_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+    );
+  }
+
+  @override
+  $LocalQrCodesTable createAlias(String alias) {
+    return $LocalQrCodesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
+  final String organizationId;
+  final int? version;
+  final String syncStatus;
+  final DateTime localUpdatedAt;
+  final DateTime? lastSyncedAt;
+  final String? syncError;
+  final bool deleted;
+  final String id;
+  final String? publicCode;
+  final String status;
+  final String? batchId;
+  final String? clientId;
+  final String? locationId;
+  final String? equipmentId;
+  final DateTime? assignedAt;
+  final DateTime? createdAt;
+  const LocalQrCode({
+    required this.organizationId,
+    this.version,
+    required this.syncStatus,
+    required this.localUpdatedAt,
+    this.lastSyncedAt,
+    this.syncError,
+    required this.deleted,
+    required this.id,
+    this.publicCode,
+    required this.status,
+    this.batchId,
+    this.clientId,
+    this.locationId,
+    this.equipmentId,
+    this.assignedAt,
+    this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['organization_id'] = Variable<String>(organizationId);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['local_updated_at'] = Variable<DateTime>(localUpdatedAt);
+    if (!nullToAbsent || lastSyncedAt != null) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    }
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['deleted'] = Variable<bool>(deleted);
+    map['id'] = Variable<String>(id);
+    if (!nullToAbsent || publicCode != null) {
+      map['public_code'] = Variable<String>(publicCode);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || batchId != null) {
+      map['batch_id'] = Variable<String>(batchId);
+    }
+    if (!nullToAbsent || clientId != null) {
+      map['client_id'] = Variable<String>(clientId);
+    }
+    if (!nullToAbsent || locationId != null) {
+      map['location_id'] = Variable<String>(locationId);
+    }
+    if (!nullToAbsent || equipmentId != null) {
+      map['equipment_id'] = Variable<String>(equipmentId);
+    }
+    if (!nullToAbsent || assignedAt != null) {
+      map['assigned_at'] = Variable<DateTime>(assignedAt);
+    }
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    return map;
+  }
+
+  LocalQrCodesCompanion toCompanion(bool nullToAbsent) {
+    return LocalQrCodesCompanion(
+      organizationId: Value(organizationId),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      syncStatus: Value(syncStatus),
+      localUpdatedAt: Value(localUpdatedAt),
+      lastSyncedAt: lastSyncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncedAt),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      deleted: Value(deleted),
+      id: Value(id),
+      publicCode: publicCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(publicCode),
+      status: Value(status),
+      batchId: batchId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(batchId),
+      clientId: clientId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clientId),
+      locationId: locationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(locationId),
+      equipmentId: equipmentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(equipmentId),
+      assignedAt: assignedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assignedAt),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+    );
+  }
+
+  factory LocalQrCode.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalQrCode(
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      version: serializer.fromJson<int?>(json['version']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      localUpdatedAt: serializer.fromJson<DateTime>(json['localUpdatedAt']),
+      lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      id: serializer.fromJson<String>(json['id']),
+      publicCode: serializer.fromJson<String?>(json['publicCode']),
+      status: serializer.fromJson<String>(json['status']),
+      batchId: serializer.fromJson<String?>(json['batchId']),
+      clientId: serializer.fromJson<String?>(json['clientId']),
+      locationId: serializer.fromJson<String?>(json['locationId']),
+      equipmentId: serializer.fromJson<String?>(json['equipmentId']),
+      assignedAt: serializer.fromJson<DateTime?>(json['assignedAt']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'organizationId': serializer.toJson<String>(organizationId),
+      'version': serializer.toJson<int?>(version),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'localUpdatedAt': serializer.toJson<DateTime>(localUpdatedAt),
+      'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'syncError': serializer.toJson<String?>(syncError),
+      'deleted': serializer.toJson<bool>(deleted),
+      'id': serializer.toJson<String>(id),
+      'publicCode': serializer.toJson<String?>(publicCode),
+      'status': serializer.toJson<String>(status),
+      'batchId': serializer.toJson<String?>(batchId),
+      'clientId': serializer.toJson<String?>(clientId),
+      'locationId': serializer.toJson<String?>(locationId),
+      'equipmentId': serializer.toJson<String?>(equipmentId),
+      'assignedAt': serializer.toJson<DateTime?>(assignedAt),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+    };
+  }
+
+  LocalQrCode copyWith({
+    String? organizationId,
+    Value<int?> version = const Value.absent(),
+    String? syncStatus,
+    DateTime? localUpdatedAt,
+    Value<DateTime?> lastSyncedAt = const Value.absent(),
+    Value<String?> syncError = const Value.absent(),
+    bool? deleted,
+    String? id,
+    Value<String?> publicCode = const Value.absent(),
+    String? status,
+    Value<String?> batchId = const Value.absent(),
+    Value<String?> clientId = const Value.absent(),
+    Value<String?> locationId = const Value.absent(),
+    Value<String?> equipmentId = const Value.absent(),
+    Value<DateTime?> assignedAt = const Value.absent(),
+    Value<DateTime?> createdAt = const Value.absent(),
+  }) => LocalQrCode(
+    organizationId: organizationId ?? this.organizationId,
+    version: version.present ? version.value : this.version,
+    syncStatus: syncStatus ?? this.syncStatus,
+    localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+    lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    deleted: deleted ?? this.deleted,
+    id: id ?? this.id,
+    publicCode: publicCode.present ? publicCode.value : this.publicCode,
+    status: status ?? this.status,
+    batchId: batchId.present ? batchId.value : this.batchId,
+    clientId: clientId.present ? clientId.value : this.clientId,
+    locationId: locationId.present ? locationId.value : this.locationId,
+    equipmentId: equipmentId.present ? equipmentId.value : this.equipmentId,
+    assignedAt: assignedAt.present ? assignedAt.value : this.assignedAt,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+  );
+  LocalQrCode copyWithCompanion(LocalQrCodesCompanion data) {
+    return LocalQrCode(
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      version: data.version.present ? data.version.value : this.version,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      localUpdatedAt: data.localUpdatedAt.present
+          ? data.localUpdatedAt.value
+          : this.localUpdatedAt,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      id: data.id.present ? data.id.value : this.id,
+      publicCode: data.publicCode.present
+          ? data.publicCode.value
+          : this.publicCode,
+      status: data.status.present ? data.status.value : this.status,
+      batchId: data.batchId.present ? data.batchId.value : this.batchId,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      locationId: data.locationId.present
+          ? data.locationId.value
+          : this.locationId,
+      equipmentId: data.equipmentId.present
+          ? data.equipmentId.value
+          : this.equipmentId,
+      assignedAt: data.assignedAt.present
+          ? data.assignedAt.value
+          : this.assignedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalQrCode(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('publicCode: $publicCode, ')
+          ..write('status: $status, ')
+          ..write('batchId: $batchId, ')
+          ..write('clientId: $clientId, ')
+          ..write('locationId: $locationId, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('assignedAt: $assignedAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    publicCode,
+    status,
+    batchId,
+    clientId,
+    locationId,
+    equipmentId,
+    assignedAt,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalQrCode &&
+          other.organizationId == this.organizationId &&
+          other.version == this.version &&
+          other.syncStatus == this.syncStatus &&
+          other.localUpdatedAt == this.localUpdatedAt &&
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.syncError == this.syncError &&
+          other.deleted == this.deleted &&
+          other.id == this.id &&
+          other.publicCode == this.publicCode &&
+          other.status == this.status &&
+          other.batchId == this.batchId &&
+          other.clientId == this.clientId &&
+          other.locationId == this.locationId &&
+          other.equipmentId == this.equipmentId &&
+          other.assignedAt == this.assignedAt &&
+          other.createdAt == this.createdAt);
+}
+
+class LocalQrCodesCompanion extends UpdateCompanion<LocalQrCode> {
+  final Value<String> organizationId;
+  final Value<int?> version;
+  final Value<String> syncStatus;
+  final Value<DateTime> localUpdatedAt;
+  final Value<DateTime?> lastSyncedAt;
+  final Value<String?> syncError;
+  final Value<bool> deleted;
+  final Value<String> id;
+  final Value<String?> publicCode;
+  final Value<String> status;
+  final Value<String?> batchId;
+  final Value<String?> clientId;
+  final Value<String?> locationId;
+  final Value<String?> equipmentId;
+  final Value<DateTime?> assignedAt;
+  final Value<DateTime?> createdAt;
+  final Value<int> rowid;
+  const LocalQrCodesCompanion({
+    this.organizationId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.id = const Value.absent(),
+    this.publicCode = const Value.absent(),
+    this.status = const Value.absent(),
+    this.batchId = const Value.absent(),
+    this.clientId = const Value.absent(),
+    this.locationId = const Value.absent(),
+    this.equipmentId = const Value.absent(),
+    this.assignedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalQrCodesCompanion.insert({
+    required String organizationId,
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required DateTime localUpdatedAt,
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String id,
+    this.publicCode = const Value.absent(),
+    required String status,
+    this.batchId = const Value.absent(),
+    this.clientId = const Value.absent(),
+    this.locationId = const Value.absent(),
+    this.equipmentId = const Value.absent(),
+    this.assignedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : organizationId = Value(organizationId),
+       localUpdatedAt = Value(localUpdatedAt),
+       id = Value(id),
+       status = Value(status);
+  static Insertable<LocalQrCode> custom({
+    Expression<String>? organizationId,
+    Expression<int>? version,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? localUpdatedAt,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<String>? syncError,
+    Expression<bool>? deleted,
+    Expression<String>? id,
+    Expression<String>? publicCode,
+    Expression<String>? status,
+    Expression<String>? batchId,
+    Expression<String>? clientId,
+    Expression<String>? locationId,
+    Expression<String>? equipmentId,
+    Expression<DateTime>? assignedAt,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (organizationId != null) 'organization_id': organizationId,
+      if (version != null) 'version': version,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (localUpdatedAt != null) 'local_updated_at': localUpdatedAt,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (syncError != null) 'sync_error': syncError,
+      if (deleted != null) 'deleted': deleted,
+      if (id != null) 'id': id,
+      if (publicCode != null) 'public_code': publicCode,
+      if (status != null) 'status': status,
+      if (batchId != null) 'batch_id': batchId,
+      if (clientId != null) 'client_id': clientId,
+      if (locationId != null) 'location_id': locationId,
+      if (equipmentId != null) 'equipment_id': equipmentId,
+      if (assignedAt != null) 'assigned_at': assignedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalQrCodesCompanion copyWith({
+    Value<String>? organizationId,
+    Value<int?>? version,
+    Value<String>? syncStatus,
+    Value<DateTime>? localUpdatedAt,
+    Value<DateTime?>? lastSyncedAt,
+    Value<String?>? syncError,
+    Value<bool>? deleted,
+    Value<String>? id,
+    Value<String?>? publicCode,
+    Value<String>? status,
+    Value<String?>? batchId,
+    Value<String?>? clientId,
+    Value<String?>? locationId,
+    Value<String?>? equipmentId,
+    Value<DateTime?>? assignedAt,
+    Value<DateTime?>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return LocalQrCodesCompanion(
+      organizationId: organizationId ?? this.organizationId,
+      version: version ?? this.version,
+      syncStatus: syncStatus ?? this.syncStatus,
+      localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      syncError: syncError ?? this.syncError,
+      deleted: deleted ?? this.deleted,
+      id: id ?? this.id,
+      publicCode: publicCode ?? this.publicCode,
+      status: status ?? this.status,
+      batchId: batchId ?? this.batchId,
+      clientId: clientId ?? this.clientId,
+      locationId: locationId ?? this.locationId,
+      equipmentId: equipmentId ?? this.equipmentId,
+      assignedAt: assignedAt ?? this.assignedAt,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (localUpdatedAt.present) {
+      map['local_updated_at'] = Variable<DateTime>(localUpdatedAt.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (publicCode.present) {
+      map['public_code'] = Variable<String>(publicCode.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (batchId.present) {
+      map['batch_id'] = Variable<String>(batchId.value);
+    }
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (locationId.present) {
+      map['location_id'] = Variable<String>(locationId.value);
+    }
+    if (equipmentId.present) {
+      map['equipment_id'] = Variable<String>(equipmentId.value);
+    }
+    if (assignedAt.present) {
+      map['assigned_at'] = Variable<DateTime>(assignedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalQrCodesCompanion(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('publicCode: $publicCode, ')
+          ..write('status: $status, ')
+          ..write('batchId: $batchId, ')
+          ..write('clientId: $clientId, ')
+          ..write('locationId: $locationId, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('assignedAt: $assignedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalQrBatchesTable extends LocalQrBatches
+    with TableInfo<$LocalQrBatchesTable, LocalQrBatch> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalQrBatchesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('synced'),
+  );
+  static const VerificationMeta _localUpdatedAtMeta = const VerificationMeta(
+    'localUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> localUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'local_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
+    'quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _reservedUserIdMeta = const VerificationMeta(
+    'reservedUserId',
+  );
+  @override
+  late final GeneratedColumn<String> reservedUserId = GeneratedColumn<String>(
+    'reserved_user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _reservedDeviceIdMeta = const VerificationMeta(
+    'reservedDeviceId',
+  );
+  @override
+  late final GeneratedColumn<String> reservedDeviceId = GeneratedColumn<String>(
+    'reserved_device_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exportCountMeta = const VerificationMeta(
+    'exportCount',
+  );
+  @override
+  late final GeneratedColumn<int> exportCount = GeneratedColumn<int>(
+    'export_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    label,
+    quantity,
+    status,
+    reservedUserId,
+    reservedDeviceId,
+    exportCount,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_qr_batches';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalQrBatch> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('local_updated_at')) {
+      context.handle(
+        _localUpdatedAtMeta,
+        localUpdatedAt.isAcceptableOrUnknown(
+          data['local_updated_at']!,
+          _localUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_localUpdatedAtMeta);
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('reserved_user_id')) {
+      context.handle(
+        _reservedUserIdMeta,
+        reservedUserId.isAcceptableOrUnknown(
+          data['reserved_user_id']!,
+          _reservedUserIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reserved_device_id')) {
+      context.handle(
+        _reservedDeviceIdMeta,
+        reservedDeviceId.isAcceptableOrUnknown(
+          data['reserved_device_id']!,
+          _reservedDeviceIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('export_count')) {
+      context.handle(
+        _exportCountMeta,
+        exportCount.isAcceptableOrUnknown(
+          data['export_count']!,
+          _exportCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalQrBatch map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalQrBatch(
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      localUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}local_updated_at'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      ),
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      )!,
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quantity'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      reservedUserId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reserved_user_id'],
+      ),
+      reservedDeviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reserved_device_id'],
+      ),
+      exportCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}export_count'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+    );
+  }
+
+  @override
+  $LocalQrBatchesTable createAlias(String alias) {
+    return $LocalQrBatchesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalQrBatch extends DataClass implements Insertable<LocalQrBatch> {
+  final String organizationId;
+  final int? version;
+  final String syncStatus;
+  final DateTime localUpdatedAt;
+  final DateTime? lastSyncedAt;
+  final String? syncError;
+  final bool deleted;
+  final String id;
+  final String label;
+  final int quantity;
+  final String status;
+  final String? reservedUserId;
+  final String? reservedDeviceId;
+  final int exportCount;
+  final DateTime? createdAt;
+  const LocalQrBatch({
+    required this.organizationId,
+    this.version,
+    required this.syncStatus,
+    required this.localUpdatedAt,
+    this.lastSyncedAt,
+    this.syncError,
+    required this.deleted,
+    required this.id,
+    required this.label,
+    required this.quantity,
+    required this.status,
+    this.reservedUserId,
+    this.reservedDeviceId,
+    required this.exportCount,
+    this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['organization_id'] = Variable<String>(organizationId);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['local_updated_at'] = Variable<DateTime>(localUpdatedAt);
+    if (!nullToAbsent || lastSyncedAt != null) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    }
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['deleted'] = Variable<bool>(deleted);
+    map['id'] = Variable<String>(id);
+    map['label'] = Variable<String>(label);
+    map['quantity'] = Variable<int>(quantity);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || reservedUserId != null) {
+      map['reserved_user_id'] = Variable<String>(reservedUserId);
+    }
+    if (!nullToAbsent || reservedDeviceId != null) {
+      map['reserved_device_id'] = Variable<String>(reservedDeviceId);
+    }
+    map['export_count'] = Variable<int>(exportCount);
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    return map;
+  }
+
+  LocalQrBatchesCompanion toCompanion(bool nullToAbsent) {
+    return LocalQrBatchesCompanion(
+      organizationId: Value(organizationId),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      syncStatus: Value(syncStatus),
+      localUpdatedAt: Value(localUpdatedAt),
+      lastSyncedAt: lastSyncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncedAt),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      deleted: Value(deleted),
+      id: Value(id),
+      label: Value(label),
+      quantity: Value(quantity),
+      status: Value(status),
+      reservedUserId: reservedUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reservedUserId),
+      reservedDeviceId: reservedDeviceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reservedDeviceId),
+      exportCount: Value(exportCount),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+    );
+  }
+
+  factory LocalQrBatch.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalQrBatch(
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      version: serializer.fromJson<int?>(json['version']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      localUpdatedAt: serializer.fromJson<DateTime>(json['localUpdatedAt']),
+      lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      id: serializer.fromJson<String>(json['id']),
+      label: serializer.fromJson<String>(json['label']),
+      quantity: serializer.fromJson<int>(json['quantity']),
+      status: serializer.fromJson<String>(json['status']),
+      reservedUserId: serializer.fromJson<String?>(json['reservedUserId']),
+      reservedDeviceId: serializer.fromJson<String?>(json['reservedDeviceId']),
+      exportCount: serializer.fromJson<int>(json['exportCount']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'organizationId': serializer.toJson<String>(organizationId),
+      'version': serializer.toJson<int?>(version),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'localUpdatedAt': serializer.toJson<DateTime>(localUpdatedAt),
+      'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'syncError': serializer.toJson<String?>(syncError),
+      'deleted': serializer.toJson<bool>(deleted),
+      'id': serializer.toJson<String>(id),
+      'label': serializer.toJson<String>(label),
+      'quantity': serializer.toJson<int>(quantity),
+      'status': serializer.toJson<String>(status),
+      'reservedUserId': serializer.toJson<String?>(reservedUserId),
+      'reservedDeviceId': serializer.toJson<String?>(reservedDeviceId),
+      'exportCount': serializer.toJson<int>(exportCount),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+    };
+  }
+
+  LocalQrBatch copyWith({
+    String? organizationId,
+    Value<int?> version = const Value.absent(),
+    String? syncStatus,
+    DateTime? localUpdatedAt,
+    Value<DateTime?> lastSyncedAt = const Value.absent(),
+    Value<String?> syncError = const Value.absent(),
+    bool? deleted,
+    String? id,
+    String? label,
+    int? quantity,
+    String? status,
+    Value<String?> reservedUserId = const Value.absent(),
+    Value<String?> reservedDeviceId = const Value.absent(),
+    int? exportCount,
+    Value<DateTime?> createdAt = const Value.absent(),
+  }) => LocalQrBatch(
+    organizationId: organizationId ?? this.organizationId,
+    version: version.present ? version.value : this.version,
+    syncStatus: syncStatus ?? this.syncStatus,
+    localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+    lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    deleted: deleted ?? this.deleted,
+    id: id ?? this.id,
+    label: label ?? this.label,
+    quantity: quantity ?? this.quantity,
+    status: status ?? this.status,
+    reservedUserId: reservedUserId.present
+        ? reservedUserId.value
+        : this.reservedUserId,
+    reservedDeviceId: reservedDeviceId.present
+        ? reservedDeviceId.value
+        : this.reservedDeviceId,
+    exportCount: exportCount ?? this.exportCount,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+  );
+  LocalQrBatch copyWithCompanion(LocalQrBatchesCompanion data) {
+    return LocalQrBatch(
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      version: data.version.present ? data.version.value : this.version,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      localUpdatedAt: data.localUpdatedAt.present
+          ? data.localUpdatedAt.value
+          : this.localUpdatedAt,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      id: data.id.present ? data.id.value : this.id,
+      label: data.label.present ? data.label.value : this.label,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      status: data.status.present ? data.status.value : this.status,
+      reservedUserId: data.reservedUserId.present
+          ? data.reservedUserId.value
+          : this.reservedUserId,
+      reservedDeviceId: data.reservedDeviceId.present
+          ? data.reservedDeviceId.value
+          : this.reservedDeviceId,
+      exportCount: data.exportCount.present
+          ? data.exportCount.value
+          : this.exportCount,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalQrBatch(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('label: $label, ')
+          ..write('quantity: $quantity, ')
+          ..write('status: $status, ')
+          ..write('reservedUserId: $reservedUserId, ')
+          ..write('reservedDeviceId: $reservedDeviceId, ')
+          ..write('exportCount: $exportCount, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    label,
+    quantity,
+    status,
+    reservedUserId,
+    reservedDeviceId,
+    exportCount,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalQrBatch &&
+          other.organizationId == this.organizationId &&
+          other.version == this.version &&
+          other.syncStatus == this.syncStatus &&
+          other.localUpdatedAt == this.localUpdatedAt &&
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.syncError == this.syncError &&
+          other.deleted == this.deleted &&
+          other.id == this.id &&
+          other.label == this.label &&
+          other.quantity == this.quantity &&
+          other.status == this.status &&
+          other.reservedUserId == this.reservedUserId &&
+          other.reservedDeviceId == this.reservedDeviceId &&
+          other.exportCount == this.exportCount &&
+          other.createdAt == this.createdAt);
+}
+
+class LocalQrBatchesCompanion extends UpdateCompanion<LocalQrBatch> {
+  final Value<String> organizationId;
+  final Value<int?> version;
+  final Value<String> syncStatus;
+  final Value<DateTime> localUpdatedAt;
+  final Value<DateTime?> lastSyncedAt;
+  final Value<String?> syncError;
+  final Value<bool> deleted;
+  final Value<String> id;
+  final Value<String> label;
+  final Value<int> quantity;
+  final Value<String> status;
+  final Value<String?> reservedUserId;
+  final Value<String?> reservedDeviceId;
+  final Value<int> exportCount;
+  final Value<DateTime?> createdAt;
+  final Value<int> rowid;
+  const LocalQrBatchesCompanion({
+    this.organizationId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.id = const Value.absent(),
+    this.label = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.status = const Value.absent(),
+    this.reservedUserId = const Value.absent(),
+    this.reservedDeviceId = const Value.absent(),
+    this.exportCount = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalQrBatchesCompanion.insert({
+    required String organizationId,
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required DateTime localUpdatedAt,
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String id,
+    this.label = const Value.absent(),
+    this.quantity = const Value.absent(),
+    required String status,
+    this.reservedUserId = const Value.absent(),
+    this.reservedDeviceId = const Value.absent(),
+    this.exportCount = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : organizationId = Value(organizationId),
+       localUpdatedAt = Value(localUpdatedAt),
+       id = Value(id),
+       status = Value(status);
+  static Insertable<LocalQrBatch> custom({
+    Expression<String>? organizationId,
+    Expression<int>? version,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? localUpdatedAt,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<String>? syncError,
+    Expression<bool>? deleted,
+    Expression<String>? id,
+    Expression<String>? label,
+    Expression<int>? quantity,
+    Expression<String>? status,
+    Expression<String>? reservedUserId,
+    Expression<String>? reservedDeviceId,
+    Expression<int>? exportCount,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (organizationId != null) 'organization_id': organizationId,
+      if (version != null) 'version': version,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (localUpdatedAt != null) 'local_updated_at': localUpdatedAt,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (syncError != null) 'sync_error': syncError,
+      if (deleted != null) 'deleted': deleted,
+      if (id != null) 'id': id,
+      if (label != null) 'label': label,
+      if (quantity != null) 'quantity': quantity,
+      if (status != null) 'status': status,
+      if (reservedUserId != null) 'reserved_user_id': reservedUserId,
+      if (reservedDeviceId != null) 'reserved_device_id': reservedDeviceId,
+      if (exportCount != null) 'export_count': exportCount,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalQrBatchesCompanion copyWith({
+    Value<String>? organizationId,
+    Value<int?>? version,
+    Value<String>? syncStatus,
+    Value<DateTime>? localUpdatedAt,
+    Value<DateTime?>? lastSyncedAt,
+    Value<String?>? syncError,
+    Value<bool>? deleted,
+    Value<String>? id,
+    Value<String>? label,
+    Value<int>? quantity,
+    Value<String>? status,
+    Value<String?>? reservedUserId,
+    Value<String?>? reservedDeviceId,
+    Value<int>? exportCount,
+    Value<DateTime?>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return LocalQrBatchesCompanion(
+      organizationId: organizationId ?? this.organizationId,
+      version: version ?? this.version,
+      syncStatus: syncStatus ?? this.syncStatus,
+      localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      syncError: syncError ?? this.syncError,
+      deleted: deleted ?? this.deleted,
+      id: id ?? this.id,
+      label: label ?? this.label,
+      quantity: quantity ?? this.quantity,
+      status: status ?? this.status,
+      reservedUserId: reservedUserId ?? this.reservedUserId,
+      reservedDeviceId: reservedDeviceId ?? this.reservedDeviceId,
+      exportCount: exportCount ?? this.exportCount,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (localUpdatedAt.present) {
+      map['local_updated_at'] = Variable<DateTime>(localUpdatedAt.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (quantity.present) {
+      map['quantity'] = Variable<int>(quantity.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (reservedUserId.present) {
+      map['reserved_user_id'] = Variable<String>(reservedUserId.value);
+    }
+    if (reservedDeviceId.present) {
+      map['reserved_device_id'] = Variable<String>(reservedDeviceId.value);
+    }
+    if (exportCount.present) {
+      map['export_count'] = Variable<int>(exportCount.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalQrBatchesCompanion(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('label: $label, ')
+          ..write('quantity: $quantity, ')
+          ..write('status: $status, ')
+          ..write('reservedUserId: $reservedUserId, ')
+          ..write('reservedDeviceId: $reservedDeviceId, ')
+          ..write('exportCount: $exportCount, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncOutboxTable extends SyncOutbox
     with TableInfo<$SyncOutboxTable, SyncOutboxData> {
   @override
@@ -8237,6 +10049,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LocalEquipmentTypesTable(this);
   late final $LocalReferenceDataTable localReferenceData =
       $LocalReferenceDataTable(this);
+  late final $LocalQrCodesTable localQrCodes = $LocalQrCodesTable(this);
+  late final $LocalQrBatchesTable localQrBatches = $LocalQrBatchesTable(this);
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $LocalSyncStateTable localSyncState = $LocalSyncStateTable(this);
   late final $UploadQueueTable uploadQueue = $UploadQueueTable(this);
@@ -8252,6 +10066,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localServiceOrderParts,
     localEquipmentTypes,
     localReferenceData,
+    localQrCodes,
+    localQrBatches,
     syncOutbox,
     localSyncState,
     uploadQueue,
@@ -11470,6 +13286,855 @@ typedef $$LocalReferenceDataTableProcessedTableManager =
       LocalReferenceDataData,
       PrefetchHooks Function()
     >;
+typedef $$LocalQrCodesTableCreateCompanionBuilder =
+    LocalQrCodesCompanion Function({
+      required String organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      required DateTime localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      required String id,
+      Value<String?> publicCode,
+      required String status,
+      Value<String?> batchId,
+      Value<String?> clientId,
+      Value<String?> locationId,
+      Value<String?> equipmentId,
+      Value<DateTime?> assignedAt,
+      Value<DateTime?> createdAt,
+      Value<int> rowid,
+    });
+typedef $$LocalQrCodesTableUpdateCompanionBuilder =
+    LocalQrCodesCompanion Function({
+      Value<String> organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      Value<DateTime> localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      Value<String> id,
+      Value<String?> publicCode,
+      Value<String> status,
+      Value<String?> batchId,
+      Value<String?> clientId,
+      Value<String?> locationId,
+      Value<String?> equipmentId,
+      Value<DateTime?> assignedAt,
+      Value<DateTime?> createdAt,
+      Value<int> rowid,
+    });
+
+class $$LocalQrCodesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalQrCodesTable> {
+  $$LocalQrCodesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get publicCode => $composableBuilder(
+    column: $table.publicCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get batchId => $composableBuilder(
+    column: $table.batchId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get locationId => $composableBuilder(
+    column: $table.locationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get equipmentId => $composableBuilder(
+    column: $table.equipmentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get assignedAt => $composableBuilder(
+    column: $table.assignedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalQrCodesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalQrCodesTable> {
+  $$LocalQrCodesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get publicCode => $composableBuilder(
+    column: $table.publicCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get batchId => $composableBuilder(
+    column: $table.batchId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get locationId => $composableBuilder(
+    column: $table.locationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get equipmentId => $composableBuilder(
+    column: $table.equipmentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get assignedAt => $composableBuilder(
+    column: $table.assignedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalQrCodesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalQrCodesTable> {
+  $$LocalQrCodesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get publicCode => $composableBuilder(
+    column: $table.publicCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get batchId =>
+      $composableBuilder(column: $table.batchId, builder: (column) => column);
+
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get locationId => $composableBuilder(
+    column: $table.locationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get equipmentId => $composableBuilder(
+    column: $table.equipmentId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get assignedAt => $composableBuilder(
+    column: $table.assignedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$LocalQrCodesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalQrCodesTable,
+          LocalQrCode,
+          $$LocalQrCodesTableFilterComposer,
+          $$LocalQrCodesTableOrderingComposer,
+          $$LocalQrCodesTableAnnotationComposer,
+          $$LocalQrCodesTableCreateCompanionBuilder,
+          $$LocalQrCodesTableUpdateCompanionBuilder,
+          (
+            LocalQrCode,
+            BaseReferences<_$AppDatabase, $LocalQrCodesTable, LocalQrCode>,
+          ),
+          LocalQrCode,
+          PrefetchHooks Function()
+        > {
+  $$LocalQrCodesTableTableManager(_$AppDatabase db, $LocalQrCodesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalQrCodesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalQrCodesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalQrCodesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> organizationId = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<DateTime> localUpdatedAt = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String?> publicCode = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> batchId = const Value.absent(),
+                Value<String?> clientId = const Value.absent(),
+                Value<String?> locationId = const Value.absent(),
+                Value<String?> equipmentId = const Value.absent(),
+                Value<DateTime?> assignedAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalQrCodesCompanion(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                publicCode: publicCode,
+                status: status,
+                batchId: batchId,
+                clientId: clientId,
+                locationId: locationId,
+                equipmentId: equipmentId,
+                assignedAt: assignedAt,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String organizationId,
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required DateTime localUpdatedAt,
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String id,
+                Value<String?> publicCode = const Value.absent(),
+                required String status,
+                Value<String?> batchId = const Value.absent(),
+                Value<String?> clientId = const Value.absent(),
+                Value<String?> locationId = const Value.absent(),
+                Value<String?> equipmentId = const Value.absent(),
+                Value<DateTime?> assignedAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalQrCodesCompanion.insert(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                publicCode: publicCode,
+                status: status,
+                batchId: batchId,
+                clientId: clientId,
+                locationId: locationId,
+                equipmentId: equipmentId,
+                assignedAt: assignedAt,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalQrCodesTable, LocalQrCode>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalQrCodesTable,
+                    LocalQrCode
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalQrCodesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalQrCodesTable,
+      LocalQrCode,
+      $$LocalQrCodesTableFilterComposer,
+      $$LocalQrCodesTableOrderingComposer,
+      $$LocalQrCodesTableAnnotationComposer,
+      $$LocalQrCodesTableCreateCompanionBuilder,
+      $$LocalQrCodesTableUpdateCompanionBuilder,
+      (
+        LocalQrCode,
+        BaseReferences<_$AppDatabase, $LocalQrCodesTable, LocalQrCode>,
+      ),
+      LocalQrCode,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalQrBatchesTableCreateCompanionBuilder =
+    LocalQrBatchesCompanion Function({
+      required String organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      required DateTime localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      required String id,
+      Value<String> label,
+      Value<int> quantity,
+      required String status,
+      Value<String?> reservedUserId,
+      Value<String?> reservedDeviceId,
+      Value<int> exportCount,
+      Value<DateTime?> createdAt,
+      Value<int> rowid,
+    });
+typedef $$LocalQrBatchesTableUpdateCompanionBuilder =
+    LocalQrBatchesCompanion Function({
+      Value<String> organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      Value<DateTime> localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      Value<String> id,
+      Value<String> label,
+      Value<int> quantity,
+      Value<String> status,
+      Value<String?> reservedUserId,
+      Value<String?> reservedDeviceId,
+      Value<int> exportCount,
+      Value<DateTime?> createdAt,
+      Value<int> rowid,
+    });
+
+class $$LocalQrBatchesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalQrBatchesTable> {
+  $$LocalQrBatchesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reservedUserId => $composableBuilder(
+    column: $table.reservedUserId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reservedDeviceId => $composableBuilder(
+    column: $table.reservedDeviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get exportCount => $composableBuilder(
+    column: $table.exportCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalQrBatchesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalQrBatchesTable> {
+  $$LocalQrBatchesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reservedUserId => $composableBuilder(
+    column: $table.reservedUserId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reservedDeviceId => $composableBuilder(
+    column: $table.reservedDeviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get exportCount => $composableBuilder(
+    column: $table.exportCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalQrBatchesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalQrBatchesTable> {
+  $$LocalQrBatchesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<int> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get reservedUserId => $composableBuilder(
+    column: $table.reservedUserId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get reservedDeviceId => $composableBuilder(
+    column: $table.reservedDeviceId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get exportCount => $composableBuilder(
+    column: $table.exportCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$LocalQrBatchesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalQrBatchesTable,
+          LocalQrBatch,
+          $$LocalQrBatchesTableFilterComposer,
+          $$LocalQrBatchesTableOrderingComposer,
+          $$LocalQrBatchesTableAnnotationComposer,
+          $$LocalQrBatchesTableCreateCompanionBuilder,
+          $$LocalQrBatchesTableUpdateCompanionBuilder,
+          (
+            LocalQrBatch,
+            BaseReferences<_$AppDatabase, $LocalQrBatchesTable, LocalQrBatch>,
+          ),
+          LocalQrBatch,
+          PrefetchHooks Function()
+        > {
+  $$LocalQrBatchesTableTableManager(
+    _$AppDatabase db,
+    $LocalQrBatchesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalQrBatchesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalQrBatchesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalQrBatchesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> organizationId = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<DateTime> localUpdatedAt = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<int> quantity = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> reservedUserId = const Value.absent(),
+                Value<String?> reservedDeviceId = const Value.absent(),
+                Value<int> exportCount = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalQrBatchesCompanion(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                label: label,
+                quantity: quantity,
+                status: status,
+                reservedUserId: reservedUserId,
+                reservedDeviceId: reservedDeviceId,
+                exportCount: exportCount,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String organizationId,
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required DateTime localUpdatedAt,
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String id,
+                Value<String> label = const Value.absent(),
+                Value<int> quantity = const Value.absent(),
+                required String status,
+                Value<String?> reservedUserId = const Value.absent(),
+                Value<String?> reservedDeviceId = const Value.absent(),
+                Value<int> exportCount = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalQrBatchesCompanion.insert(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                label: label,
+                quantity: quantity,
+                status: status,
+                reservedUserId: reservedUserId,
+                reservedDeviceId: reservedDeviceId,
+                exportCount: exportCount,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalQrBatchesTable, LocalQrBatch>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalQrBatchesTable,
+                    LocalQrBatch
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalQrBatchesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalQrBatchesTable,
+      LocalQrBatch,
+      $$LocalQrBatchesTableFilterComposer,
+      $$LocalQrBatchesTableOrderingComposer,
+      $$LocalQrBatchesTableAnnotationComposer,
+      $$LocalQrBatchesTableCreateCompanionBuilder,
+      $$LocalQrBatchesTableUpdateCompanionBuilder,
+      (
+        LocalQrBatch,
+        BaseReferences<_$AppDatabase, $LocalQrBatchesTable, LocalQrBatch>,
+      ),
+      LocalQrBatch,
+      PrefetchHooks Function()
+    >;
 typedef $$SyncOutboxTableCreateCompanionBuilder =
     SyncOutboxCompanion Function({
       required String operationId,
@@ -12294,6 +14959,10 @@ class $AppDatabaseManager {
       $$LocalEquipmentTypesTableTableManager(_db, _db.localEquipmentTypes);
   $$LocalReferenceDataTableTableManager get localReferenceData =>
       $$LocalReferenceDataTableTableManager(_db, _db.localReferenceData);
+  $$LocalQrCodesTableTableManager get localQrCodes =>
+      $$LocalQrCodesTableTableManager(_db, _db.localQrCodes);
+  $$LocalQrBatchesTableTableManager get localQrBatches =>
+      $$LocalQrBatchesTableTableManager(_db, _db.localQrBatches);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
   $$LocalSyncStateTableTableManager get localSyncState =>

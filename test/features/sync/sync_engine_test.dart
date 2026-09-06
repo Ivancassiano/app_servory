@@ -21,6 +21,23 @@ void main() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     api = MockSyncApi();
     engine = SyncEngine(api: api, db: db, organizationId: 'org1');
+    // Padrão: página vazia para qualquer entityType não estubado
+    // explicitamente (ex.: qr_code/qr_batch). `when()` específico no teste
+    // sobrepõe.
+    when(
+      () => api.bootstrap(
+        entityType: any(named: 'entityType'),
+        page: any(named: 'page'),
+      ),
+    ).thenAnswer(
+      (_) async => const SyncBootstrapPage(
+        items: [],
+        total: 0,
+        page: 1,
+        size: 100,
+        cursor: 0,
+      ),
+    );
   });
 
   tearDown(() => db.close());

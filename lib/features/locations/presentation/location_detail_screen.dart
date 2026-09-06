@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../clients/application/clients_provider.dart';
+import '../../labels/data/qr_mapper.dart';
+import '../../labels/presentation/qr_label_section.dart';
 import '../application/location_edit_controller.dart';
 import '../application/locations_provider.dart';
 import '../data/location_mapper.dart';
@@ -340,6 +342,14 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                         )
                       : const Text('Salvar'),
                 ),
+                if (!widget.isNew) ...[
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  QrLabelSection(
+                    target: QrTarget.location(widget.locationId),
+                  ),
+                ],
               ],
             ),
           ),

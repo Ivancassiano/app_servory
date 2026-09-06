@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
+import '../../labels/data/qr_mapper.dart';
+import '../../labels/presentation/qr_label_section.dart';
 import '../application/client_edit_controller.dart';
 import '../application/clients_provider.dart';
 
@@ -172,6 +174,12 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
                         )
                       : const Text('Salvar'),
                 ),
+                if (!widget.isNew) ...[
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  QrLabelSection(target: QrTarget.client(widget.clientId)),
+                ],
               ],
             ),
           ),

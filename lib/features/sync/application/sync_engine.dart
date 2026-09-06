@@ -5,18 +5,22 @@ import 'package:drift/drift.dart' show Value;
 import '../../../core/db/app_database.dart';
 import '../../clients/data/client_mapper.dart';
 import '../../equipments/data/equipment_mapper.dart';
+import '../../labels/data/qr_mapper.dart';
 import '../../locations/data/location_mapper.dart';
 import '../../service_orders/data/service_order_mapper.dart';
 import '../data/sync_api.dart';
 
-/// As 3 entidades desta entrega (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`/
-/// `push` tratam as 3 igual.
+/// As 7 entidades sincronizáveis (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`
+/// leem todas; `push` só as que têm operações de escrita. `qr_batch` é
+/// somente leitura; `qr_code` não usa `version` de verdade (§9.3).
 const _readEntityTypes = [
   'client',
   'location',
   'equipment',
   'service_order',
   'service_order_part',
+  'qr_code',
+  'qr_batch',
 ];
 
 /// Orquestra `bootstrap`/`pull`/`push` entre o [SyncApi] e o [AppDatabase]
@@ -38,7 +42,7 @@ class SyncEngine {
   /// Dump completo paginado, uma vez por organização (quando o banco local
   /// ainda não tinha nada) — GUIA-FLUTTER.md §8.2.
   Future<void> bootstrap() async {
-    int? finalCursor;
+    var maxCursor = 0;
     for (final entityType in _readEntityTypes) {
       var page = 1;
       while (true) {
@@ -46,12 +50,15 @@ class SyncEngine {
         for (final item in result.items) {
           await _upsert(entityType, item);
         }
-        finalCursor = result.cursor;
+        // Cada bootstrap de entidade tira sua foto num instante diferente;
+        // o `pull` seguinte deve partir da marca mais alta vista (reprocessar
+        // é idempotente; pular uma mudança não é).
+        if (result.cursor > maxCursor) maxCursor = result.cursor;
         if (!result.hasMore) break;
         page++;
       }
     }
-    await _saveCursor(finalCursor ?? 0);
+    await _saveCursor(maxCursor);
   }
 
   /// Mudanças desde o cursor salvo, em loop até `next_cursor` parar de
@@ -182,6 +189,19 @@ class SyncEngine {
             syncError: const Value(null),
           ),
         );
+      case 'qr_code':
+        // A etiqueta certa vem no próximo `pull` (§9.4); aqui só limpamos o
+        // estado pendente da linha que enviamos.
+        await (_db.update(
+          _db.localQrCodes,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalQrCodesCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
     }
   }
 
@@ -222,6 +242,12 @@ class SyncEngine {
         )..where((t) => t.id.equals(entityId))).write(
           LocalServiceOrderPartsCompanion(syncStatus: status, syncError: error),
         );
+      case 'qr_code':
+        await (_db.update(
+          _db.localQrCodes,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalQrCodesCompanion(syncStatus: status, syncError: error),
+        );
     }
   }
 
@@ -261,6 +287,18 @@ class SyncEngine {
             .insertOnConflictUpdate(
               servicePartFromApiJson(data, organizationId: org),
             );
+      case 'qr_code':
+        await _db
+            .into(_db.localQrCodes)
+            .insertOnConflictUpdate(
+              qrCodeFromApiJson(data, organizationId: org),
+            );
+      case 'qr_batch':
+        await _db
+            .into(_db.localQrBatches)
+            .insertOnConflictUpdate(
+              qrBatchFromApiJson(data, organizationId: org),
+            );
     }
   }
 
@@ -286,6 +324,14 @@ class SyncEngine {
         await (_db.update(_db.localServiceOrderParts)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalServiceOrderPartsCompanion(deleted: Value(true)));
+      case 'qr_code':
+        await (_db.update(_db.localQrCodes)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalQrCodesCompanion(deleted: Value(true)));
+      case 'qr_batch':
+        await (_db.update(_db.localQrBatches)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalQrBatchesCompanion(deleted: Value(true)));
     }
   }
 

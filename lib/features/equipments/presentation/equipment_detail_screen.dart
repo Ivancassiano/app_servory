@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
+import '../../labels/data/qr_mapper.dart';
+import '../../labels/presentation/qr_label_section.dart';
 import '../../locations/application/locations_provider.dart';
 import '../application/equipment_edit_controller.dart';
 import '../application/equipments_provider.dart';
@@ -228,6 +230,14 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                         )
                       : const Text('Salvar'),
                 ),
+                if (!widget.isNew) ...[
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  QrLabelSection(
+                    target: QrTarget.equipment(widget.equipmentId),
+                  ),
+                ],
               ],
             ),
           ),

@@ -211,6 +211,52 @@ class LocalReferenceData extends Table {
   Set<Column> get primaryKey => {kind, id};
 }
 
+/// Espelha `QRCode` do OpenAPI (spec §8-§9). Etiqueta sincronizável
+/// (`create`/`assign`/`replace`/`deactivate`, GUIA-FLUTTER.md §8.4). **Não
+/// usa `version` de verdade** — a regra de conflito é "primeira confirmação
+/// do servidor vence" (§9.3); ainda assim carregamos `version` porque o
+/// protocolo de push exige `base_version` como forma. `publicCode` é o texto
+/// impresso/escaneável — só o servidor gera (ADR-0019), fica nulo enquanto
+/// uma etiqueta criada offline não sincronizou. Exatamente um entre
+/// `clientId`/`locationId`/`equipmentId` é preenchido quando `status` =
+/// `assigned`.
+class LocalQrCodes extends Table with _SyncColumns {
+  TextColumn get id => text()();
+  TextColumn get publicCode => text().named('public_code').nullable()();
+  TextColumn get status => text()(); // available|reserved|issued|assigned|deactivated|replaced|lost
+  TextColumn get batchId => text().named('batch_id').nullable()();
+  TextColumn get clientId => text().named('client_id').nullable()();
+  TextColumn get locationId => text().named('location_id').nullable()();
+  TextColumn get equipmentId => text().named('equipment_id').nullable()();
+  DateTimeColumn get assignedAt =>
+      dateTime().named('assigned_at').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Espelha `QRBatch` do OpenAPI. **Somente leitura** no app (aparece em
+/// `pull`/`bootstrap`; criar/reservar/exportar lote é sempre REST,
+/// GUIA-FLUTTER.md §8.4). Usa `version` normalmente.
+@DataClassName('LocalQrBatch')
+class LocalQrBatches extends Table with _SyncColumns {
+  TextColumn get id => text()();
+  TextColumn get label => text().withDefault(const Constant(''))();
+  IntColumn get quantity => integer().withDefault(const Constant(0))();
+  TextColumn get status => text()(); // created|reserved|issued|lost
+  TextColumn get reservedUserId =>
+      text().named('reserved_user_id').nullable()();
+  TextColumn get reservedDeviceId =>
+      text().named('reserved_device_id').nullable()();
+  IntColumn get exportCount =>
+      integer().named('export_count').withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().named('created_at').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Linha única por organização: cursor do último `pull` bem-sucedido.
 class LocalSyncState extends Table {
   TextColumn get organizationId => text().named('organization_id')();
@@ -253,6 +299,8 @@ class UploadQueue extends Table {
     LocalServiceOrderParts,
     LocalEquipmentTypes,
     LocalReferenceData,
+    LocalQrCodes,
+    LocalQrBatches,
     SyncOutbox,
     LocalSyncState,
     UploadQueue,
@@ -271,7 +319,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -289,6 +337,10 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 5) {
         await m.createTable(localReferenceData);
+      }
+      if (from < 6) {
+        await m.createTable(localQrCodes);
+        await m.createTable(localQrBatches);
       }
     },
   );
