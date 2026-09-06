@@ -581,7 +581,7 @@ class _ScheduledForField extends StatelessWidget {
 
   Future<void> _pick(BuildContext context) async {
     final now = DateTime.now();
-    final base = value ?? now;
+    final base = (value ?? now).toLocal();
     final date = await showDatePicker(
       context: context,
       initialDate: base,
@@ -600,8 +600,9 @@ class _ScheduledForField extends StatelessWidget {
   }
 
   String _fmt(DateTime d) {
+    final l = d.toLocal();
     String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(d.day)}/${two(d.month)}/${d.year} ${two(d.hour)}:${two(d.minute)}';
+    return '${two(l.day)}/${two(l.month)}/${l.year} ${two(l.hour)}:${two(l.minute)}';
   }
 
   @override
