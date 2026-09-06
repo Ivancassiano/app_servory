@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../auth/application/session_controller.dart';
+import '../../labels/data/label_batch_repository.dart';
 import '../../sync/application/sync_provider.dart';
 import '../application/me_provider.dart';
 
@@ -120,6 +121,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            const _QrConflictBanner(),
             _ShortcutTile(
               icon: Icons.groups_outlined,
               label: 'Clientes',
@@ -140,7 +142,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               label: 'Ordens de serviço',
               onTap: () => context.push('/service-orders'),
             ),
+            _ShortcutTile(
+              icon: Icons.qr_code_2_outlined,
+              label: 'Etiquetas',
+              onTap: () => context.push('/label-batches'),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Pendência de conflito de etiqueta (§9.3) — banner na home só quando há.
+class _QrConflictBanner extends ConsumerWidget {
+  const _QrConflictBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final n = ref.watch(qrConflictCountProvider).value ?? 0;
+    if (n == 0) return const SizedBox.shrink();
+    final theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.errorContainer,
+      child: ListTile(
+        leading: Icon(Icons.warning_amber, color: theme.colorScheme.error),
+        title: Text(
+          n == 1
+              ? '1 etiqueta precisa ser substituída'
+              : '$n etiquetas precisam ser substituídas',
+          style: TextStyle(color: theme.colorScheme.onErrorContainer),
+        ),
+        subtitle: Text(
+          'Outro dispositivo confirmou o mesmo código primeiro. Abra o '
+          'registro e gere uma etiqueta nova.',
+          style: TextStyle(color: theme.colorScheme.onErrorContainer),
         ),
       ),
     );

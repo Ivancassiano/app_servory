@@ -11,6 +11,8 @@ import '../../features/clients/presentation/client_detail_screen.dart';
 import '../../features/clients/presentation/client_list_screen.dart';
 import '../../features/equipments/presentation/equipment_detail_screen.dart';
 import '../../features/equipments/presentation/equipment_list_screen.dart';
+import '../../features/labels/presentation/label_batch_detail_screen.dart';
+import '../../features/labels/presentation/label_batch_list_screen.dart';
 import '../../features/locations/presentation/location_detail_screen.dart';
 import '../../features/locations/presentation/location_list_screen.dart';
 import '../../features/me/presentation/home_screen.dart';
@@ -104,6 +106,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: ':id',
             builder: (_, state) =>
                 EquipmentDetailScreen(equipmentId: state.pathParameters['id']!),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/label-batches',
+        builder: (_, _) => const LabelBatchListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, state) =>
+                LabelBatchDetailScreen(batchId: state.pathParameters['id']!),
           ),
         ],
       ),
