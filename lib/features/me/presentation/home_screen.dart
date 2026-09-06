@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../auth/application/session_controller.dart';
 import '../../labels/data/label_batch_repository.dart';
+import '../../service_orders/presentation/agenda_card.dart';
 import '../../sync/application/sync_provider.dart';
 import '../application/me_provider.dart';
 
@@ -122,6 +123,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 16),
             const _QrConflictBanner(),
+            const AgendaCard(),
             _ShortcutTile(
               icon: Icons.groups_outlined,
               label: 'Clientes',
