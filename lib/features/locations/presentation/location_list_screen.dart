@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../application/locations_provider.dart';
 
@@ -11,10 +12,15 @@ class LocationListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(locationListProvider);
+    final total = async.value?.length;
     return Scaffold(
-      appBar: AppBar(title: const Text('Locais')),
+      appBar: brandAppBar(
+        title: 'Locais',
+        count: total == null ? null : '$total ${total == 1 ? 'local' : 'locais'}',
+      ),
       body: SearchableListView<LocalLocation>(
-        async: ref.watch(locationListProvider),
+        async: async,
         onRefresh: () => ref.read(locationRepositoryProvider).refresh(),
         hintText: 'Buscar local',
         emptyMessage: 'Nenhum local ainda. Puxe pra baixo para sincronizar.',
@@ -48,10 +54,10 @@ class LocationListScreen extends ConsumerWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/locations/new'),
-        tooltip: 'Novo local',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Novo local'),
       ),
     );
   }

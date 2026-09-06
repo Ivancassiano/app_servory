@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../application/equipments_provider.dart';
 
@@ -11,9 +12,12 @@ class EquipmentListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(equipmentListProvider);
+    final total = async.value?.length;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Equipamentos'),
+      appBar: brandAppBar(
+        title: 'Equipamentos',
+        count: total == null ? null : '$total ${total == 1 ? 'item' : 'itens'}',
         actions: [
           IconButton(
             tooltip: 'Tipos de equipamento',
@@ -23,7 +27,7 @@ class EquipmentListScreen extends ConsumerWidget {
         ],
       ),
       body: SearchableListView<LocalEquipment>(
-        async: ref.watch(equipmentListProvider),
+        async: async,
         onRefresh: () => ref.read(equipmentRepositoryProvider).refresh(),
         hintText: 'Buscar equipamento',
         emptyMessage:
@@ -60,10 +64,10 @@ class EquipmentListScreen extends ConsumerWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/equipments/new'),
-        tooltip: 'Novo equipamento',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Novo equipamento'),
       ),
     );
   }

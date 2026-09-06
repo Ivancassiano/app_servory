@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../data/company_repository.dart';
 
@@ -12,10 +13,17 @@ class CompanyListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(companyListProvider);
+    final total = async.value?.length;
     return Scaffold(
-      appBar: AppBar(title: const Text('Empresas')),
+      appBar: brandAppBar(
+        title: 'Empresas',
+        count: total == null
+            ? null
+            : '$total ${total == 1 ? 'empresa' : 'empresas'}',
+      ),
       body: SearchableListView<Company>(
-        async: ref.watch(companyListProvider),
+        async: async,
         onRefresh: () => ref.read(companyRepositoryProvider).refresh(),
         hintText: 'Buscar empresa',
         emptyMessage: 'Nenhuma empresa cadastrada.',
@@ -36,10 +44,10 @@ class CompanyListScreen extends ConsumerWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/companies/new'),
-        tooltip: 'Nova empresa',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Nova empresa'),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:signature/signature.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../application/attachment_controller.dart';
 
 /// Tela cheia de captura de assinatura (GUIA-FLUTTER.md §7/§12) — desenha
@@ -17,10 +18,11 @@ class SignaturePadSheet extends ConsumerStatefulWidget {
 }
 
 class _SignaturePadSheetState extends ConsumerState<SignaturePadSheet> {
-  final _controller = SignatureController(
-    penStrokeWidth: 3,
-    penColor: Colors.black,
+  late final SignatureController _controller = SignatureController(
+    penStrokeWidth: 3.4,
+    penColor: BrandColor.ink,
     exportBackgroundColor: Colors.white,
+    onDrawEnd: () => setState(() {}),
   );
   bool _saving = false;
 
@@ -48,14 +50,20 @@ class _SignaturePadSheetState extends ConsumerState<SignaturePadSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final canSave = !_saving && _controller.isNotEmpty;
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: 'Cancelar',
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
         title: const Text('Assinatura do cliente'),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),
             tooltip: 'Limpar',
-            onPressed: () => _controller.clear(),
+            onPressed: () => setState(_controller.clear),
           ),
         ],
       ),
@@ -64,30 +72,63 @@ class _SignaturePadSheetState extends ConsumerState<SignaturePadSheet> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              const Text('Peça para o cliente assinar abaixo.'),
+              const Text(
+                'Peça para o cliente assinar abaixo.',
+                style: TextStyle(
+                  fontFamily: 'Space Grotesk',
+                  fontSize: 13.5,
+                  color: BrandColor.textSecondary,
+                ),
+              ),
               const SizedBox(height: 12),
               Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                    borderRadius: BorderRadius.circular(8),
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border.fromBorderSide(
+                      BorderSide(color: BrandColor.border),
+                    ),
                   ),
-                  child: Signature(
-                    controller: _controller,
-                    backgroundColor: Colors.white,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 24,
+                        right: 24,
+                        bottom: 120,
+                        child: Container(
+                          height: 1,
+                          color: const Color(0xFFE3E5E8),
+                        ),
+                      ),
+                      Signature(
+                        controller: _controller,
+                        backgroundColor: Colors.white,
+                      ),
+                    ],
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              FilledButton(
-                onPressed: _saving ? null : _submit,
-                child: _saving
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Salvar assinatura'),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: canSave ? _submit : null,
+                  child: _saving
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Salvar assinatura'),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'envio enfileirado — funciona offline',
+                style: BrandText.brandOver.copyWith(
+                  letterSpacing: 0.4,
+                  color: BrandColor.textDisabled,
+                ),
               ),
             ],
           ),

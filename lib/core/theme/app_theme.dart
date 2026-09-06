@@ -301,8 +301,16 @@ class AppTheme {
         focusedBorder: inputBorder(BrandColor.ink, 1.5),
         errorBorder: inputBorder(BrandColor.errorBar),
         focusedErrorBorder: inputBorder(BrandColor.errorBar, 1.5),
-        labelStyle: const TextStyle(color: BrandColor.textTertiary),
-        floatingLabelStyle: const TextStyle(color: BrandColor.ink),
+        labelStyle: const TextStyle(
+          fontFamily: _sans,
+          color: BrandColor.textTertiary,
+        ),
+        floatingLabelStyle: const TextStyle(
+          fontFamily: _mono,
+          fontSize: 12,
+          letterSpacing: 0.6,
+          color: BrandColor.ink,
+        ),
         hintStyle: const TextStyle(color: BrandColor.textDisabled),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -369,14 +377,17 @@ class AppTheme {
         side: const BorderSide(color: BrandColor.border),
         backgroundColor: BrandColor.surface,
         selectedColor: BrandColor.ink,
-        labelStyle: const TextStyle(fontFamily: _mono, fontSize: 11),
-        secondaryLabelStyle: const TextStyle(
-          fontFamily: _mono,
-          fontSize: 11,
-          color: Colors.white,
-        ),
         showCheckmark: false,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        labelStyle: WidgetStateTextStyle.resolveWith(
+          (states) => TextStyle(
+            fontFamily: _mono,
+            fontSize: 11,
+            color: states.contains(WidgetState.selected)
+                ? Colors.white
+                : BrandColor.ink,
+          ),
+        ),
       ),
       listTileTheme: const ListTileThemeData(
         iconColor: BrandColor.textTertiary,

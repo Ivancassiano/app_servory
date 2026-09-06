@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -30,8 +29,6 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
-  bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
-
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -58,15 +55,14 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
               const SizedBox(height: 40),
-              if (_isAndroid)
-                const SizedBox(
-                  width: 132,
-                  child: LinearProgressIndicator(
-                    minHeight: 3,
-                    color: BrandColor.blueLight,
-                    backgroundColor: BrandColor.onDarkTrack,
-                  ),
+              const SizedBox(
+                width: 132,
+                child: LinearProgressIndicator(
+                  minHeight: 3,
+                  color: BrandColor.blueLight,
+                  backgroundColor: BrandColor.onDarkTrack,
                 ),
+              ),
               const SizedBox(height: 14),
               Text(
                 'preparando dados do dispositivo',

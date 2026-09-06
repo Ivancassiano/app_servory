@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../../attachments/application/pending_uploads.dart';
 import '../application/service_orders_provider.dart';
@@ -27,9 +29,15 @@ class _ServiceOrderListScreenState
 
   @override
   Widget build(BuildContext context) {
+    final async = ref.watch(serviceOrderListProvider);
+    final total = async.value?.length;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ordens de serviço'),
+      appBar: brandAppBar(
+        title: 'Ordens de serviço',
+        count: total == null
+            ? null
+            : '$total ${total == 1 ? 'ordem' : 'ordens'}',
         actions: [
           IconButton(
             tooltip: 'Tipos de ordem',
@@ -39,7 +47,7 @@ class _ServiceOrderListScreenState
         ],
       ),
       body: SearchableListView<ServiceOrderWithClient>(
-        async: ref.watch(serviceOrderListProvider),
+        async: async,
         onRefresh: () async {
           await ref.read(serviceOrderRepositoryProvider).refresh();
           await drainPendingUploads(ref);
@@ -56,17 +64,17 @@ class _ServiceOrderListScreenState
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             children: [
-              ChoiceChip(
-                label: const Text('Todas'),
+              _StatusChip(
+                label: 'Todas',
                 selected: _status == null,
-                onSelected: (_) => setState(() => _status = null),
+                onTap: () => setState(() => _status = null),
               ),
               for (final entry in _statusLabels.entries) ...[
                 const SizedBox(width: 8),
-                ChoiceChip(
-                  label: Text(entry.value),
+                _StatusChip(
+                  label: entry.value,
                   selected: _status == entry.key,
-                  onSelected: (_) => setState(
+                  onTap: () => setState(
                     () => _status = _status == entry.key ? null : entry.key,
                   ),
                 ),
@@ -83,11 +91,15 @@ class _ServiceOrderListScreenState
               '${order.reason.isNotEmpty ? ' · ${order.reason}' : ''}',
             ),
             trailing: switch (order.syncStatus) {
-              'pending' => const Icon(Icons.cloud_upload_outlined, size: 20),
-              'conflict' => Icon(
+              'pending' => const Icon(
+                Icons.cloud_upload_outlined,
+                size: 17,
+                color: BrandColor.blue,
+              ),
+              'conflict' => const Icon(
                 Icons.warning_amber,
-                size: 20,
-                color: Theme.of(context).colorScheme.error,
+                size: 17,
+                color: BrandColor.errorBar,
               ),
               _ => null,
             },
@@ -95,10 +107,48 @@ class _ServiceOrderListScreenState
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/service-orders/new'),
-        tooltip: 'Nova ordem',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Nova ordem'),
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? BrandColor.ink : BrandColor.surface,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: selected ? BrandColor.ink : BrandColor.border,
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'IBM Plex Mono',
+              fontSize: 11,
+              color: selected ? Colors.white : BrandColor.ink,
+            ),
+          ),
+        ),
       ),
     );
   }

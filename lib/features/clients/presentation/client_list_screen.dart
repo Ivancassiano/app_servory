@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../application/clients_provider.dart';
 
@@ -11,10 +12,17 @@ class ClientListScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(clientListProvider);
+    final total = async.value?.length;
     return Scaffold(
-      appBar: AppBar(title: const Text('Clientes')),
+      appBar: brandAppBar(
+        title: 'Clientes',
+        count: total == null
+            ? null
+            : '$total ${total == 1 ? 'cliente' : 'clientes'}',
+      ),
       body: SearchableListView<LocalClient>(
-        async: ref.watch(clientListProvider),
+        async: async,
         onRefresh: () => ref.read(clientRepositoryProvider).refresh(),
         hintText: 'Buscar cliente',
         emptyMessage: 'Nenhum cliente ainda. Puxe pra baixo para sincronizar.',
@@ -39,10 +47,10 @@ class ClientListScreen extends ConsumerWidget {
           onTap: () => context.push('/clients/${client.id}'),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/clients/new'),
-        tooltip: 'Novo cliente',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Novo cliente'),
       ),
     );
   }

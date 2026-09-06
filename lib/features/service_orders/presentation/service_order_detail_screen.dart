@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/local_file_image.dart';
 import '../../attachments/application/pending_uploads.dart';
 import '../../attachments/application/service_order_attachments_provider.dart';
@@ -300,12 +301,14 @@ class _ServiceOrderDetailScreenState
         : null;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          order == null
-              ? 'Nova ordem'
-              : (clientNameAsync?.value?.name ?? 'Ordem de serviço'),
-        ),
+      appBar: brandAppBar(
+        title: order == null
+            ? 'Nova ordem'
+            : (clientNameAsync?.value?.name ?? 'Ordem de serviço'),
+        count: order == null
+            ? null
+            : (_statusLabels[order.status] ?? order.status),
+        titleSize: 20,
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -321,36 +324,29 @@ class _ServiceOrderDetailScreenState
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (order != null) ...[
-                    Row(
-                      children: [
-                        Chip(
-                          label: Text(
-                            _statusLabels[order.status] ?? order.status,
-                          ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: switch (order.status) {
+                        'open' => OutlinedButton(
+                          onPressed: _saving
+                              ? null
+                              : () => _runTransition('start'),
+                          child: const Text('Iniciar'),
                         ),
-                        const SizedBox(width: 8),
-                        if (order.status == 'open')
-                          OutlinedButton(
-                            onPressed: _saving
-                                ? null
-                                : () => _runTransition('start'),
-                            child: const Text('Iniciar'),
-                          ),
-                        if (order.status == 'in_progress')
-                          OutlinedButton(
-                            onPressed: _saving
-                                ? null
-                                : () => _runTransition('complete'),
-                            child: const Text('Concluir'),
-                          ),
-                        if (order.status == 'completed')
-                          OutlinedButton(
-                            onPressed: _saving
-                                ? null
-                                : () => _runTransition('reopen'),
-                            child: const Text('Reabrir'),
-                          ),
-                      ],
+                        'in_progress' => OutlinedButton(
+                          onPressed: _saving
+                              ? null
+                              : () => _runTransition('complete'),
+                          child: const Text('Concluir'),
+                        ),
+                        'completed' => OutlinedButton(
+                          onPressed: _saving
+                              ? null
+                              : () => _runTransition('reopen'),
+                          child: const Text('Reabrir'),
+                        ),
+                        _ => const SizedBox.shrink(),
+                      },
                     ),
                     const SizedBox(height: 16),
                   ],
@@ -786,10 +782,12 @@ class _SignatureSection extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
           TextButton(
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              builder: (_) => SignaturePadSheet(serviceOrderId: serviceOrderId),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                fullscreenDialog: true,
+                builder: (_) =>
+                    SignaturePadSheet(serviceOrderId: serviceOrderId),
+              ),
             ),
             child: const Text('Substituir'),
           ),
@@ -798,10 +796,11 @@ class _SignatureSection extends ConsumerWidget {
     }
 
     return OutlinedButton.icon(
-      onPressed: () => showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => SignaturePadSheet(serviceOrderId: serviceOrderId),
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          fullscreenDialog: true,
+          builder: (_) => SignaturePadSheet(serviceOrderId: serviceOrderId),
+        ),
       ),
       icon: const Icon(Icons.draw_outlined),
       label: const Text('Coletar assinatura'),
