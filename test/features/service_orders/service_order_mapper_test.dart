@@ -55,4 +55,34 @@ void main() {
       {'client_id': 'c1', 'open': true, 'reason': 'r'},
     );
   });
+
+  test('serviceOrderCreateBody inclui refs e scheduled_for RFC3339', () {
+    final body = serviceOrderCreateBody(
+      clientId: 'c1',
+      serviceOrderTypeId: 't1',
+      companyId: 'co1',
+      assignedUserId: 'u1',
+      scheduledFor: DateTime.utc(2026, 9, 10, 14, 30),
+      open: false,
+      reason: '',
+    );
+    expect(body['service_order_type_id'], 't1');
+    expect(body['company_id'], 'co1');
+    expect(body['assigned_user_id'], 'u1');
+    expect(body['scheduled_for'], '2026-09-10T14:30:00.000Z');
+  });
+
+  test('serviceOrderUpdateBody omite refs nulas (não dá pra limpar via REST)', () {
+    final body = serviceOrderUpdateBody(
+      reason: 'r',
+      diagnosis: '',
+      workPerformed: '',
+      finalCondition: '',
+      notes: '',
+    );
+    expect(body.containsKey('service_order_type_id'), isFalse);
+    expect(body.containsKey('company_id'), isFalse);
+    expect(body.containsKey('assigned_user_id'), isFalse);
+    expect(body.containsKey('scheduled_for'), isFalse);
+  });
 }

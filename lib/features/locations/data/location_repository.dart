@@ -28,6 +28,7 @@ abstract interface class LocationRepository {
     required String contactPerson,
     required String phone,
     required String notes,
+    LocationAddressInput address,
   });
 
   Future<void> update({
@@ -37,6 +38,7 @@ abstract interface class LocationRepository {
     required String contactPerson,
     required String phone,
     required String notes,
+    LocationAddressInput address,
   });
 }
 
@@ -83,6 +85,7 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
     required String contactPerson,
     required String phone,
     required String notes,
+    LocationAddressInput address = LocationAddressInput.empty,
   }) async {
     final body = locationCreateBody(
       clientId: clientId,
@@ -91,6 +94,7 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
       contactPerson: contactPerson,
       phone: phone,
       notes: notes,
+      address: address,
     );
     if (online) {
       try {
@@ -116,6 +120,13 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
               clientId: clientId,
               parentLocationId: Value(parentLocationId),
               name: name,
+              postalCode: Value(address.postalCode),
+              street: Value(address.street),
+              number: Value(address.number),
+              complement: Value(address.complement),
+              district: Value(address.district),
+              city: Value(address.city),
+              state: Value(address.state),
               contactPerson: Value(contactPerson),
               phone: Value(phone),
               notes: Value(notes),
@@ -143,12 +154,14 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
     required String contactPerson,
     required String phone,
     required String notes,
+    LocationAddressInput address = LocationAddressInput.empty,
   }) async {
     final body = locationUpdateBody(
       name: name,
       contactPerson: contactPerson,
       phone: phone,
       notes: notes,
+      address: address,
     );
     if (online) {
       try {
@@ -173,6 +186,13 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
       await (db.update(db.localLocations)..where((t) => t.id.equals(id))).write(
         LocalLocationsCompanion(
           name: Value(name),
+          postalCode: Value(address.postalCode),
+          street: Value(address.street),
+          number: Value(address.number),
+          complement: Value(address.complement),
+          district: Value(address.district),
+          city: Value(address.city),
+          state: Value(address.state),
           contactPerson: Value(contactPerson),
           phone: Value(phone),
           notes: Value(notes),
@@ -225,6 +245,7 @@ class RemoteLocationRepository implements LocationRepository {
     required String contactPerson,
     required String phone,
     required String notes,
+    LocationAddressInput address = LocationAddressInput.empty,
   }) async {
     final loc = await _collection.create(
       locationCreateBody(
@@ -234,6 +255,7 @@ class RemoteLocationRepository implements LocationRepository {
         contactPerson: contactPerson,
         phone: phone,
         notes: notes,
+        address: address,
       ),
     );
     return loc.id;
@@ -247,6 +269,7 @@ class RemoteLocationRepository implements LocationRepository {
     required String contactPerson,
     required String phone,
     required String notes,
+    LocationAddressInput address = LocationAddressInput.empty,
   }) async {
     await _collection.update(id, {
       ...locationUpdateBody(
@@ -254,6 +277,7 @@ class RemoteLocationRepository implements LocationRepository {
         contactPerson: contactPerson,
         phone: phone,
         notes: notes,
+        address: address,
       ),
       'version': ?baseVersion,
     });

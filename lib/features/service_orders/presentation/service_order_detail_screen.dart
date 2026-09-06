@@ -12,6 +12,7 @@ import '../../attachments/presentation/signature_pad_sheet.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../equipments/application/equipments_provider.dart';
 import '../../locations/application/locations_provider.dart';
+import '../../reference/data/reference_repository.dart';
 import '../application/service_order_edit_controller.dart';
 import '../application/service_order_part_controller.dart';
 import '../application/service_orders_provider.dart';
@@ -49,6 +50,10 @@ class _ServiceOrderDetailScreenState
   String? _clientId;
   String? _locationId;
   String? _equipmentId;
+  String? _serviceOrderTypeId;
+  String? _companyId;
+  String? _assignedUserId;
+  DateTime? _scheduledFor;
   bool _openNow = false;
   bool _seeded = false;
   bool _saving = false;
@@ -57,6 +62,19 @@ class _ServiceOrderDetailScreenState
   /// Atualizado a cada rebuild (não só na 1ª vez, ao contrário do
   /// `_seedFrom`) — as ações nomeadas mudam a `version` e precisam da atual.
   int? _currentVersion;
+
+  @override
+  void initState() {
+    super.initState();
+    // Dados de referência REST-only: melhor esforço, pra popular os seletores.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final repo = ref.read(referenceDataRepositoryProvider);
+      for (final k in ReferenceKind.values) {
+        repo.refresh(k).ignore();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -73,6 +91,10 @@ class _ServiceOrderDetailScreenState
     _clientId = order.clientId;
     _locationId = order.locationId;
     _equipmentId = order.equipmentId;
+    _serviceOrderTypeId = order.serviceOrderTypeId;
+    _companyId = order.companyId;
+    _assignedUserId = order.assignedUserId;
+    _scheduledFor = order.scheduledFor;
     _reasonController.text = order.reason;
     _diagnosisController.text = order.diagnosis;
     _workPerformedController.text = order.workPerformed;
@@ -98,6 +120,10 @@ class _ServiceOrderDetailScreenState
           clientId: _clientId!,
           locationId: _locationId,
           equipmentId: _equipmentId,
+          serviceOrderTypeId: _serviceOrderTypeId,
+          companyId: _companyId,
+          assignedUserId: _assignedUserId,
+          scheduledFor: _scheduledFor,
           open: _openNow,
           reason: _reasonController.text.trim(),
         );
@@ -110,6 +136,10 @@ class _ServiceOrderDetailScreenState
           baseVersion: _currentVersion,
           locationId: _locationId,
           equipmentId: _equipmentId,
+          serviceOrderTypeId: _serviceOrderTypeId,
+          companyId: _companyId,
+          assignedUserId: _assignedUserId,
+          scheduledFor: _scheduledFor,
           reason: _reasonController.text.trim(),
           diagnosis: _diagnosisController.text.trim(),
           workPerformed: _workPerformedController.text.trim(),
@@ -189,6 +219,47 @@ class _ServiceOrderDetailScreenState
       );
     }
     return _buildForm(context, order: null);
+  }
+
+  /// Seletor de um dado de referência REST-only. Se o valor selecionado ainda
+  /// não estiver na lista carregada (offline sem cache, ou lista chegando),
+  /// mantém um item-fantasma pra não perder a seleção nem quebrar o dropdown.
+  Widget _referenceDropdown({
+    required ReferenceKind kind,
+    required String label,
+    required String? value,
+    required ValueChanged<String?> onChanged,
+  }) {
+    final itemsAsync = ref.watch(referenceListProvider(kind));
+    final items = itemsAsync.value ?? const <ReferenceItem>[];
+    final known = items.any((i) => i.id == value);
+    return DropdownButtonFormField<String?>(
+      initialValue: value,
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: label,
+        helperText: itemsAsync.hasError
+            ? 'Não foi possível carregar a lista.'
+            : null,
+      ),
+      items: [
+        const DropdownMenuItem<String?>(value: null, child: Text('—')),
+        if (value != null && !known)
+          DropdownMenuItem<String?>(
+            value: value,
+            child: const Text('(carregando…)'),
+          ),
+        for (final i in items)
+          DropdownMenuItem<String?>(
+            value: i.id,
+            child: Text(
+              i.subtitle.isEmpty ? i.label : '${i.label} · ${i.subtitle}',
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+      ],
+      onChanged: onChanged,
+    );
   }
 
   Widget _buildForm(BuildContext context, {required LocalServiceOrder? order}) {
@@ -355,6 +426,33 @@ class _ServiceOrderDetailScreenState
                         : (v) => setState(() => _equipmentId = v),
                   ),
                   const SizedBox(height: 16),
+                  _referenceDropdown(
+                    kind: ReferenceKind.serviceOrderType,
+                    label: 'Tipo de ordem (opcional)',
+                    value: _serviceOrderTypeId,
+                    onChanged: (v) =>
+                        setState(() => _serviceOrderTypeId = v),
+                  ),
+                  const SizedBox(height: 16),
+                  _referenceDropdown(
+                    kind: ReferenceKind.company,
+                    label: 'Empresa emitente (opcional)',
+                    value: _companyId,
+                    onChanged: (v) => setState(() => _companyId = v),
+                  ),
+                  const SizedBox(height: 16),
+                  _referenceDropdown(
+                    kind: ReferenceKind.orgUser,
+                    label: 'Técnico responsável (opcional)',
+                    value: _assignedUserId,
+                    onChanged: (v) => setState(() => _assignedUserId = v),
+                  ),
+                  const SizedBox(height: 16),
+                  _ScheduledForField(
+                    value: _scheduledFor,
+                    onChanged: (v) => setState(() => _scheduledFor = v),
+                  ),
+                  const SizedBox(height: 16),
                   TextFormField(
                     controller: _reasonController,
                     decoration: const InputDecoration(labelText: 'Motivo'),
@@ -468,6 +566,65 @@ class _ServiceOrderDetailScreenState
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Agendamento (`scheduled_for`). Data + hora; limpar zera localmente, mas o
+/// backend não aceita *remover* o agendamento via REST/sync — só trocá-lo.
+class _ScheduledForField extends StatelessWidget {
+  const _ScheduledForField({required this.value, required this.onChanged});
+
+  final DateTime? value;
+  final ValueChanged<DateTime?> onChanged;
+
+  Future<void> _pick(BuildContext context) async {
+    final now = DateTime.now();
+    final base = value ?? now;
+    final date = await showDatePicker(
+      context: context,
+      initialDate: base,
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 5),
+    );
+    if (date == null || !context.mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(base),
+    );
+    if (time == null) return;
+    onChanged(
+      DateTime(date.year, date.month, date.day, time.hour, time.minute),
+    );
+  }
+
+  String _fmt(DateTime d) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(d.day)}/${two(d.month)}/${d.year} ${two(d.hour)}:${two(d.minute)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InputDecorator(
+      decoration: const InputDecoration(
+        labelText: 'Agendamento (opcional)',
+        border: OutlineInputBorder(),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text(value == null ? '—' : _fmt(value!))),
+          TextButton(
+            onPressed: () => _pick(context),
+            child: Text(value == null ? 'Definir' : 'Alterar'),
+          ),
+          if (value != null)
+            IconButton(
+              tooltip: 'Limpar',
+              icon: const Icon(Icons.clear),
+              onPressed: () => onChanged(null),
+            ),
+        ],
       ),
     );
   }

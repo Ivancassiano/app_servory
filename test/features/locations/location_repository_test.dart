@@ -29,6 +29,15 @@ void main() {
         'contact_person': '',
         'phone': '',
         'notes': '',
+        'address': {
+          'postal_code': '',
+          'street': '',
+          'number': '',
+          'complement': '',
+          'district': '',
+          'city': '',
+          'state': '',
+        },
       },
     );
     expect(
@@ -42,6 +51,31 @@ void main() {
       )['parent_location_id'],
       'p1',
     );
+  });
+
+  test('locationUpdateBody aninha o endereço sob address', () {
+    final body = locationUpdateBody(
+      name: 'Filial',
+      contactPerson: '',
+      phone: '',
+      notes: '',
+      address: const LocationAddressInput(
+        postalCode: '01310-100',
+        street: 'Av. Paulista',
+        number: '1000',
+        city: 'São Paulo',
+        state: 'SP',
+      ),
+    );
+    expect(body['address'], {
+      'postal_code': '01310-100',
+      'street': 'Av. Paulista',
+      'number': '1000',
+      'complement': '',
+      'district': '',
+      'city': 'São Paulo',
+      'state': 'SP',
+    });
   });
 
   test('web: create faz POST /v1/locations', () async {

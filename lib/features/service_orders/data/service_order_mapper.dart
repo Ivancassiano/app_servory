@@ -66,23 +66,43 @@ LocalServiceOrderPart servicePartFromApiJson(
 
 // --- corpos de escrita ------------------------------------------------------
 
+/// `scheduled_for` no formato RFC3339 UTC (o backend faz `time.Parse`).
+String? _rfc3339(DateTime? d) => d?.toUtc().toIso8601String();
+
 Map<String, dynamic> serviceOrderCreateBody({
   required String clientId,
   String? locationId,
   String? equipmentId,
+  String? serviceOrderTypeId,
+  String? companyId,
+  String? assignedUserId,
+  DateTime? scheduledFor,
   required bool open,
   required String reason,
 }) => {
   'client_id': clientId,
   'location_id': ?locationId,
   'equipment_id': ?equipmentId,
+  'service_order_type_id': ?serviceOrderTypeId,
+  'company_id': ?companyId,
+  'assigned_user_id': ?assignedUserId,
+  'scheduled_for': ?_rfc3339(scheduledFor),
   'open': open,
   'reason': reason,
 };
 
+/// Os campos de referência (`service_order_type_id`, `company_id`,
+/// `assigned_user_id`) e `scheduled_for` só são enviados quando não-nulos: o
+/// backend trata string vazia como "não mexer", então o formulário não
+/// consegue *limpar* um valor já gravado — só trocá-lo (limitação REST/sync
+/// conhecida, documentada nas sobras da Fatia 2).
 Map<String, dynamic> serviceOrderUpdateBody({
   String? locationId,
   String? equipmentId,
+  String? serviceOrderTypeId,
+  String? companyId,
+  String? assignedUserId,
+  DateTime? scheduledFor,
   required String reason,
   required String diagnosis,
   required String workPerformed,
@@ -91,6 +111,10 @@ Map<String, dynamic> serviceOrderUpdateBody({
 }) => {
   'location_id': ?locationId,
   'equipment_id': ?equipmentId,
+  'service_order_type_id': ?serviceOrderTypeId,
+  'company_id': ?companyId,
+  'assigned_user_id': ?assignedUserId,
+  'scheduled_for': ?_rfc3339(scheduledFor),
   'reason': reason,
   'diagnosis': diagnosis,
   'work_performed': workPerformed,

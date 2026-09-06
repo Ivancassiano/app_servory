@@ -193,6 +193,24 @@ class LocalEquipmentTypes extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Dados de referência **REST-only** que não entram no protocolo de sync
+/// (GUIA-FLUTTER.md §8.4): tipos de ordem de serviço, empresas emitentes e
+/// membros da organização. Guardados numa tabela única, chaveada por `kind`,
+/// só para os seletores do formulário de ordem funcionarem offline (precisa
+/// ter ficado online ao menos uma vez). `label` é o texto exibido; `subtitle`
+/// é o complemento (ex.: e-mail do usuário). `cachedAt` marca a última busca.
+class LocalReferenceData extends Table {
+  TextColumn get kind => text()(); // 'service_order_type' | 'company' | 'org_user'
+  TextColumn get id => text()();
+  TextColumn get organizationId => text().named('organization_id')();
+  TextColumn get label => text()();
+  TextColumn get subtitle => text().withDefault(const Constant(''))();
+  DateTimeColumn get cachedAt => dateTime().named('cached_at')();
+
+  @override
+  Set<Column> get primaryKey => {kind, id};
+}
+
 /// Linha única por organização: cursor do último `pull` bem-sucedido.
 class LocalSyncState extends Table {
   TextColumn get organizationId => text().named('organization_id')();
@@ -234,6 +252,7 @@ class UploadQueue extends Table {
     LocalServiceOrders,
     LocalServiceOrderParts,
     LocalEquipmentTypes,
+    LocalReferenceData,
     SyncOutbox,
     LocalSyncState,
     UploadQueue,
@@ -252,7 +271,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -267,6 +286,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 4) {
         await m.createTable(localEquipmentTypes);
+      }
+      if (from < 5) {
+        await m.createTable(localReferenceData);
       }
     },
   );

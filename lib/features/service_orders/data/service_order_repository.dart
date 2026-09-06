@@ -27,6 +27,10 @@ abstract interface class ServiceOrderRepository {
     required String clientId,
     String? locationId,
     String? equipmentId,
+    String? serviceOrderTypeId,
+    String? companyId,
+    String? assignedUserId,
+    DateTime? scheduledFor,
     required bool open,
     required String reason,
   });
@@ -36,6 +40,10 @@ abstract interface class ServiceOrderRepository {
     required int? baseVersion,
     String? locationId,
     String? equipmentId,
+    String? serviceOrderTypeId,
+    String? companyId,
+    String? assignedUserId,
+    DateTime? scheduledFor,
     required String reason,
     required String diagnosis,
     required String workPerformed,
@@ -136,6 +144,10 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     required String clientId,
     String? locationId,
     String? equipmentId,
+    String? serviceOrderTypeId,
+    String? companyId,
+    String? assignedUserId,
+    DateTime? scheduledFor,
     required bool open,
     required String reason,
   }) async {
@@ -143,6 +155,10 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
       clientId: clientId,
       locationId: locationId,
       equipmentId: equipmentId,
+      serviceOrderTypeId: serviceOrderTypeId,
+      companyId: companyId,
+      assignedUserId: assignedUserId,
+      scheduledFor: scheduledFor,
       open: open,
       reason: reason,
     );
@@ -170,6 +186,10 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
               clientId: clientId,
               locationId: Value(locationId),
               equipmentId: Value(equipmentId),
+              serviceOrderTypeId: Value(serviceOrderTypeId),
+              companyId: Value(companyId),
+              assignedUserId: Value(assignedUserId),
+              scheduledFor: Value(scheduledFor),
               status: Value(open ? 'open' : 'draft'),
               reason: Value(reason),
               localUpdatedAt: DateTime.now(),
@@ -194,6 +214,10 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     required int? baseVersion,
     String? locationId,
     String? equipmentId,
+    String? serviceOrderTypeId,
+    String? companyId,
+    String? assignedUserId,
+    DateTime? scheduledFor,
     required String reason,
     required String diagnosis,
     required String workPerformed,
@@ -203,6 +227,10 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     final body = serviceOrderUpdateBody(
       locationId: locationId,
       equipmentId: equipmentId,
+      serviceOrderTypeId: serviceOrderTypeId,
+      companyId: companyId,
+      assignedUserId: assignedUserId,
+      scheduledFor: scheduledFor,
       reason: reason,
       diagnosis: diagnosis,
       workPerformed: workPerformed,
@@ -237,6 +265,18 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
               : const Value.absent(),
           equipmentId: equipmentId != null
               ? Value(equipmentId)
+              : const Value.absent(),
+          serviceOrderTypeId: serviceOrderTypeId != null
+              ? Value(serviceOrderTypeId)
+              : const Value.absent(),
+          companyId: companyId != null
+              ? Value(companyId)
+              : const Value.absent(),
+          assignedUserId: assignedUserId != null
+              ? Value(assignedUserId)
+              : const Value.absent(),
+          scheduledFor: scheduledFor != null
+              ? Value(scheduledFor)
               : const Value.absent(),
           reason: Value(reason),
           diagnosis: Value(diagnosis),
@@ -546,6 +586,10 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
     required String clientId,
     String? locationId,
     String? equipmentId,
+    String? serviceOrderTypeId,
+    String? companyId,
+    String? assignedUserId,
+    DateTime? scheduledFor,
     required bool open,
     required String reason,
   }) async {
@@ -554,6 +598,10 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
         clientId: clientId,
         locationId: locationId,
         equipmentId: equipmentId,
+        serviceOrderTypeId: serviceOrderTypeId,
+        companyId: companyId,
+        assignedUserId: assignedUserId,
+        scheduledFor: scheduledFor,
         open: open,
         reason: reason,
       ),
@@ -567,6 +615,10 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
     required int? baseVersion,
     String? locationId,
     String? equipmentId,
+    String? serviceOrderTypeId,
+    String? companyId,
+    String? assignedUserId,
+    DateTime? scheduledFor,
     required String reason,
     required String diagnosis,
     required String workPerformed,
@@ -577,6 +629,10 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
       ...serviceOrderUpdateBody(
         locationId: locationId,
         equipmentId: equipmentId,
+        serviceOrderTypeId: serviceOrderTypeId,
+        companyId: companyId,
+        assignedUserId: assignedUserId,
+        scheduledFor: scheduledFor,
         reason: reason,
         diagnosis: diagnosis,
         workPerformed: workPerformed,

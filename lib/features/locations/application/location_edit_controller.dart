@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/location_mapper.dart';
 import '../data/location_repository.dart';
 
 /// Fachada fina — a lógica online-first / offline vive no
@@ -15,6 +16,7 @@ class LocationEditController {
     required String contactPerson,
     required String phone,
     required String notes,
+    LocationAddressInput address = LocationAddressInput.empty,
   }) => _ref.read(locationRepositoryProvider).create(
     clientId: clientId,
     parentLocationId: parentLocationId,
@@ -22,6 +24,7 @@ class LocationEditController {
     contactPerson: contactPerson,
     phone: phone,
     notes: notes,
+    address: address,
   );
 
   Future<void> update({
@@ -31,6 +34,7 @@ class LocationEditController {
     required String contactPerson,
     required String phone,
     required String notes,
+    LocationAddressInput address = LocationAddressInput.empty,
   }) => _ref.read(locationRepositoryProvider).update(
     id: locationId,
     baseVersion: baseVersion,
@@ -38,6 +42,7 @@ class LocationEditController {
     contactPerson: contactPerson,
     phone: phone,
     notes: notes,
+    address: address,
   );
 }
 

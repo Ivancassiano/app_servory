@@ -6287,6 +6287,417 @@ class LocalEquipmentTypesCompanion extends UpdateCompanion<LocalEquipmentType> {
   }
 }
 
+class $LocalReferenceDataTable extends LocalReferenceData
+    with TableInfo<$LocalReferenceDataTable, LocalReferenceDataData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalReferenceDataTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _subtitleMeta = const VerificationMeta(
+    'subtitle',
+  );
+  @override
+  late final GeneratedColumn<String> subtitle = GeneratedColumn<String>(
+    'subtitle',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    kind,
+    id,
+    organizationId,
+    label,
+    subtitle,
+    cachedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_reference_data';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalReferenceDataData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_labelMeta);
+    }
+    if (data.containsKey('subtitle')) {
+      context.handle(
+        _subtitleMeta,
+        subtitle.isAcceptableOrUnknown(data['subtitle']!, _subtitleMeta),
+      );
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {kind, id};
+  @override
+  LocalReferenceDataData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalReferenceDataData(
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      )!,
+      subtitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}subtitle'],
+      )!,
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalReferenceDataTable createAlias(String alias) {
+    return $LocalReferenceDataTable(attachedDatabase, alias);
+  }
+}
+
+class LocalReferenceDataData extends DataClass
+    implements Insertable<LocalReferenceDataData> {
+  final String kind;
+  final String id;
+  final String organizationId;
+  final String label;
+  final String subtitle;
+  final DateTime cachedAt;
+  const LocalReferenceDataData({
+    required this.kind,
+    required this.id,
+    required this.organizationId,
+    required this.label,
+    required this.subtitle,
+    required this.cachedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['kind'] = Variable<String>(kind);
+    map['id'] = Variable<String>(id);
+    map['organization_id'] = Variable<String>(organizationId);
+    map['label'] = Variable<String>(label);
+    map['subtitle'] = Variable<String>(subtitle);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  LocalReferenceDataCompanion toCompanion(bool nullToAbsent) {
+    return LocalReferenceDataCompanion(
+      kind: Value(kind),
+      id: Value(id),
+      organizationId: Value(organizationId),
+      label: Value(label),
+      subtitle: Value(subtitle),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory LocalReferenceDataData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalReferenceDataData(
+      kind: serializer.fromJson<String>(json['kind']),
+      id: serializer.fromJson<String>(json['id']),
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      label: serializer.fromJson<String>(json['label']),
+      subtitle: serializer.fromJson<String>(json['subtitle']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'kind': serializer.toJson<String>(kind),
+      'id': serializer.toJson<String>(id),
+      'organizationId': serializer.toJson<String>(organizationId),
+      'label': serializer.toJson<String>(label),
+      'subtitle': serializer.toJson<String>(subtitle),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  LocalReferenceDataData copyWith({
+    String? kind,
+    String? id,
+    String? organizationId,
+    String? label,
+    String? subtitle,
+    DateTime? cachedAt,
+  }) => LocalReferenceDataData(
+    kind: kind ?? this.kind,
+    id: id ?? this.id,
+    organizationId: organizationId ?? this.organizationId,
+    label: label ?? this.label,
+    subtitle: subtitle ?? this.subtitle,
+    cachedAt: cachedAt ?? this.cachedAt,
+  );
+  LocalReferenceDataData copyWithCompanion(LocalReferenceDataCompanion data) {
+    return LocalReferenceDataData(
+      kind: data.kind.present ? data.kind.value : this.kind,
+      id: data.id.present ? data.id.value : this.id,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      label: data.label.present ? data.label.value : this.label,
+      subtitle: data.subtitle.present ? data.subtitle.value : this.subtitle,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalReferenceDataData(')
+          ..write('kind: $kind, ')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('label: $label, ')
+          ..write('subtitle: $subtitle, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(kind, id, organizationId, label, subtitle, cachedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalReferenceDataData &&
+          other.kind == this.kind &&
+          other.id == this.id &&
+          other.organizationId == this.organizationId &&
+          other.label == this.label &&
+          other.subtitle == this.subtitle &&
+          other.cachedAt == this.cachedAt);
+}
+
+class LocalReferenceDataCompanion
+    extends UpdateCompanion<LocalReferenceDataData> {
+  final Value<String> kind;
+  final Value<String> id;
+  final Value<String> organizationId;
+  final Value<String> label;
+  final Value<String> subtitle;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const LocalReferenceDataCompanion({
+    this.kind = const Value.absent(),
+    this.id = const Value.absent(),
+    this.organizationId = const Value.absent(),
+    this.label = const Value.absent(),
+    this.subtitle = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalReferenceDataCompanion.insert({
+    required String kind,
+    required String id,
+    required String organizationId,
+    required String label,
+    this.subtitle = const Value.absent(),
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  }) : kind = Value(kind),
+       id = Value(id),
+       organizationId = Value(organizationId),
+       label = Value(label),
+       cachedAt = Value(cachedAt);
+  static Insertable<LocalReferenceDataData> custom({
+    Expression<String>? kind,
+    Expression<String>? id,
+    Expression<String>? organizationId,
+    Expression<String>? label,
+    Expression<String>? subtitle,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (kind != null) 'kind': kind,
+      if (id != null) 'id': id,
+      if (organizationId != null) 'organization_id': organizationId,
+      if (label != null) 'label': label,
+      if (subtitle != null) 'subtitle': subtitle,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalReferenceDataCompanion copyWith({
+    Value<String>? kind,
+    Value<String>? id,
+    Value<String>? organizationId,
+    Value<String>? label,
+    Value<String>? subtitle,
+    Value<DateTime>? cachedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalReferenceDataCompanion(
+      kind: kind ?? this.kind,
+      id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
+      label: label ?? this.label,
+      subtitle: subtitle ?? this.subtitle,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (subtitle.present) {
+      map['subtitle'] = Variable<String>(subtitle.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalReferenceDataCompanion(')
+          ..write('kind: $kind, ')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('label: $label, ')
+          ..write('subtitle: $subtitle, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncOutboxTable extends SyncOutbox
     with TableInfo<$SyncOutboxTable, SyncOutboxData> {
   @override
@@ -7824,6 +8235,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LocalServiceOrderPartsTable(this);
   late final $LocalEquipmentTypesTable localEquipmentTypes =
       $LocalEquipmentTypesTable(this);
+  late final $LocalReferenceDataTable localReferenceData =
+      $LocalReferenceDataTable(this);
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $LocalSyncStateTable localSyncState = $LocalSyncStateTable(this);
   late final $UploadQueueTable uploadQueue = $UploadQueueTable(this);
@@ -7838,6 +8251,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localServiceOrders,
     localServiceOrderParts,
     localEquipmentTypes,
+    localReferenceData,
     syncOutbox,
     localSyncState,
     uploadQueue,
@@ -10811,6 +11225,251 @@ typedef $$LocalEquipmentTypesTableProcessedTableManager =
       LocalEquipmentType,
       PrefetchHooks Function()
     >;
+typedef $$LocalReferenceDataTableCreateCompanionBuilder =
+    LocalReferenceDataCompanion Function({
+      required String kind,
+      required String id,
+      required String organizationId,
+      required String label,
+      Value<String> subtitle,
+      required DateTime cachedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalReferenceDataTableUpdateCompanionBuilder =
+    LocalReferenceDataCompanion Function({
+      Value<String> kind,
+      Value<String> id,
+      Value<String> organizationId,
+      Value<String> label,
+      Value<String> subtitle,
+      Value<DateTime> cachedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalReferenceDataTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalReferenceDataTable> {
+  $$LocalReferenceDataTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subtitle => $composableBuilder(
+    column: $table.subtitle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalReferenceDataTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalReferenceDataTable> {
+  $$LocalReferenceDataTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get subtitle => $composableBuilder(
+    column: $table.subtitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalReferenceDataTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalReferenceDataTable> {
+  $$LocalReferenceDataTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<String> get subtitle =>
+      $composableBuilder(column: $table.subtitle, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$LocalReferenceDataTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalReferenceDataTable,
+          LocalReferenceDataData,
+          $$LocalReferenceDataTableFilterComposer,
+          $$LocalReferenceDataTableOrderingComposer,
+          $$LocalReferenceDataTableAnnotationComposer,
+          $$LocalReferenceDataTableCreateCompanionBuilder,
+          $$LocalReferenceDataTableUpdateCompanionBuilder,
+          (
+            LocalReferenceDataData,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalReferenceDataTable,
+              LocalReferenceDataData
+            >,
+          ),
+          LocalReferenceDataData,
+          PrefetchHooks Function()
+        > {
+  $$LocalReferenceDataTableTableManager(
+    _$AppDatabase db,
+    $LocalReferenceDataTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalReferenceDataTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalReferenceDataTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalReferenceDataTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> kind = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> organizationId = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<String> subtitle = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalReferenceDataCompanion(
+                kind: kind,
+                id: id,
+                organizationId: organizationId,
+                label: label,
+                subtitle: subtitle,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String kind,
+                required String id,
+                required String organizationId,
+                required String label,
+                Value<String> subtitle = const Value.absent(),
+                required DateTime cachedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalReferenceDataCompanion.insert(
+                kind: kind,
+                id: id,
+                organizationId: organizationId,
+                label: label,
+                subtitle: subtitle,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalReferenceDataTable, LocalReferenceDataData>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalReferenceDataTable,
+                    LocalReferenceDataData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalReferenceDataTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalReferenceDataTable,
+      LocalReferenceDataData,
+      $$LocalReferenceDataTableFilterComposer,
+      $$LocalReferenceDataTableOrderingComposer,
+      $$LocalReferenceDataTableAnnotationComposer,
+      $$LocalReferenceDataTableCreateCompanionBuilder,
+      $$LocalReferenceDataTableUpdateCompanionBuilder,
+      (
+        LocalReferenceDataData,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalReferenceDataTable,
+          LocalReferenceDataData
+        >,
+      ),
+      LocalReferenceDataData,
+      PrefetchHooks Function()
+    >;
 typedef $$SyncOutboxTableCreateCompanionBuilder =
     SyncOutboxCompanion Function({
       required String operationId,
@@ -11633,6 +12292,8 @@ class $AppDatabaseManager {
       );
   $$LocalEquipmentTypesTableTableManager get localEquipmentTypes =>
       $$LocalEquipmentTypesTableTableManager(_db, _db.localEquipmentTypes);
+  $$LocalReferenceDataTableTableManager get localReferenceData =>
+      $$LocalReferenceDataTableTableManager(_db, _db.localReferenceData);
   $$SyncOutboxTableTableManager get syncOutbox =>
       $$SyncOutboxTableTableManager(_db, _db.syncOutbox);
   $$LocalSyncStateTableTableManager get localSyncState =>
