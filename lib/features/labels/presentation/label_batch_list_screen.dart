@@ -20,7 +20,16 @@ class LabelBatchListScreen extends ConsumerWidget {
     final async = ref.watch(labelBatchListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Etiquetas')),
+      appBar: AppBar(
+        title: const Text('Etiquetas'),
+        actions: [
+          IconButton(
+            tooltip: 'Modelos de etiqueta',
+            icon: const Icon(Icons.description_outlined),
+            onPressed: () => context.push('/label-templates'),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(labelBatchRepositoryProvider).refresh(),
         child: async.when(

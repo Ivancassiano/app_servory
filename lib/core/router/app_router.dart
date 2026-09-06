@@ -13,6 +13,8 @@ import '../../features/equipments/presentation/equipment_detail_screen.dart';
 import '../../features/equipments/presentation/equipment_list_screen.dart';
 import '../../features/labels/presentation/label_batch_detail_screen.dart';
 import '../../features/labels/presentation/label_batch_list_screen.dart';
+import '../../features/labels/presentation/label_template_edit_screen.dart';
+import '../../features/labels/presentation/label_template_list_screen.dart';
 import '../../features/locations/presentation/location_detail_screen.dart';
 import '../../features/locations/presentation/location_list_screen.dart';
 import '../../features/me/presentation/home_screen.dart';
@@ -117,6 +119,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: ':id',
             builder: (_, state) =>
                 LabelBatchDetailScreen(batchId: state.pathParameters['id']!),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/label-templates',
+        builder: (_, _) => const LabelTemplateListScreen(),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, state) => LabelTemplateEditScreen(
+              templateId: state.pathParameters['id']!,
+            ),
           ),
         ],
       ),

@@ -7,6 +7,7 @@ import 'package:printing/printing.dart';
 import '../../../core/db/app_database.dart';
 import '../../reference/data/reference_repository.dart';
 import '../data/label_batch_repository.dart';
+import '../data/label_template_repository.dart';
 
 final _batchByIdProvider = Provider.family<LocalQrBatch?, String>((ref, id) {
   final list = ref.watch(labelBatchListProvider).value ?? const [];
@@ -42,13 +43,14 @@ class _LabelBatchDetailScreenState
   @override
   void initState() {
     super.initState();
-    // Empresas emissoras para o seletor do PDF (dado de referência REST).
+    // Empresas emissoras e modelos para o seletor de texto do PDF.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref
             .read(referenceDataRepositoryProvider)
             .refresh(ReferenceKind.company)
             .ignore();
+        ref.read(labelTemplateRepositoryProvider).refresh().ignore();
       }
     });
   }
@@ -205,10 +207,16 @@ class _LabelBatchDetailScreenState
   );
 
   Future<void> _openPdfFlow(LocalQrBatch batch) async {
-    final companies = ref.read(referenceListProvider(ReferenceKind.company)).value ??
+    final companies =
+        ref.read(referenceListProvider(ReferenceKind.company)).value ??
         const <ReferenceItem>[];
+    final templates =
+        ref.read(labelTemplateListProvider).value ??
+        const <LabelTemplate>[];
     var format = 'full';
-    String? companyId = companies.isNotEmpty ? companies.first.id : null;
+    // `co:<id>` / `tp:<id>` / null — o texto da etiqueta vem da empresa OU
+    // de um modelo (mutuamente exclusivos, ADR-0016/0017).
+    String? source;
 
     final go = await showModalBottomSheet<bool>(
       context: context,
@@ -251,16 +259,31 @@ class _LabelBatchDetailScreenState
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String?>(
-                initialValue: companyId,
+                initialValue: source,
+                isExpanded: true,
                 decoration: const InputDecoration(
-                  labelText: 'Empresa emissora (opcional)',
+                  labelText: 'Texto da etiqueta (opcional)',
                 ),
                 items: [
                   const DropdownMenuItem(value: null, child: Text('—')),
                   for (final c in companies)
-                    DropdownMenuItem(value: c.id, child: Text(c.label)),
+                    DropdownMenuItem(
+                      value: 'co:${c.id}',
+                      child: Text(
+                        'Empresa: ${c.label}',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  for (final t in templates)
+                    DropdownMenuItem(
+                      value: 'tp:${t.id}',
+                      child: Text(
+                        'Modelo: ${t.name}',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                 ],
-                onChanged: (v) => setSheet(() => companyId = v),
+                onChanged: (v) => setSheet(() => source = v),
               ),
               const SizedBox(height: 24),
               FilledButton(
@@ -279,7 +302,12 @@ class _LabelBatchDetailScreenState
         builder: (_) => _LabelSheetPreview(
           batchId: batch.id,
           format: format,
-          companyId: companyId,
+          companyId: source != null && source!.startsWith('co:')
+              ? source!.substring(3)
+              : null,
+          templateId: source != null && source!.startsWith('tp:')
+              ? source!.substring(3)
+              : null,
         ),
       ),
     );
@@ -325,11 +353,13 @@ class _LabelSheetPreview extends ConsumerStatefulWidget {
     required this.batchId,
     required this.format,
     required this.companyId,
+    required this.templateId,
   });
 
   final String batchId;
   final String format;
   final String? companyId;
+  final String? templateId;
 
   @override
   ConsumerState<_LabelSheetPreview> createState() => _LabelSheetPreviewState();
@@ -345,6 +375,7 @@ class _LabelSheetPreviewState extends ConsumerState<_LabelSheetPreview> {
           widget.batchId,
           format: widget.format,
           companyId: widget.companyId,
+          templateId: widget.templateId,
         );
   }
 
