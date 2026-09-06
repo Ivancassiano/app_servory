@@ -26,7 +26,7 @@ class LabelBatchRepository {
   AppDatabase get _db => _ref.read(appDatabaseProvider);
 
   final _webCtrl = StreamController<List<LocalQrBatch>>.broadcast();
-  List<LocalQrBatch> _webCache = const [];
+  List<LocalQrBatch>? _webCache;
 
   void dispose() {
     if (kIsWeb) _webCtrl.close();
@@ -35,7 +35,9 @@ class LabelBatchRepository {
   Stream<List<LocalQrBatch>> watchList() {
     if (kIsWeb) {
       scheduleMicrotask(() {
-        _webCtrl.add(_webCache);
+        // Só re-emite o cache se já buscou uma vez; senão deixa o provider
+        // em loading até a 1ª resposta (evita piscar "nenhum lote").
+        if (_webCache != null) _webCtrl.add(_webCache!);
         unawaited(refresh());
       });
       return _webCtrl.stream;
@@ -67,7 +69,7 @@ class LabelBatchRepository {
               ),
             )
             .toList();
-        if (!_webCtrl.isClosed) _webCtrl.add(_webCache);
+        if (!_webCtrl.isClosed) _webCtrl.add(_webCache!);
       } on ApiException catch (e) {
         if (!_webCtrl.isClosed) _webCtrl.addError(e);
       }
@@ -81,9 +83,9 @@ class LabelBatchRepository {
     if (kIsWeb) {
       _webCache = [
         batch,
-        ..._webCache.where((b) => b.id != batch.id),
+        ...(_webCache ?? const []).where((b) => b.id != batch.id),
       ];
-      if (!_webCtrl.isClosed) _webCtrl.add(_webCache);
+      if (!_webCtrl.isClosed) _webCtrl.add(_webCache!);
     } else {
       await _db.into(_db.localQrBatches).insertOnConflictUpdate(batch);
     }

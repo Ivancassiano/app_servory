@@ -379,12 +379,37 @@ class _LabelSheetPreviewState extends ConsumerState<_LabelSheetPreview> {
             );
           }
           final bytes = snap.data!;
-          return PdfPreview(
-            build: (_) => bytes,
-            canChangePageFormat: false,
-            canChangeOrientation: false,
-            canDebug: false,
-            pdfFileName: 'etiquetas-${widget.batchId.substring(0, 8)}.pdf',
+          final name = 'etiquetas-${widget.batchId.substring(0, 8)}.pdf';
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.picture_as_pdf_outlined, size: 64),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Folha pronta (${(bytes.length / 1024).toStringAsFixed(0)} KB).',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: () => Printing.layoutPdf(
+                      onLayout: (_) => bytes,
+                      name: name,
+                    ),
+                    icon: const Icon(Icons.print_outlined),
+                    label: const Text('Imprimir'),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => Printing.sharePdf(bytes: bytes, filename: name),
+                    icon: const Icon(Icons.download_outlined),
+                    label: const Text('Baixar / compartilhar'),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       ),
