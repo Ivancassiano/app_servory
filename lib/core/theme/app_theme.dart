@@ -8,7 +8,9 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2F6F4F)),
-      inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder()),
+      inputDecorationTheme: const InputDecorationTheme(
+        border: OutlineInputBorder(),
+      ),
     );
   }
 }

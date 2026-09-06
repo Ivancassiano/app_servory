@@ -8,18 +8,47 @@ Fonte de requisitos: [`servicelog-especificacao-funcional-tecnica.md`](servicelo
 Contrato consumido a partir do backend: [`docs/GUIA-FLUTTER.md`](docs/GUIA-FLUTTER.md).
 Estado do projeto (backend e app): [`docs/progresso.md`](docs/progresso.md).
 
-## Escopo desta entrega (fundação)
+## Escopo até agora
 
-Estrutura, tema, roteamento (`go_router`), cliente HTTP com refresh
-automático de token (`dio`), armazenamento seguro de sessão
-(`flutter_secure_storage`), tela de login e uma Home mínima consumindo
-`/v1/me`. **Sem** banco local (SQLite/Drift), sessão offline por PIN/
-biometria nem sincronização ainda — isso é escopo de uma entrega seguinte,
-só para iOS/Android (ver decisão sobre o Chrome abaixo).
+- **Fundação**: estrutura, tema, roteamento (`go_router`), cliente HTTP com
+  refresh automático de token (`dio`), armazenamento seguro de sessão
+  (`flutter_secure_storage`), login, Home consumindo `/v1/me`.
+- **Offline (só iOS/Android)**: banco local criptografado (Drift +
+  SQLite3 Multiple Ciphers), sessão offline por biometria/PIN do aparelho
+  (spec §18.3), sincronização (`bootstrap`/`pull`/`push`) de
+  `client`/`location`/`equipment` — escrita local (create/update) só em
+  `client` por ora.
 
 O Chrome roda **sempre online**: chama a API diretamente a cada tela, sem
 banco local nem sessão offline — todo o esforço de offline-first (spec §18,
 §19) fica restrito a iOS/Android, que é quem vai a campo sem sinal.
+
+### Criptografia do banco local
+
+`sqlcipher_flutter_libs` está obsoleto (sqlite3 v3+ mudou para hooks de
+build). Este projeto usa a alternativa recomendada pelo próprio mantenedor
+do drift — configurado em `pubspec.yaml`:
+
+```yaml
+hooks:
+  user_defines:
+    sqlite3:
+      source: sqlite3mc   # SQLite3 Multiple Ciphers
+```
+
+Isso faz o `sqlite3` bundlar um binário com suporte a `PRAGMA key`/`PRAGMA
+cipher` automaticamente no primeiro `flutter pub get`/`flutter run` — nada
+de instalar nada manualmente. A chave (256 bits, gerada uma vez por
+organização) fica só no Keychain/Keystore via `flutter_secure_storage`
+(`lib/core/db/db_key_store.dart`), nunca é enviada ao servidor.
+
+### Codegen (Drift)
+
+Depois de editar `lib/core/db/app_database.dart` (tabelas), regenere:
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
 
 ## Pré-requisitos
 
@@ -80,11 +109,16 @@ flutter test
 ```
 lib/
   core/            config, cliente HTTP + interceptor de refresh,
-                   armazenamento seguro, roteamento, tema — genérico,
-                   sem regra de nenhuma feature específica
+                   armazenamento seguro, banco local (Drift), roteamento,
+                   conectividade, biometria, tema — genérico, sem regra de
+                   nenhuma feature específica
   features/
-    auth/          login, sessão (data/application/presentation)
+    auth/          login, sessão, trava do app offline
     me/             /v1/me, /v1/me/permissions
+    sync/           bootstrap/pull/push (client/location/equipment)
+    clients/        lista + criar/editar (local -> outbox -> push)
+    locations/      lista (só leitura)
+    equipments/     lista (só leitura)
 ```
 
 Cada feature nova segue o mesmo molde (`data/` chamadas HTTP tipadas,

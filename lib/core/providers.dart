@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'config/app_config.dart';
 import 'network/api_client.dart';
+import 'security/biometric_gate.dart';
 import 'storage/secure_store.dart';
 
 /// Providers "de fundação" — compartilhados entre todas as features.
@@ -11,6 +12,10 @@ import 'storage/secure_store.dart';
 final appConfigProvider = Provider<AppConfig>((ref) => AppConfig.resolve());
 
 final secureStoreProvider = Provider<SecureStore>((ref) => SecureStore());
+
+final biometricGateProvider = Provider<BiometricGate>(
+  (ref) => LocalAuthBiometricGate(),
+);
 
 /// Ponte para quebrar a dependência circular entre [ApiClient] (que precisa
 /// avisar quando uma sessão expira) e o controller de sessão (que precisa do
@@ -22,7 +27,9 @@ class SessionExpiredPort {
   void notify() => _listener?.call();
 }
 
-final sessionExpiredPortProvider = Provider<SessionExpiredPort>((ref) => SessionExpiredPort());
+final sessionExpiredPortProvider = Provider<SessionExpiredPort>(
+  (ref) => SessionExpiredPort(),
+);
 
 final apiClientProvider = Provider<ApiClient>((ref) {
   final port = ref.watch(sessionExpiredPortProvider);

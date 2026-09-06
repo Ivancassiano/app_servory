@@ -9,9 +9,22 @@ import 'auth_interceptor.dart';
 /// já que essas chamadas não exigem sessão prévia) e [businessDio] fala com
 /// o `servicelog-api` (tudo mais), sempre autenticado.
 class ApiClient {
-  ApiClient({required AppConfig config, required SecureStore store, void Function()? onSessionExpired})
-      : authDio = Dio(BaseOptions(baseUrl: config.authBaseUrl, connectTimeout: const Duration(seconds: 15))),
-        businessDio = Dio(BaseOptions(baseUrl: config.apiBaseUrl, connectTimeout: const Duration(seconds: 15))) {
+  ApiClient({
+    required AppConfig config,
+    required SecureStore store,
+    void Function()? onSessionExpired,
+  }) : authDio = Dio(
+         BaseOptions(
+           baseUrl: config.authBaseUrl,
+           connectTimeout: const Duration(seconds: 15),
+         ),
+       ),
+       businessDio = Dio(
+         BaseOptions(
+           baseUrl: config.apiBaseUrl,
+           connectTimeout: const Duration(seconds: 15),
+         ),
+       ) {
     businessDio.interceptors.add(
       AuthInterceptor(
         authDio: authDio,

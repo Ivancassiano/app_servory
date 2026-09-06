@@ -30,7 +30,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _errorMessage = null);
 
     try {
-      await ref.read(sessionControllerProvider.notifier).login(
+      await ref
+          .read(sessionControllerProvider.notifier)
+          .login(
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
@@ -39,13 +41,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       setState(() => _errorMessage = e.friendlyMessage);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _errorMessage = 'Não foi possível completar a ação. Tente novamente.');
+      setState(
+        () => _errorMessage =
+            'Não foi possível completar a ação. Tente novamente.',
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isAuthenticating = ref.watch(sessionControllerProvider) is SessionAuthenticating;
+    final isAuthenticating =
+        ref.watch(sessionControllerProvider) is SessionAuthenticating;
 
     return Scaffold(
       body: SafeArea(
@@ -60,7 +66,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.build_circle_outlined, size: 56, color: Theme.of(context).colorScheme.primary),
+                    Icon(
+                      Icons.build_circle_outlined,
+                      size: 56,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       'ServiceLog',
@@ -79,7 +89,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       autofillHints: const [AutofillHints.email],
                       decoration: const InputDecoration(labelText: 'E-mail'),
                       validator: (value) {
-                        if (value == null || value.trim().isEmpty) return 'Informe o e-mail.';
+                        if (value == null || value.trim().isEmpty)
+                          return 'Informe o e-mail.';
                         if (!value.contains('@')) return 'E-mail inválido.';
                         return null;
                       },
@@ -92,12 +103,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       decoration: InputDecoration(
                         labelText: 'Senha',
                         suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Informe a senha.';
+                        if (value == null || value.isEmpty)
+                          return 'Informe a senha.';
                         return null;
                       },
                       onFieldSubmitted: (_) => _submit(),
@@ -106,7 +124,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const SizedBox(height: 12),
                       Text(
                         _errorMessage!,
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
                     ],
                     const SizedBox(height: 24),

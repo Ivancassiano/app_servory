@@ -11,4 +11,6 @@ MeApi _meApi(Ref ref) => MeApi(ref.watch(apiClientProvider).businessDio);
 final identityProvider = FutureProvider<Identity>((ref) => _meApi(ref).getMe());
 
 /// Permissões efetivas — só para decorar a UI (spec §17.4).
-final permissionsProvider = FutureProvider<PermissionSet>((ref) => _meApi(ref).getPermissions());
+final permissionsProvider = FutureProvider<PermissionSet>(
+  (ref) => _meApi(ref).getPermissions(),
+);

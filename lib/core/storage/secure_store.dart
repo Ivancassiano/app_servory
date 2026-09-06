@@ -10,7 +10,7 @@ import 'package:uuid/uuid.dart';
 /// Chrome, que não guarda dado de negócio localmente, só a sessão.
 class SecureStore {
   SecureStore({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 
@@ -19,6 +19,7 @@ class SecureStore {
   static const _kOrganizationId = 'organization_id';
   static const _kUserId = 'user_id';
   static const _kDeviceId = 'device_id';
+  static const _kLastOnlineValidationAt = 'last_online_validation_at';
 
   Future<void> saveSession({
     required String accessToken,
@@ -47,6 +48,32 @@ class SecureStore {
       _storage.delete(key: _kUserId),
     ]);
   }
+
+  /// Timestamp da última vez que a sessão foi confirmada com o servidor
+  /// (login ou refresh bem-sucedido) — usado para o prazo de sessão offline
+  /// de 7 dias (spec §18.3). Sobrevive ao `clearSession` propositalmente? Não:
+  /// é parte da sessão, some junto no logout.
+  Future<void> saveLastOnlineValidation(DateTime at) => _storage.write(
+    key: _kLastOnlineValidationAt,
+    value: at.toIso8601String(),
+  );
+
+  Future<DateTime?> readLastOnlineValidation() async {
+    final raw = await _storage.read(key: _kLastOnlineValidationAt);
+    if (raw == null) return null;
+    return DateTime.tryParse(raw);
+  }
+
+  /// Chave de criptografia do banco local desta organização (spec §18.1),
+  /// 256 bits em hexadecimal — gerada uma vez por [DbKeyStore], nunca
+  /// enviada ao servidor. Fica fora de `clearSession`: a chave sobrevive a
+  /// um logout (os dados locais continuam existindo até o usuário logar de
+  /// novo); só é apagada se o app inteiro for desinstalado.
+  Future<String?> readDbKey(String organizationId) =>
+      _storage.read(key: 'db_key_$organizationId');
+
+  Future<void> saveDbKey(String organizationId, String hexKey) =>
+      _storage.write(key: 'db_key_$organizationId', value: hexKey);
 
   /// UUID gerado uma vez por instalação (GUIA-FLUTTER.md §3.1) e persistido
   /// para sempre — nunca regenerado a cada login. Se o armazenamento for
