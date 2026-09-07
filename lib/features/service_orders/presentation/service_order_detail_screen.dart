@@ -1004,7 +1004,7 @@ class _ItemsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          items.isEmpty ? 'Itens' : 'Itens (\${items.length})',
+          items.isEmpty ? 'Itens' : 'Itens (${items.length})',
           style: theme.textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
@@ -1025,7 +1025,7 @@ class _ItemsSection extends ConsumerWidget {
                 ),
                 trailing: _ApprovalChip(it.approval),
                 onTap: () => context.push(
-                  '/service-orders/\$serviceOrderId/items/\${it.id}',
+                  '/service-orders/$serviceOrderId/items/${it.id}',
                 ),
               ),
             ),
@@ -1055,7 +1055,7 @@ class _ItemsSection extends ConsumerWidget {
         lastId = await repo.addItem(orderId: serviceOrderId, itemId: t.itemId);
       }
       if (context.mounted && picked.length == 1 && lastId != null) {
-        context.push('/service-orders/\$serviceOrderId/items/\$lastId');
+        context.push('/service-orders/$serviceOrderId/items/$lastId');
       }
     } catch (_) {
       if (context.mounted) {

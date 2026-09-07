@@ -205,6 +205,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     String note = '',
   }) async {
     final body = serviceOrderItemBody(
+      itemId: itemId,
       diagnosis: diagnosis,
       workPerformed: workPerformed,
       finalCondition: finalCondition,

@@ -1,7 +1,27 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:servory/features/service_orders/data/service_order_item_mapper.dart';
 import 'package:servory/features/service_orders/data/service_order_mapper.dart';
 
 void main() {
+  test('serviceOrderItemBody inclui item_id (obrigatório no backend)', () {
+    final body = serviceOrderItemBody(
+      itemId: 'item-1',
+      diagnosis: 'd',
+      workPerformed: '',
+      finalCondition: '',
+      note: '',
+    );
+    expect(body['item_id'], 'item-1');
+    // sem item: a chave some (não vira null explícito)
+    final semItem = serviceOrderItemBody(
+      diagnosis: '',
+      workPerformed: '',
+      finalCondition: '',
+      note: '',
+    );
+    expect(semItem.containsKey('item_id'), isFalse);
+  });
+
   test('serviceOrderFromApiJson: datas e campos snake_case', () {
     final o = serviceOrderFromApiJson(const {
       'id': 'so1',
