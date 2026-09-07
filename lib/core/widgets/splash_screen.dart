@@ -44,9 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               _PulsingMark(animation: _c),
-              const SizedBox(height: 20),
-              Text('leiano', style: BrandText.brandOver),
-              const SizedBox(height: 4),
+              const SizedBox(height: 22),
               Text(
                 'servicereport',
                 style: BrandText.brandWord.copyWith(
@@ -54,7 +52,16 @@ class _SplashScreenState extends State<SplashScreen>
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 7),
+              Text(
+                kBrandEndorsement,
+                style: BrandText.brandOver.copyWith(
+                  fontSize: 10.5,
+                  letterSpacing: 1.4,
+                  color: BrandColor.onDarkSecondary,
+                ),
+              ),
+              const SizedBox(height: 38),
               const SizedBox(
                 width: 132,
                 child: LinearProgressIndicator(
@@ -75,6 +82,7 @@ class _SplashScreenState extends State<SplashScreen>
               Text(
                 'versão $_appVersion',
                 style: BrandText.brandOver.copyWith(
+                  fontSize: 9.5,
                   letterSpacing: 0.5,
                   color: BrandColor.textTertiary,
                 ),

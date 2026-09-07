@@ -39,16 +39,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 16,
-        title: Row(
+        toolbarHeight: kToolbarHeight + 10,
+        title: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const BrandIcon(size: 18, onDark: true, mono: true),
-            const SizedBox(width: 8),
-            Text(
-              'servicereport',
-              style: BrandText.brandWord.copyWith(
-                fontSize: 15,
-                color: Colors.white,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const BrandIcon(size: 18, onDark: true, mono: true),
+                const SizedBox(width: 8),
+                Text(
+                  'servicereport',
+                  style: BrandText.brandWord.copyWith(
+                    fontSize: 15,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 26),
+              child: Text(
+                kBrandEndorsement,
+                style: BrandText.brandOver.copyWith(
+                  fontSize: 8,
+                  letterSpacing: 1,
+                  color: BrandColor.onDarkSecondary,
+                ),
               ),
             ),
           ],

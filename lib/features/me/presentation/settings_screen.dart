@@ -107,7 +107,33 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
+
+          // [item 3 — em avaliação] rodapé de marca. Para remover: apague
+          // esta linha e a classe _BrandFooter no fim do arquivo.
+          const _BrandFooter(),
         ],
+      ),
+    );
+  }
+}
+
+/// [item 3 — em avaliação] Assinatura discreta no rodapé das configurações.
+class _BrandFooter extends StatelessWidget {
+  const _BrandFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 28),
+      child: Center(
+        child: Text(
+          'ServiceReport · Leiano Sistemas · v1.0.0',
+          style: BrandText.brandOver.copyWith(
+            fontSize: 9.5,
+            letterSpacing: 0.5,
+            color: BrandColor.textTertiary,
+          ),
+        ),
       ),
     );
   }

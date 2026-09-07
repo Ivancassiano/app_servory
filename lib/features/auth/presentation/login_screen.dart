@@ -87,7 +87,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       textAlign: TextAlign.center,
                       style: BrandText.brandWord.copyWith(fontSize: 19),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 5),
+                    Text(
+                      kBrandEndorsement,
+                      textAlign: TextAlign.center,
+                      style: BrandText.brandOver.copyWith(
+                        fontSize: 10,
+                        letterSpacing: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     Text(
                       'Histórico de manutenção dos seus equipamentos',
                       textAlign: TextAlign.center,

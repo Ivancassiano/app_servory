@@ -171,12 +171,13 @@ abstract final class BrandText {
     color: BrandColor.ink,
   );
 
-  /// Linha "leiano" do lockup da marca.
+  /// Linha "leiano" / assinatura da casa acima ou abaixo do wordmark.
+  /// Valores do manual da marca (README): 11px, ~0,18em, `#4C5057`.
   static const brandOver = TextStyle(
     fontFamily: _mono,
-    fontSize: 9.5,
-    letterSpacing: 2.85, // 0.3em
-    color: BrandColor.textDisabled,
+    fontSize: 11,
+    letterSpacing: 2, // ~0.18em
+    color: BrandColor.textSecondary,
   );
 
   /// Linha "servicereport" do lockup (caixa baixa, uma palavra).
@@ -188,6 +189,10 @@ abstract final class BrandText {
     color: BrandColor.ink,
   );
 }
+
+/// Assinatura da casa: o ServiceReport é um produto da Leiano Sistemas.
+/// Usada abaixo do wordmark na splash, no login e no cabeçalho da home.
+const kBrandEndorsement = 'uma solução leiano';
 
 class AppTheme {
   static ThemeData light() {

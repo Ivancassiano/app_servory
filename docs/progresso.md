@@ -22,6 +22,21 @@ serviço ligadas ao registro. Agora cada uma tem uma seção **Laudos (N)**.
 - Testes: lista recortada por local (`service_order_list_screen_test`); seção
   filtra pelo escopo + navega + estado vazio (`related_service_orders_section_test`).
 
+## `app_servory` — `feature/service-orders`: marca Leiano mais presente ✅
+
+O nome da casa (Leiano) só aparecia na splash e apagadíssimo. Agora:
+
+- Token `BrandText.brandOver` voltou pro manual (11px, ~0,18em, `#4C5057`) —
+  era 9,5px `#8A8F98`.
+- `kBrandEndorsement = 'uma solução leiano'` (constante em `app_theme.dart`),
+  usada abaixo do wordmark na **splash**, no **login** e no **cabeçalho da
+  home** (a AppBar da home virou título de 2 linhas, `toolbarHeight += 10`).
+- Splash: a linha solta "leiano" (rastreada, apagada) saiu; entrou a
+  assinatura abaixo do wordmark, em `#B4B9C1`.
+- **Configurações**: rodapé `ServiceReport · Leiano Sistemas · v1.0.0`
+  (`_BrandFooter`) — marcado `[item 3 — em avaliação]`, fácil de remover
+  (uma linha na ListView + a classe).
+
 ## `app_servory` — `feature/service-orders`: tempo mínimo de splash no boot ✅
 
 O splash sumia num flash quando a sessão restaurava na hora, passando a
