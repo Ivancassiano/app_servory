@@ -27,6 +27,7 @@ import '../../features/reference/data/type_catalog_repository.dart';
 import '../../features/reference/presentation/type_catalog_screen.dart';
 import '../../features/service_orders/presentation/service_order_detail_screen.dart';
 import '../../features/service_orders/presentation/service_order_list_screen.dart';
+import '../../features/service_orders/presentation/service_order_item_screen.dart';
 import '../../features/service_orders/presentation/service_order_report_screen.dart';
 import '../connectivity/connectivity_provider.dart';
 import '../providers.dart';
@@ -198,6 +199,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: 'report',
                 builder: (_, state) => ServiceOrderReportScreen(
                   serviceOrderId: state.pathParameters['id']!,
+                ),
+              ),
+              GoRoute(
+                path: 'items/:itemId',
+                builder: (_, state) => ServiceOrderItemScreen(
+                  serviceOrderId: state.pathParameters['id']!,
+                  itemId: state.pathParameters['itemId']!,
                 ),
               ),
             ],

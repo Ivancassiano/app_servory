@@ -382,11 +382,19 @@ class _ServiceOrderDetailScreenState
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 8),
+              _ItemsSection(
+                serviceOrderId: order.id,
+                clientId: order.clientId,
+                canEdit: canEditLaudo,
+              ),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
                     child: Text(
-                      'Laudo',
+                      'Laudo geral',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
@@ -396,7 +404,7 @@ class _ServiceOrderDetailScreenState
                         _editing = true;
                         _laudoOnly = true;
                       }),
-                      child: const Text('Editar laudo'),
+                      child: const Text('Editar'),
                     ),
                 ],
               ),
@@ -408,7 +416,7 @@ class _ServiceOrderDetailScreenState
               const Divider(),
               const SizedBox(height: 8),
               Text(
-                'Peças e materiais',
+                'Peças e materiais (geral)',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
@@ -1494,6 +1502,250 @@ class _RecommendationFormSheetState
                     )
                   : const Text('Salvar'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+const _approvalLabels = {
+  'pending': 'Pendente',
+  'approved': 'Aprovado',
+  'declined': 'Não aprovado',
+};
+
+/// "Itens" numa ordem — o laudo por equipamento, agrupado por local. Opcional:
+/// a ordem pode não ter item e usar só o laudo geral.
+class _ItemsSection extends ConsumerWidget {
+  const _ItemsSection({
+    required this.serviceOrderId,
+    required this.clientId,
+    required this.canEdit,
+  });
+
+  final String serviceOrderId;
+  final String clientId;
+  final bool canEdit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final itemsAsync = ref.watch(serviceItemsProvider(serviceOrderId));
+    final locsById = {
+      for (final l
+          in ref.watch(locationListProvider).value ?? const <LocalLocation>[])
+        l.id: l,
+    };
+    final equipsById = {
+      for (final e
+          in ref.watch(equipmentListProvider).value ?? const <LocalEquipment>[])
+        e.id: e,
+    };
+    final items = itemsAsync.value ?? const <LocalServiceOrderItem>[];
+
+    final byLoc = <String, List<LocalServiceOrderItem>>{};
+    for (final it in items) {
+      byLoc.putIfAbsent(it.locationId, () => []).add(it);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          items.isEmpty ? 'Itens' : 'Itens (${items.length})',
+          style: theme.textTheme.titleMedium,
+        ),
+        const SizedBox(height: 8),
+        if (items.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              'Nenhum item. Adicione um equipamento para registrar o laudo dele.',
+            ),
+          )
+        else
+          for (final entry in byLoc.entries) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 4),
+              child: Text(
+                locsById[entry.key]?.name ?? 'Local',
+                style: theme.textTheme.labelLarge,
+              ),
+            ),
+            for (final it in entry.value)
+              Card(
+                child: ListTile(
+                  title: Text(
+                    it.equipmentId == null
+                        ? 'Local (sem equipamento)'
+                        : equipsById[it.equipmentId]?.name ?? 'Equipamento',
+                  ),
+                  subtitle: Text(
+                    it.diagnosis.isEmpty ? 'Sem diagnóstico' : it.diagnosis,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: _ApprovalChip(it.approval),
+                  onTap: () => context.push(
+                    '/service-orders/$serviceOrderId/items/${it.id}',
+                  ),
+                ),
+              ),
+          ],
+        if (canEdit) ...[
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () => _addItem(context, ref),
+            icon: const Icon(Icons.add),
+            label: const Text('Adicionar item'),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _addItem(BuildContext context, WidgetRef ref) async {
+    final locations = (ref.read(locationListProvider).value ?? const [])
+        .where((l) => l.clientId == clientId)
+        .toList();
+    if (locations.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cadastre um local para este cliente.')),
+      );
+      return;
+    }
+    final picked = await showModalBottomSheet<({String locId, String? eqId})>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _AddItemSheet(clientId: clientId),
+    );
+    if (picked == null || !context.mounted) return;
+    try {
+      final id = await ref
+          .read(serviceOrderRepositoryProvider)
+          .addItem(
+            orderId: serviceOrderId,
+            locationId: picked.eqId == null ? picked.locId : null,
+            equipmentId: picked.eqId,
+          );
+      if (context.mounted) {
+        context.push('/service-orders/$serviceOrderId/items/$id');
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não foi possível adicionar o item.')),
+        );
+      }
+    }
+  }
+}
+
+class _ApprovalChip extends StatelessWidget {
+  const _ApprovalChip(this.approval);
+  final String approval;
+
+  @override
+  Widget build(BuildContext context) {
+    final (bg, fg) = switch (approval) {
+      'approved' => (const Color(0xFFE3F0E4), const Color(0xFF23502A)),
+      'declined' => (const Color(0xFFF3E0DD), const Color(0xFF7C2A20)),
+      _ => (const Color(0xFFEDEEF0), const Color(0xFF71757C)),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      color: bg,
+      child: Text(
+        _approvalLabels[approval] ?? approval,
+        style: TextStyle(
+          fontFamily: 'IBM Plex Mono',
+          fontSize: 10,
+          color: fg,
+        ),
+      ),
+    );
+  }
+}
+
+/// Folha de seleção: escolhe o local (do cliente da ordem) e, opcionalmente,
+/// um equipamento daquele local.
+class _AddItemSheet extends ConsumerStatefulWidget {
+  const _AddItemSheet({required this.clientId});
+  final String clientId;
+
+  @override
+  ConsumerState<_AddItemSheet> createState() => _AddItemSheetState();
+}
+
+class _AddItemSheetState extends ConsumerState<_AddItemSheet> {
+  String? _locId;
+
+  @override
+  Widget build(BuildContext context) {
+    final locations = (ref.watch(locationListProvider).value ?? const [])
+        .where((l) => l.clientId == widget.clientId)
+        .toList();
+    final equipments = _locId == null
+        ? const <LocalEquipment>[]
+        : (ref.watch(equipmentListProvider).value ?? const [])
+              .where((e) => e.locationId == _locId)
+              .toList();
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Novo item', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _locId,
+              decoration: const InputDecoration(labelText: 'Local'),
+              items: [
+                for (final l in locations)
+                  DropdownMenuItem(value: l.id, child: Text(l.name)),
+              ],
+              onChanged: (v) => setState(() => _locId = v),
+            ),
+            const SizedBox(height: 12),
+            if (_locId != null) ...[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Equipamento (opcional)',
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
+              ),
+              const SizedBox(height: 4),
+              OutlinedButton(
+                onPressed: () =>
+                    Navigator.of(context).pop((locId: _locId!, eqId: null)),
+                child: const Text('Sem equipamento — só o local'),
+              ),
+              for (final e in equipments)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(
+                      context,
+                    ).pop((locId: _locId!, eqId: e.id)),
+                    child: Text(e.name),
+                  ),
+                ),
+              if (equipments.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(top: 6),
+                  child: Text('Nenhum equipamento neste local.'),
+                ),
+            ],
           ],
         ),
       ),

@@ -22,6 +22,25 @@ serviço ligadas ao registro. Agora cada uma tem uma seção **Laudos (N)**.
 - Testes: lista recortada por local (`service_order_list_screen_test`); seção
   filtra pelo escopo + navega + estado vazio (`related_service_orders_section_test`).
 
+## `app_servory` — `feature/service-orders`: itens da ordem (Fase 2) 🚧
+
+Laudo por equipamento. Plano: `~/.claude/plans/indexed-herding-ripple.md`.
+
+- **Backend** (`auth_servory`, commits `ab5c96c`, `8483cb5`): migração 00036 —
+  `service_order_items` (opcional, 0..N) com laudo próprio + `approval`;
+  `service_order_item_id` NULLABLE em parts/recommendations/photos (sem
+  backfill, cabeçalho intocado = "laudo geral"). Rotas
+  `/v1/service-orders/{id}/items[/{itemId}[/approval]]`. Adaptador de sync do
+  item. Recomendações ganharam trigger de outbox (adaptador fica p/ depois).
+- **App** (commit `b0530e4` + este): drift `LocalServiceOrderItems` (v7),
+  mapper, sync_engine, `ServiceOrderRepository.watchItems/addItem/updateItem/
+  deleteItem/setItemApproval`. Tela da ordem: seção **Itens** (agrupada por
+  local) + folha "Novo item" (local → equipamento opcional). Editor do item
+  (`/service-orders/:id/items/:itemId`): diagnóstico/serviço/condição/obs +
+  aprovação (SegmentedButton) + remover. "Laudo" virou "Laudo geral".
+- **Falta (2d-b):** peças/recomendações/fotos por item (filtro + tag por
+  `item_id`); sync das recomendações; Fase 3 (ordem-filha) e Fase 4 (PDF).
+
 ## `app_servory` — `feature/service-orders`: ordem — modo de criação (Fase 1) ✅
 
 Primeira fatia do plano "visita técnica" (`~/.claude/plans/indexed-herding-ripple.md`).
