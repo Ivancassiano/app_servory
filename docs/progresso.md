@@ -22,6 +22,18 @@ serviço ligadas ao registro. Agora cada uma tem uma seção **Laudos (N)**.
 - Testes: lista recortada por local (`service_order_list_screen_test`); seção
   filtra pelo escopo + navega + estado vazio (`related_service_orders_section_test`).
 
+## `app_servory` — `feature/service-orders`: ordem — modo de criação (Fase 1) ✅
+
+Primeira fatia do plano "visita técnica" (`~/.claude/plans/indexed-herding-ripple.md`).
+
+- O switch "Abrir imediatamente" saiu. Na criação, o botão principal alterna:
+  **Iniciar ordem** (sem data → `mode: start`, já em andamento) ↔ **Agendar ordem**
+  (com data → `mode: open`, entra na agenda). Link **Salvar rascunho** (`mode: draft`).
+- `serviceOrderCreateBody` / repos / controller: `open: bool` → `mode: String`.
+  Offline: `_statusForMode` + `startedAt` local quando `start`.
+- Backend (mesma fatia, repo auth_servory): `CreateInput.Mode`, `started_at` no
+  insert, `open` → `mode` no HTTP e no sync.
+
 ## `app_servory` — `feature/service-orders`: laudos como histórico (data/hora) ✅
 
 `RelatedServiceOrdersSection` agora mostra a **data/hora de cadastro** como

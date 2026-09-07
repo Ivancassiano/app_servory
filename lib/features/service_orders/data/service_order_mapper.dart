@@ -77,7 +77,7 @@ Map<String, dynamic> serviceOrderCreateBody({
   String? companyId,
   String? assignedUserId,
   DateTime? scheduledFor,
-  required bool open,
+  required String mode,
   required String reason,
 }) => {
   'client_id': clientId,
@@ -87,7 +87,7 @@ Map<String, dynamic> serviceOrderCreateBody({
   'company_id': ?companyId,
   'assigned_user_id': ?assignedUserId,
   'scheduled_for': ?_rfc3339(scheduledFor),
-  'open': open,
+  'mode': mode,
   'reason': reason,
 };
 

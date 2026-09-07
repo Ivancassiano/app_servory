@@ -58,7 +58,6 @@ class _ServiceOrderDetailScreenState
   String? _companyId;
   String? _assignedUserId;
   DateTime? _scheduledFor;
-  bool _openNow = false;
   bool _seeded = false;
   bool _saving = false;
   bool _conflict = false;
@@ -135,7 +134,8 @@ class _ServiceOrderDetailScreenState
     _seeded = true;
   }
 
-  Future<void> _submit() async {
+  /// [mode] só vale na criação (`draft` | `open` | `start`); na edição é ignorado.
+  Future<void> _submit({String mode = 'draft'}) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (widget.isNew && _clientId == null) {
       setState(() => _error = 'Escolha um cliente.');
@@ -157,7 +157,7 @@ class _ServiceOrderDetailScreenState
           companyId: _companyId,
           assignedUserId: _assignedUserId,
           scheduledFor: _scheduledFor,
-          open: _openNow,
+          mode: mode,
           reason: _reasonController.text.trim(),
         );
         if (!mounted) return;
@@ -660,18 +660,6 @@ class _ServiceOrderDetailScreenState
                       controller: _reasonController,
                       decoration: const InputDecoration(labelText: 'Motivo'),
                     ),
-                    if (order == null) ...[
-                      const SizedBox(height: 16),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Abrir imediatamente'),
-                        subtitle: const Text(
-                          'Desligado salva como rascunho (não visível na agenda).',
-                        ),
-                        value: _openNow,
-                        onChanged: (v) => setState(() => _openNow = v),
-                      ),
-                    ],
                   ], // fim if (!_laudoOnly)
                   if (order != null) ...[
                     const SizedBox(height: 16),
@@ -721,21 +709,40 @@ class _ServiceOrderDetailScreenState
                     ),
                   ],
                   const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _saving ? null : _submit,
-                    child: _saving
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Salvar'),
-                  ),
-                  if (order != null)
+                  if (order == null) ...[
+                    // Criação: o botão principal alterna Iniciar (atende agora)
+                    // ↔ Agendar (tem data/hora → vai pra agenda). Rascunho fica
+                    // como opção discreta abaixo.
+                    FilledButton(
+                      onPressed: _saving
+                          ? null
+                          : () => _submit(
+                              mode: _scheduledFor == null ? 'start' : 'open',
+                            ),
+                      child: _saving
+                          ? const _BtnSpinner()
+                          : Text(
+                              _scheduledFor == null
+                                  ? 'Iniciar ordem'
+                                  : 'Agendar ordem',
+                            ),
+                    ),
+                    TextButton(
+                      onPressed: _saving ? null : () => _submit(mode: 'draft'),
+                      child: const Text('Salvar rascunho'),
+                    ),
+                  ] else ...[
+                    FilledButton(
+                      onPressed: _saving ? null : _submit,
+                      child: _saving
+                          ? const _BtnSpinner()
+                          : const Text('Salvar'),
+                    ),
                     TextButton(
                       onPressed: _saving ? null : _cancelEdit,
                       child: const Text('Cancelar'),
                     ),
+                  ],
                 ],
               ),
             ),
@@ -744,6 +751,18 @@ class _ServiceOrderDetailScreenState
       ),
     );
   }
+}
+
+/// Spinner pequeno para dentro de um botão em estado de envio.
+class _BtnSpinner extends StatelessWidget {
+  const _BtnSpinner();
+
+  @override
+  Widget build(BuildContext context) => const SizedBox(
+    height: 20,
+    width: 20,
+    child: CircularProgressIndicator(strokeWidth: 2),
+  );
 }
 
 /// Agendamento (`scheduled_for`). Data + hora; limpar zera localmente, mas o

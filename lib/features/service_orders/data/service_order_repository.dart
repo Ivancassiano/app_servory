@@ -23,6 +23,8 @@ abstract interface class ServiceOrderRepository {
   Stream<List<LocalServiceOrderPart>> watchParts(String orderId);
   Future<void> refresh();
 
+  /// [mode] ∈ {`draft`, `open`, `start`} (spec §7.6). `start` já entra em
+  /// andamento; `open` agenda/abre; `draft` salva rascunho.
   Future<String> create({
     required String clientId,
     String? locationId,
@@ -31,7 +33,7 @@ abstract interface class ServiceOrderRepository {
     String? companyId,
     String? assignedUserId,
     DateTime? scheduledFor,
-    required bool open,
+    required String mode,
     required String reason,
   });
 
@@ -104,6 +106,14 @@ final serviceOrderRepositoryProvider = Provider<ServiceOrderRepository>((ref) {
 
 // ---------------------------------------------------------------------------
 
+/// Status local inicial para o modo de criação (o servidor faz o mesmo
+/// mapeamento em `createStatus`).
+String _statusForMode(String mode) => switch (mode) {
+  'start' => 'in_progress',
+  'open' => 'open',
+  _ => 'draft',
+};
+
 class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     implements ServiceOrderRepository {
   LocalFirstServiceOrderRepository(super.ref);
@@ -148,7 +158,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     String? companyId,
     String? assignedUserId,
     DateTime? scheduledFor,
-    required bool open,
+    required String mode,
     required String reason,
   }) async {
     final body = serviceOrderCreateBody(
@@ -159,7 +169,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
       companyId: companyId,
       assignedUserId: assignedUserId,
       scheduledFor: scheduledFor,
-      open: open,
+      mode: mode,
       reason: reason,
     );
     if (online) {
@@ -190,7 +200,8 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
               companyId: Value(companyId),
               assignedUserId: Value(assignedUserId),
               scheduledFor: Value(scheduledFor),
-              status: Value(open ? 'open' : 'draft'),
+              status: Value(_statusForMode(mode)),
+              startedAt: Value(mode == 'start' ? DateTime.now() : null),
               reason: Value(reason),
               localUpdatedAt: DateTime.now(),
               syncStatus: const Value('pending'),
@@ -590,7 +601,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
     String? companyId,
     String? assignedUserId,
     DateTime? scheduledFor,
-    required bool open,
+    required String mode,
     required String reason,
   }) async {
     final order = await _orders.create(
@@ -602,7 +613,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
         companyId: companyId,
         assignedUserId: assignedUserId,
         scheduledFor: scheduledFor,
-        open: open,
+        mode: mode,
         reason: reason,
       ),
     );

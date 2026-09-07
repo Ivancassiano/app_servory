@@ -19,7 +19,7 @@ class ServiceOrderEditController {
     String? companyId,
     String? assignedUserId,
     DateTime? scheduledFor,
-    required bool open,
+    required String mode,
     required String reason,
   }) => _repo.create(
     clientId: clientId,
@@ -29,7 +29,7 @@ class ServiceOrderEditController {
     companyId: companyId,
     assignedUserId: assignedUserId,
     scheduledFor: scheduledFor,
-    open: open,
+    mode: mode,
     reason: reason,
   );
 

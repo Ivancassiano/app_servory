@@ -51,8 +51,8 @@ void main() {
 
   test('serviceOrderCreateBody omite location/equipment quando null', () {
     expect(
-      serviceOrderCreateBody(clientId: 'c1', open: true, reason: 'r'),
-      {'client_id': 'c1', 'open': true, 'reason': 'r'},
+      serviceOrderCreateBody(clientId: 'c1', mode: 'start', reason: 'r'),
+      {'client_id': 'c1', 'mode': 'start', 'reason': 'r'},
     );
   });
 
@@ -63,7 +63,7 @@ void main() {
       companyId: 'co1',
       assignedUserId: 'u1',
       scheduledFor: DateTime.utc(2026, 9, 10, 14, 30),
-      open: false,
+      mode: 'open',
       reason: '',
     );
     expect(body['service_order_type_id'], 't1');
