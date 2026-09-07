@@ -5,6 +5,23 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: laudos relacionados no cliente/local/equipamento ✅
+
+As telas de cliente, local e equipamento não tinham como chegar nas ordens de
+serviço ligadas ao registro. Agora cada uma tem uma seção **Laudos (N)**.
+
+- `RelatedServiceOrdersSection` (`clientId` | `locationId` | `equipmentId`):
+  filtra `serviceOrderListProvider` pelo escopo, mostra prévia de 3 (status +
+  motivo, toca → abre a OS) e um "Ver todos (N)" que abre a lista filtrada.
+  Vazio: "Nenhum laudo relacionado."
+- `ServiceOrderListScreen` ganhou `clientId`/`locationId`/`equipmentId`. No modo
+  recortado o título vira **Laudos**, o nome do registro vai no subtítulo do
+  `brandAppBar`, tem botão de voltar e o FAB "Nova ordem" some. Os chips de
+  status continuam funcionando dentro do recorte.
+- Rota `/service-orders` lê os 3 query params.
+- Testes: lista recortada por local (`service_order_list_screen_test`); seção
+  filtra pelo escopo + navega + estado vazio (`related_service_orders_section_test`).
+
 ## `app_servory` — `feature/service-orders`: tempo mínimo de splash no boot ✅
 
 O splash sumia num flash quando a sessão restaurava na hora, passando a

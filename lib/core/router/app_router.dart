@@ -182,7 +182,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/service-orders',
-        builder: (_, _) => const ServiceOrderListScreen(),
+        builder: (_, state) => ServiceOrderListScreen(
+          clientId: state.uri.queryParameters['clientId'],
+          locationId: state.uri.queryParameters['locationId'],
+          equipmentId: state.uri.queryParameters['equipmentId'],
+        ),
         routes: [
           GoRoute(
             path: ':id',

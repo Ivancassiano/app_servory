@@ -11,6 +11,7 @@ import '../../equipments/presentation/client_equipments_section.dart';
 import '../../locations/presentation/client_locations_section.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
+import '../../service_orders/presentation/related_service_orders_section.dart';
 import '../application/client_edit_controller.dart';
 import '../application/clients_provider.dart';
 
@@ -199,6 +200,10 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
             const Divider(),
             const SizedBox(height: 8),
             ClientEquipmentsSection(clientId: widget.clientId),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            RelatedServiceOrdersSection(clientId: widget.clientId),
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 8),

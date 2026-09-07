@@ -5,10 +5,19 @@ import 'package:servory/features/service_orders/application/service_orders_provi
 import 'package:servory/features/service_orders/data/service_order_mapper.dart';
 import 'package:servory/features/service_orders/presentation/service_order_list_screen.dart';
 
-ServiceOrderWithClient _order(String id, String status, String client) {
+ServiceOrderWithClient _order(
+  String id,
+  String status,
+  String client, {
+  String? clientId,
+  String? locationId,
+  String? equipmentId,
+}) {
   final o = serviceOrderFromApiJson({
     'id': id,
-    'client_id': 'c-$id',
+    'client_id': clientId ?? 'c-$id',
+    'location_id': locationId,
+    'equipment_id': equipmentId,
     'status': status,
     'reason': 'motivo $id',
   }, organizationId: 'org');
@@ -17,16 +26,16 @@ ServiceOrderWithClient _order(String id, String status, String client) {
 
 void main() {
   final orders = [
-    _order('1', 'draft', 'Padaria Central'),
+    _order('1', 'draft', 'Padaria Central', locationId: 'loc-1'),
     _order('2', 'open', 'Bar do Zé'),
-    _order('3', 'completed', 'Loja Norte'),
+    _order('3', 'completed', 'Loja Norte', locationId: 'loc-1'),
   ];
 
-  Widget host() => ProviderScope(
+  Widget host({Widget screen = const ServiceOrderListScreen()}) => ProviderScope(
     overrides: [
       serviceOrderListProvider.overrideWithValue(AsyncValue.data(orders)),
     ],
-    child: const MaterialApp(home: ServiceOrderListScreen()),
+    child: MaterialApp(home: screen),
   );
 
   testWidgets('lista todas e filtra pelo chip de status', (tester) async {
@@ -43,6 +52,21 @@ void main() {
     expect(find.text('Bar do Zé'), findsOneWidget);
     expect(find.text('Padaria Central'), findsNothing);
     expect(find.text('Loja Norte'), findsNothing);
+  });
+
+  testWidgets('escopo por local: só os laudos daquele local + voltar', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(screen: const ServiceOrderListScreen(locationId: 'loc-1')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Laudos'), findsOneWidget);
+    expect(find.byType(BackButton), findsOneWidget);
+    expect(find.text('Padaria Central'), findsOneWidget);
+    expect(find.text('Loja Norte'), findsOneWidget);
+    expect(find.text('Bar do Zé'), findsNothing);
   });
 
   testWidgets('busca por nome do cliente', (tester) async {

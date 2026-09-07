@@ -10,6 +10,7 @@ import '../../clients/application/clients_provider.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
 import '../../locations/application/locations_provider.dart';
+import '../../service_orders/presentation/related_service_orders_section.dart';
 import '../application/equipment_edit_controller.dart';
 import '../application/equipments_provider.dart';
 
@@ -238,6 +239,10 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
             DetailRow('Tipo', typeName),
             if (extras.isNotEmpty)
               DetailExpander(title: 'Detalhes', children: extras),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            RelatedServiceOrdersSection(equipmentId: widget.equipmentId),
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 8),

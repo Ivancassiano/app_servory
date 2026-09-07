@@ -6,6 +6,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../../attachments/application/pending_uploads.dart';
+import '../../clients/application/clients_provider.dart';
+import '../../equipments/application/equipments_provider.dart';
+import '../../locations/application/locations_provider.dart';
 import '../application/service_orders_provider.dart';
 
 const _statusLabels = {
@@ -16,7 +19,21 @@ const _statusLabels = {
 };
 
 class ServiceOrderListScreen extends ConsumerStatefulWidget {
-  const ServiceOrderListScreen({super.key});
+  const ServiceOrderListScreen({
+    super.key,
+    this.clientId,
+    this.locationId,
+    this.equipmentId,
+  });
+
+  /// Quando um deles é setado, a tela vira "Laudos" daquele registro: lista
+  /// só as ordens ligadas a ele, com o nome no cabeçalho e botão de voltar.
+  final String? clientId;
+  final String? locationId;
+  final String? equipmentId;
+
+  bool get scoped =>
+      clientId != null || locationId != null || equipmentId != null;
 
   @override
   ConsumerState<ServiceOrderListScreen> createState() =>
@@ -27,17 +44,57 @@ class _ServiceOrderListScreenState
     extends ConsumerState<ServiceOrderListScreen> {
   String? _status;
 
+  bool _inScope(ServiceOrderWithClient e) {
+    final o = e.order;
+    return (widget.clientId == null || o.clientId == widget.clientId) &&
+        (widget.locationId == null || o.locationId == widget.locationId) &&
+        (widget.equipmentId == null || o.equipmentId == widget.equipmentId);
+  }
+
+  String? _scopeName() {
+    if (widget.clientId != null) {
+      return (ref.watch(clientListProvider).value ?? const [])
+          .where((c) => c.id == widget.clientId)
+          .map((c) => c.name)
+          .join();
+    }
+    if (widget.locationId != null) {
+      return (ref.watch(locationListProvider).value ?? const [])
+          .where((l) => l.id == widget.locationId)
+          .map((l) => l.name)
+          .join();
+    }
+    if (widget.equipmentId != null) {
+      return (ref.watch(equipmentListProvider).value ?? const [])
+          .where((eq) => eq.id == widget.equipmentId)
+          .map((eq) => eq.name)
+          .join();
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(serviceOrderListProvider);
-    final total = async.value?.length;
+    final scoped = widget.scoped;
+    final total = scoped
+        ? async.value?.where(_inScope).length
+        : async.value?.length;
+    final scopeName = scoped ? _scopeName() : null;
+    final needsFilter = scoped || _status != null;
 
     return Scaffold(
       appBar: brandAppBar(
-        title: 'Ordens de serviço',
+        title: scoped ? 'Laudos' : 'Ordens de serviço',
         count: total == null
             ? null
+            : scoped
+            ? '$total ${total == 1 ? 'laudo' : 'laudos'}'
             : '$total ${total == 1 ? 'ordem' : 'ordens'}',
+        subtitle: scoped
+            ? ((scopeName ?? '').isEmpty ? null : scopeName)
+            : null,
+        leading: scoped ? const BackButton() : null,
       ),
       body: SearchableListView<ServiceOrderWithClient>(
         async: async,
@@ -46,12 +103,16 @@ class _ServiceOrderListScreenState
           await drainPendingUploads(ref);
         },
         hintText: 'Buscar por cliente ou motivo',
-        emptyMessage: 'Nenhuma ordem ainda. Puxe pra baixo para sincronizar.',
+        emptyMessage: scoped
+            ? 'Nenhum laudo relacionado.'
+            : 'Nenhuma ordem ainda. Puxe pra baixo para sincronizar.',
         errorMessage: 'Não foi possível carregar as ordens.',
         searchText: (e) => '${e.clientName} ${e.order.reason}',
-        extraFilter: _status == null
-            ? null
-            : (e) => e.order.status == _status,
+        extraFilter: needsFilter
+            ? (e) =>
+                  _inScope(e) &&
+                  (_status == null || e.order.status == _status)
+            : null,
         filterBar: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -100,11 +161,13 @@ class _ServiceOrderListScreenState
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/service-orders/new'),
-        icon: const Icon(Icons.add),
-        label: const Text('Nova ordem'),
-      ),
+      floatingActionButton: scoped
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => context.push('/service-orders/new'),
+              icon: const Icon(Icons.add),
+              label: const Text('Nova ordem'),
+            ),
     );
   }
 }

@@ -12,6 +12,7 @@ import '../../contacts/presentation/contact_section.dart';
 import '../../equipments/presentation/location_equipments_section.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
+import '../../service_orders/presentation/related_service_orders_section.dart';
 import '../application/location_edit_controller.dart';
 import '../application/locations_provider.dart';
 import '../data/location_mapper.dart';
@@ -271,6 +272,10 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
             const Divider(),
             const SizedBox(height: 8),
             LocationEquipmentsSection(locationId: widget.locationId),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            RelatedServiceOrdersSection(locationId: widget.locationId),
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 8),
