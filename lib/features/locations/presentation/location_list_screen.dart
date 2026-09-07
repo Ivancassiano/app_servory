@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/widgets/brand_app_bar.dart';
-import '../../../core/widgets/client_filter_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../../clients/application/clients_provider.dart';
 import '../application/locations_provider.dart';
@@ -31,8 +30,10 @@ class LocationListScreen extends ConsumerWidget {
       appBar: brandAppBar(
         title: 'Locais',
         count: total == null ? null : '$total ${total == 1 ? 'local' : 'locais'}',
-        // A vista filtrada por cliente é sempre empilhada (vem da tela do
-        // cliente) — garante o "voltar" mesmo se o implícito falhar.
+        // Recorte por cliente: nome fixo abaixo do título (não dá pra "limpar"
+        // — a lista foi aberta a partir do cliente) e "voltar" explícito, já
+        // que é sempre empilhada.
+        subtitle: clientId == null ? null : clientsById[clientId] ?? 'Cliente',
         leading: clientId == null ? null : const BackButton(),
       ),
       body: SearchableListView<LocalLocation>(
@@ -40,12 +41,6 @@ class LocationListScreen extends ConsumerWidget {
         paging: ref.watch(locationListPagingProvider),
         loadAllOnInit: clientId != null,
         extraFilter: clientId == null ? null : mine,
-        filterBar: clientId == null
-            ? null
-            : ClientFilterBar(
-                label: clientsById[clientId] ?? 'Cliente',
-                onClear: () => context.go('/locations'),
-              ),
         onRefresh: () => ref.read(locationRepositoryProvider).refresh(),
         hintText: 'Buscar local ou cliente',
         emptyMessage: 'Nenhum local ainda. Puxe pra baixo para sincronizar.',

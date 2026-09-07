@@ -57,13 +57,22 @@ void main() {
     expect(find.text('Filial Sul'), findsNothing);
   });
 
-  testWidgets('clientId limita a lista e mostra o chip', (tester) async {
+  testWidgets('clientId limita a lista e mostra o cliente no cabeçalho', (
+    tester,
+  ) async {
     await tester.pumpWidget(host(clientId: 'c2'));
     await tester.pumpAndSettle();
 
     expect(find.text('Depósito'), findsOneWidget);
     expect(find.text('Matriz'), findsNothing);
-    expect(find.text('Cliente: Bar do Zé'), findsOneWidget);
+    // nome do cliente no subtítulo da AppBar (sem chip removível)
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text('Bar do Zé'),
+      ),
+      findsOneWidget,
+    );
     expect(find.byType(BackButton), findsOneWidget);
   });
 }

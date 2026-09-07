@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/widgets/brand_app_bar.dart';
-import '../../../core/widgets/client_filter_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../locations/application/locations_provider.dart';
@@ -40,6 +39,7 @@ class EquipmentListScreen extends ConsumerWidget {
         count: total == null
             ? null
             : '$total ${total == 1 ? 'item' : 'itens'}',
+        subtitle: clientId == null ? null : clientsById[clientId] ?? 'Cliente',
         leading: clientId == null ? null : const BackButton(),
       ),
       body: SearchableListView<LocalEquipment>(
@@ -47,12 +47,6 @@ class EquipmentListScreen extends ConsumerWidget {
         paging: ref.watch(equipmentListPagingProvider),
         loadAllOnInit: clientId != null,
         extraFilter: clientId == null ? null : mine,
-        filterBar: clientId == null
-            ? null
-            : ClientFilterBar(
-                label: clientsById[clientId] ?? 'Cliente',
-                onClear: () => context.go('/equipments'),
-              ),
         onRefresh: () => ref.read(equipmentRepositoryProvider).refresh(),
         hintText: 'Buscar equipamento, local ou cliente',
         emptyMessage:

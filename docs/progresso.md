@@ -5,19 +5,21 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
-## `app_servory` — `feature/service-orders`: fix "Ver todos" (chip invisível + sem voltar) ✅
+## `app_servory` — `feature/service-orders`: recorte por cliente no cabeçalho ✅
 
-Dois bugs na lista filtrada por cliente (aberta pelo "Ver todos" da tela do
-cliente):
+A lista de Locais/Equipamentos aberta pelo "Ver todos" da tela do cliente
+usava um chip removível (`ClientFilterBar`) — que além de renderizar branco no
+branco, deixava "limpar" o cliente (não faz sentido: você entrou pelo cliente)
+e, ao limpar, sumia com o botão de voltar.
 
-- **Chip do filtro invisível**: o `InputChip` do `ClientFilterBar` renderizava
-  texto branco no branco (tema de chip). Trocado por uma faixa escura
-  (`BrandColor.ink`) com "Cliente: <nome>" em branco + `IconButton` de limpar.
-- **Sem botão de voltar**: o `automaticallyImplyLeading` da AppBar não aparecia
-  nessa rota empilhada. `brandAppBar` ganhou param `leading`; `LocationListScreen`
-  e `EquipmentListScreen` passam `const BackButton()` quando `clientId != null`.
-- Testes atualizados (`location_list_screen`, `equipment_list_screen`): checam
-  `BackButton` presente no modo filtrado.
+- Chip removido (`client_filter_bar.dart` deletado).
+- `brandAppBar` ganhou `subtitle` (linha abaixo do título, mono). As duas
+  listas passam o nome do cliente ali quando `clientId != null`:
+  `5 LOCAIS / Locais / Padaria Central Web`.
+- `brandAppBar` ganhou `leading`; as listas passam `const BackButton()` no
+  modo recortado (a rota é sempre empilhada e o implícito falhava).
+- Testes (`location_list_screen`, `equipment_list_screen`): cliente no
+  cabeçalho + `BackButton` presente.
 
 ## `app_servory` — `feature/service-orders`: empresa abre em leitura ✅
 
