@@ -8,10 +8,10 @@ void main() {
   runApp(
     ProviderScope(
       overrides: [
-        // Segura o splash por pelo menos 1s no boot, mesmo quando a sessão
+        // Segura o splash por pelo menos 3s no boot, mesmo quando a sessão
         // restaura na hora — dá ao usuário a sensação de que o app carregou.
         bootSplashMinDurationProvider.overrideWithValue(
-          const Duration(seconds: 1),
+          const Duration(seconds: 3),
         ),
       ],
       child: const ServoryApp(),

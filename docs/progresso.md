@@ -25,7 +25,7 @@ serviço ligadas ao registro. Agora cada uma tem uma seção **Laudos (N)**.
 ## `app_servory` — `feature/service-orders`: tempo mínimo de splash no boot ✅
 
 O splash sumia num flash quando a sessão restaurava na hora, passando a
-sensação de que o app "não carregou nada". Agora fica pelo menos 1s.
+sensação de que o app "não carregou nada". Agora fica pelo menos 3s.
 
 - `bootSplashMinDurationProvider` (`session_controller.dart`): padrão
   `Duration.zero`; `main.dart` sobrescreve com `1s`. Assim os testes de widget
