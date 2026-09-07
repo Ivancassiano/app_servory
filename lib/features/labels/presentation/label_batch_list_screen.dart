@@ -75,10 +75,10 @@ class LabelBatchListScreen extends ConsumerWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _createDialog(context, ref),
-        tooltip: 'Novo lote',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Novo lote'),
       ),
     );
   }

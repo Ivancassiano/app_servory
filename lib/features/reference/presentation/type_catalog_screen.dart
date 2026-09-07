@@ -80,10 +80,10 @@ class TypeCatalogScreen extends ConsumerWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _edit(context, ref),
-        tooltip: 'Novo ${kind.singular.toLowerCase()}',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: Text('Novo ${kind.singular.toLowerCase()}'),
       ),
     );
   }
