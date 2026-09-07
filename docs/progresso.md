@@ -47,8 +47,10 @@ cliente / local / equipamento — só dava pra gerar e copiar o código.
 - Backend não tem endpoint de PDF por etiqueta única (só o de folha por lote
   via worker) — por isso o PDF é montado no cliente.
 - O botão no card é **só o ícone de impressora** (sem texto), um **quadrado
-  preto** (`IconButton` com `shape` de raio zero) — o `IconButton.filled`
-  saía como círculo, fora do padrão de cantos retos do tema.
+  preto** com a **mesma altura** do botão "Substituir" ao lado (os dois num
+  `IntrinsicHeight` + `Row` com `stretch`; a impressora é um `FilledButton`
+  em `AspectRatio(1)`). O `IconButton.filled` saía círculo, e depois um
+  quadrado mais baixo que o "Substituir".
 - Na tela de preview há um seletor **"Texto da etiqueta (opcional)"** —
   `— / Empresa: <nome> / Modelo: <nome>` (mesma ideia da folha por lote,
   ADR-0016/0017). Empresa → nome/endereço/telefone; Modelo → o `body`

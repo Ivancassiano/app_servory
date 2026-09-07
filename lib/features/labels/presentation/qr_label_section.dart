@@ -306,27 +306,44 @@ class _LabelCard extends StatelessWidget {
                     ),
             ),
             const SizedBox(height: 4),
+            IntrinsicHeight(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (onPrint != null && !conflict) ...[
+                    AspectRatio(
+                      aspectRatio: 1,
+                      child: FilledButton(
+                        onPressed: onPrint,
+                        style: FilledButton.styleFrom(
+                          backgroundColor: BrandColor.ink,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                          ),
+                        ),
+                        child: const Icon(Icons.print_outlined, size: 20),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  FilledButton.tonalIcon(
+                    onPressed: busy ? null : onReplaceScan,
+                    icon: const Icon(Icons.qr_code_scanner),
+                    label: Text(
+                      conflict ? 'Substituir etiqueta' : 'Substituir',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: [
-                if (onPrint != null && !conflict)
-                  IconButton(
-                    onPressed: onPrint,
-                    icon: const Icon(Icons.print_outlined),
-                    tooltip: 'Imprimir / compartilhar',
-                    style: IconButton.styleFrom(
-                      backgroundColor: BrandColor.ink,
-                      foregroundColor: Colors.white,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                    ),
-                  ),
-                FilledButton.tonalIcon(
-                  onPressed: busy ? null : onReplaceScan,
-                  icon: const Icon(Icons.qr_code_scanner),
-                  label: Text(conflict ? 'Substituir etiqueta' : 'Substituir'),
-                ),
                 if (!conflict)
                   TextButton(
                     onPressed: busy ? null : onReplaceGenerate,
