@@ -22,6 +22,13 @@ serviço ligadas ao registro. Agora cada uma tem uma seção **Laudos (N)**.
 - Testes: lista recortada por local (`service_order_list_screen_test`); seção
   filtra pelo escopo + navega + estado vazio (`related_service_orders_section_test`).
 
+## `app_servory` — `feature/service-orders`: laudos como histórico (data/hora) ✅
+
+`RelatedServiceOrdersSection` agora mostra a **data/hora de cadastro** como
+título de cada card (`dd/MM/yyyy HH:mm`, hora local) e ordena **mais recente
+primeiro** por `createdAt` (cai pra `updatedAt` em registro antigo). Subtítulo
+virou `status · motivo`. Lê como um histórico.
+
 ## `app_servory` — `feature/service-orders`: marca Leiano mais presente ✅
 
 O nome da casa (Leiano) só aparecia na splash e apagadíssimo. Agora:
