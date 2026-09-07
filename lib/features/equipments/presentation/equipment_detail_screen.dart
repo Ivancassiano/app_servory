@@ -6,6 +6,7 @@ import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/conflict_notice.dart';
 import '../../../core/widgets/detail_view.dart';
+import '../../clients/application/clients_provider.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
 import '../../locations/application/locations_provider.dart';
@@ -21,12 +22,17 @@ class EquipmentDetailScreen extends ConsumerStatefulWidget {
     super.key,
     required this.equipmentId,
     this.presetLocationId,
+    this.presetClientId,
   });
 
   final String equipmentId;
 
   /// Local pré-selecionado ao criar a partir da tela do local — fica fixo.
   final String? presetLocationId;
+
+  /// Cliente pré-selecionado ao criar a partir da tela do cliente — trava o
+  /// cliente e filtra a lista de locais. Ignorado se [presetLocationId] veio.
+  final String? presetClientId;
 
   bool get isNew => equipmentId == 'new';
 
@@ -41,6 +47,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
   final _brandController = TextEditingController();
   final _modelController = TextEditingController();
   final _notesController = TextEditingController();
+  String? _clientId;
   String? _locationId;
   String? _equipmentTypeId;
   int? _version;
@@ -72,7 +79,10 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
   void initState() {
     super.initState();
     _editing = widget.isNew;
-    if (widget.isNew) _locationId = widget.presetLocationId;
+    if (widget.isNew) {
+      _locationId = widget.presetLocationId;
+      _clientId = widget.presetClientId;
+    }
     // Best effort: puxa os tipos do servidor — pro seletor (criação) e pro
     // nome do tipo (leitura).
     Future.microtask(
@@ -96,6 +106,9 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
     _modelController.text = equipment.model;
     _notesController.text = equipment.notes;
     _locationId = equipment.locationId;
+    final locMatch = (ref.read(locationListProvider).value ?? const [])
+        .where((l) => l.id == equipment.locationId);
+    _clientId = locMatch.isEmpty ? null : locMatch.first.clientId;
     _equipmentTypeId = equipment.equipmentTypeId;
     _version = equipment.version;
     _seeded = true;
@@ -240,7 +253,15 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
 
   Widget _form(BuildContext context, {required String title}) {
     final locations = ref.watch(locationListProvider).value ?? const [];
+    final clients = ref.watch(clientListProvider).value ?? const [];
     final types = ref.watch(equipmentTypeListProvider).value ?? const [];
+
+    // Local vem da tela do local (fixo) → não precisa escolher cliente.
+    final lockLocation = widget.presetLocationId != null;
+    final clientLocations = [
+      for (final l in locations)
+        if (l.clientId == _clientId) l,
+    ];
 
     return Scaffold(
       appBar: AppBar(title: Text(title)),
@@ -253,7 +274,38 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (widget.isNew) ...[
-                  if (widget.presetLocationId != null)
+                  if (!lockLocation) ...[
+                    if (widget.presetClientId != null)
+                      InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Cliente',
+                          enabled: false,
+                        ),
+                        child: Text(
+                          clients
+                              .where((c) => c.id == widget.presetClientId)
+                              .map((c) => c.name)
+                              .join(),
+                        ),
+                      )
+                    else
+                      DropdownButtonFormField<String>(
+                        initialValue: _clientId,
+                        decoration: const InputDecoration(labelText: 'Cliente'),
+                        items: [
+                          for (final c in clients)
+                            DropdownMenuItem(value: c.id, child: Text(c.name)),
+                        ],
+                        onChanged: (v) => setState(() {
+                          _clientId = v;
+                          _locationId = null;
+                        }),
+                        validator: (v) =>
+                            v == null ? 'Escolha o cliente.' : null,
+                      ),
+                    const SizedBox(height: 16),
+                  ],
+                  if (lockLocation)
                     InputDecorator(
                       decoration: const InputDecoration(
                         labelText: 'Local',
@@ -268,13 +320,22 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                     )
                   else
                     DropdownButtonFormField<String>(
-                      initialValue: _locationId,
-                      decoration: const InputDecoration(labelText: 'Local'),
+                      initialValue: clientLocations.any((l) => l.id == _locationId)
+                          ? _locationId
+                          : null,
+                      decoration: InputDecoration(
+                        labelText: 'Local',
+                        helperText: _clientId == null
+                            ? 'Escolha o cliente primeiro.'
+                            : null,
+                      ),
                       items: [
-                        for (final l in locations)
+                        for (final l in clientLocations)
                           DropdownMenuItem(value: l.id, child: Text(l.name)),
                       ],
-                      onChanged: (v) => setState(() => _locationId = v),
+                      onChanged: _clientId == null
+                          ? null
+                          : (v) => setState(() => _locationId = v),
                       validator: (v) => v == null ? 'Escolha o local.' : null,
                     ),
                   const SizedBox(height: 16),

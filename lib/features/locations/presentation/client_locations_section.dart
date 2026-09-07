@@ -30,14 +30,23 @@ class ClientLocationsSection extends ConsumerWidget {
       );
     }
 
+    const previewLimit = 4;
+    final preview = mine.take(previewLimit).toList();
+
     return ChildListSection(
       title: 'Locais',
       count: async.isLoading && async.value == null ? null : mine.length,
       emptyMessage: 'Nenhum local para este cliente.',
       addLabel: 'Novo local',
       onAdd: () => context.push('/locations/new?clientId=$clientId'),
+      seeAllLabel: mine.length > previewLimit
+          ? 'Ver todos (${mine.length})'
+          : null,
+      onSeeAll: mine.length > previewLimit
+          ? () => context.push('/locations?clientId=$clientId')
+          : null,
       children: [
-        for (final l in mine)
+        for (final l in preview)
           Card(
             child: ListTile(
               title: Text(l.name),

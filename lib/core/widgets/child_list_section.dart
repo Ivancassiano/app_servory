@@ -12,6 +12,8 @@ class ChildListSection extends StatelessWidget {
     required this.emptyMessage,
     required this.addLabel,
     required this.onAdd,
+    this.seeAllLabel,
+    this.onSeeAll,
   });
 
   final String title;
@@ -20,6 +22,11 @@ class ChildListSection extends StatelessWidget {
   final String emptyMessage;
   final String addLabel;
   final VoidCallback onAdd;
+
+  /// Quando setados, mostra um "Ver todos (N)" abaixo da lista (a lista aqui
+  /// é só uma prévia).
+  final String? seeAllLabel;
+  final VoidCallback? onSeeAll;
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +49,11 @@ class ChildListSection extends StatelessWidget {
           )
         else
           Column(children: children),
+        if (seeAllLabel != null && onSeeAll != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(onPressed: onSeeAll, child: Text(seeAllLabel!)),
+          ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
           onPressed: onAdd,

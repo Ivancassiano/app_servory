@@ -24,6 +24,7 @@ class SearchableListView<T> extends StatefulWidget {
     this.filterBar,
     this.extraFilter,
     this.paging,
+    this.loadAllOnInit = false,
   });
 
   /// Estado da lista (loading / error / data).
@@ -54,6 +55,11 @@ class SearchableListView<T> extends StatefulWidget {
   /// Fonte paginada (só web). Nulo nos apps.
   final PagedSource? paging;
 
+  /// Puxa todas as páginas assim que monta. Use quando um [extraFilter]
+  /// client-side (ex.: por cliente) precisa do conjunto completo pra não dar
+  /// resultado parcial no web.
+  final bool loadAllOnInit;
+
   @override
   State<SearchableListView<T>> createState() => _SearchableListViewState<T>();
 }
@@ -68,6 +74,7 @@ class _SearchableListViewState<T> extends State<SearchableListView<T>> {
     super.initState();
     _scroll.addListener(_onScroll);
     widget.paging?.addListener(_onPagingChange);
+    if (widget.loadAllOnInit) widget.paging?.loadAll();
   }
 
   @override

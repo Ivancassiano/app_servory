@@ -5,6 +5,34 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: hierarquia nas listas, buscas e cadastro ✅
+
+A associação cliente → local → equipamento já era salva, mas a navegação era
+fraca. Melhorias:
+
+- **Lista de Locais**: subtítulo mostra `cliente · cidade`; busca acha pelo
+  nome do cliente também.
+- **Lista de Equipamentos**: subtítulo `cliente · local` + marca/modelo; busca
+  por equipamento, local ou cliente.
+- **Cadastro de equipamento**: novo seletor **Cliente** que filtra a lista de
+  **Local** (mesmo padrão de `location_detail_screen`: troca de cliente zera o
+  local; `InputDecorator` travado quando vem da tela do cliente). O local
+  continua obrigatório (backend exige) — o cliente não é persistido, é
+  transitivo.
+- **Tela do cliente**: seções **Locais** e **Equipamentos** agora são prévia
+  de 4 + "Ver todos (N)" → abre a lista filtrada (`/locations?clientId=` /
+  `/equipments?clientId=`) com chip do cliente e "carrega tudo" no web
+  (`SearchableListView.loadAllOnInit`). A seção de Equipamentos junta os
+  equipamentos de todos os locais do cliente (dá pra achar um sem abrir local
+  por local).
+- Novos: `ClientEquipmentsSection`, `ClientFilterBar`; `ChildListSection` ganhou
+  `seeAllLabel`/`onSeeAll`; rotas `/locations` e `/equipments` aceitam
+  `?clientId=`.
+- 136 testes (era 125): `location_list_screen`, `equipment_list_screen`,
+  `equipment_detail_screen`, `client_equipments_section`, +
+  `client_locations_section` (prévia/ver todos). `flutter analyze` limpo,
+  `flutter build web` OK. Verificado ao vivo no Android.
+
 ## `app_servory` — `feature/service-orders`: bottom sheets acima da barra do Android ✅
 
 O botão "Gerar" da folha de etiquetas (e outros) ficava atrás da barra de

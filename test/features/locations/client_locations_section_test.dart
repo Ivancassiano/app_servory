@@ -49,6 +49,33 @@ void main() {
     expect(find.widgetWithText(OutlinedButton, 'Novo local'), findsOneWidget);
   });
 
+  testWidgets('mais de 4 locais mostra prévia + "Ver todos"', (tester) async {
+    final locations = [
+      for (var i = 0; i < 6; i++) _loc('l$i', 'c1', 'Local $i'),
+    ];
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          locationListProvider.overrideWith((ref) => Stream.value(locations)),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ClientLocationsSection(clientId: 'c1'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Locais (6)'), findsOneWidget);
+    expect(find.text('Ver todos (6)'), findsOneWidget);
+    expect(find.text('Local 0'), findsOneWidget);
+    expect(find.text('Local 4'), findsNothing); // prévia de 4
+  });
+
   testWidgets('sem locais mostra a mensagem vazia', (tester) async {
     await tester.pumpWidget(
       ProviderScope(

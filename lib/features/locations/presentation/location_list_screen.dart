@@ -4,16 +4,29 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/widgets/brand_app_bar.dart';
+import '../../../core/widgets/client_filter_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
+import '../../clients/application/clients_provider.dart';
 import '../application/locations_provider.dart';
 
 class LocationListScreen extends ConsumerWidget {
-  const LocationListScreen({super.key});
+  const LocationListScreen({super.key, this.clientId});
+
+  /// Quando setado, a lista mostra só os locais deste cliente (aberta pela
+  /// tela do cliente). O chip no topo limpa o filtro.
+  final String? clientId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(locationListProvider);
-    final total = async.value?.length;
+    final clientsById = {
+      for (final c in ref.watch(clientListProvider).value ?? const <LocalClient>[])
+        c.id: c.name,
+    };
+
+    bool mine(LocalLocation l) => clientId == null || l.clientId == clientId;
+    final total = async.value?.where(mine).length;
+
     return Scaffold(
       appBar: brandAppBar(
         title: 'Locais',
@@ -22,26 +35,36 @@ class LocationListScreen extends ConsumerWidget {
       body: SearchableListView<LocalLocation>(
         async: async,
         paging: ref.watch(locationListPagingProvider),
+        loadAllOnInit: clientId != null,
+        extraFilter: clientId == null ? null : mine,
+        filterBar: clientId == null
+            ? null
+            : ClientFilterBar(
+                label: clientsById[clientId] ?? 'Cliente',
+                onClear: () => context.go('/locations'),
+              ),
         onRefresh: () => ref.read(locationRepositoryProvider).refresh(),
-        hintText: 'Buscar local',
+        hintText: 'Buscar local ou cliente',
         emptyMessage: 'Nenhum local ainda. Puxe pra baixo para sincronizar.',
         errorMessage: 'Não foi possível carregar os locais.',
-        searchText: (l) =>
-            '${l.name} ${l.city} ${l.state} ${l.district} ${l.street} ${l.contactPerson}',
+        searchText: (l) => '${l.name} ${clientsById[l.clientId] ?? ''} '
+            '${l.city} ${l.state} ${l.district} ${l.street} ${l.contactPerson}',
         itemBuilder: (context, location) {
-          final address = [
+          final place = [
             location.city,
             location.state,
           ].where((s) => s.isNotEmpty).join(' - ');
+          final clientName = clientsById[location.clientId] ?? '';
+          final subtitle = [
+            if (clientName.isNotEmpty) clientName,
+            if (place.isNotEmpty)
+              place
+            else if (location.contactPerson.isNotEmpty)
+              location.contactPerson,
+          ].join(' · ');
           return ListTile(
             title: Text(location.name),
-            subtitle: Text(
-              address.isNotEmpty
-                  ? address
-                  : (location.contactPerson.isNotEmpty
-                        ? location.contactPerson
-                        : '—'),
-            ),
+            subtitle: Text(subtitle.isNotEmpty ? subtitle : '—'),
             trailing: switch (location.syncStatus) {
               'pending' => const Icon(Icons.cloud_upload_outlined, size: 20),
               'conflict' => Icon(
@@ -56,7 +79,11 @@ class LocationListScreen extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/locations/new'),
+        onPressed: () => context.push(
+          clientId == null
+              ? '/locations/new'
+              : '/locations/new?clientId=$clientId',
+        ),
         icon: const Icon(Icons.add),
         label: const Text('Novo local'),
       ),
