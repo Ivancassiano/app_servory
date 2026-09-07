@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../sync/data/local_first_repository.dart';
+import '../../../core/data/paged_source.dart';
 import '../../../core/data/remote_collection.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
@@ -173,7 +174,7 @@ class LocalFirstClientRepository extends LocalFirstRepositoryBase
 
 // ---------------------------------------------------------------------------
 
-class RemoteClientRepository implements ClientRepository {
+class RemoteClientRepository implements ClientRepository, PagedListRepository {
   RemoteClientRepository(Dio dio, String orgId)
     : _collection = RemoteCollection<LocalClient>(
         dio: dio,
@@ -181,9 +182,13 @@ class RemoteClientRepository implements ClientRepository {
         listKey: 'clients',
         fromJson: (j) => clientFromApiJson(j, organizationId: orgId),
         idOf: (c) => c.id,
+        pageSize: 50,
       );
 
   final RemoteCollection<LocalClient> _collection;
+
+  @override
+  PagedSource? get listPaging => _collection;
 
   void dispose() => _collection.dispose();
 

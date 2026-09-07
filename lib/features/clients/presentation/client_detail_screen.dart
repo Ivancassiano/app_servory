@@ -6,6 +6,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/conflict_notice.dart';
 import '../../contacts/data/contact_repository.dart';
 import '../../contacts/presentation/contact_section.dart';
+import '../../locations/presentation/client_locations_section.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
 import '../application/client_edit_controller.dart';
@@ -200,6 +201,10 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
                 ),
                 if (!widget.isNew) ...[
                   const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  ClientLocationsSection(clientId: widget.clientId),
+                  const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 8),
                   ContactSection(

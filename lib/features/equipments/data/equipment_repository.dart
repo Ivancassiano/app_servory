@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/data/paged_source.dart';
 import '../../../core/data/remote_collection.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
@@ -195,7 +196,8 @@ class LocalFirstEquipmentRepository extends LocalFirstRepositoryBase
 
 // ---------------------------------------------------------------------------
 
-class RemoteEquipmentRepository implements EquipmentRepository {
+class RemoteEquipmentRepository
+    implements EquipmentRepository, PagedListRepository {
   RemoteEquipmentRepository(Dio dio, String orgId)
     : _collection = RemoteCollection<LocalEquipment>(
         dio: dio,
@@ -203,9 +205,13 @@ class RemoteEquipmentRepository implements EquipmentRepository {
         listKey: 'equipments',
         fromJson: (j) => equipmentFromApiJson(j, organizationId: orgId),
         idOf: (e) => e.id,
+        pageSize: 50,
       );
 
   final RemoteCollection<LocalEquipment> _collection;
+
+  @override
+  PagedSource? get listPaging => _collection;
 
   void dispose() => _collection.dispose();
 

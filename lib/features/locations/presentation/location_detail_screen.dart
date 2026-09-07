@@ -8,6 +8,7 @@ import '../../../core/widgets/conflict_notice.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../contacts/data/contact_repository.dart';
 import '../../contacts/presentation/contact_section.dart';
+import '../../equipments/presentation/location_equipments_section.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
 import '../application/location_edit_controller.dart';
@@ -17,9 +18,17 @@ import '../data/location_mapper.dart';
 /// `locationId == 'new'` é o sentinela de criação. Criar exige escolher o
 /// cliente; o local-pai (hierarquia) é opcional.
 class LocationDetailScreen extends ConsumerStatefulWidget {
-  const LocationDetailScreen({super.key, required this.locationId});
+  const LocationDetailScreen({
+    super.key,
+    required this.locationId,
+    this.presetClientId,
+  });
 
   final String locationId;
+
+  /// Cliente pré-selecionado ao criar a partir da tela do cliente — fica fixo.
+  final String? presetClientId;
+
   bool get isNew => locationId == 'new';
 
   @override
@@ -55,6 +64,12 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
       _conflict = false;
       _error = null;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isNew) _clientId = widget.presetClientId;
   }
 
   @override
@@ -203,19 +218,34 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (widget.isNew) ...[
-                  DropdownButtonFormField<String>(
-                    initialValue: _clientId,
-                    decoration: const InputDecoration(labelText: 'Cliente'),
-                    items: [
-                      for (final c in clients)
-                        DropdownMenuItem(value: c.id, child: Text(c.name)),
-                    ],
-                    onChanged: (v) => setState(() {
-                      _clientId = v;
-                      _parentLocationId = null;
-                    }),
-                    validator: (v) => v == null ? 'Escolha um cliente.' : null,
-                  ),
+                  if (widget.presetClientId != null)
+                    InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Cliente',
+                        enabled: false,
+                      ),
+                      child: Text(
+                        clients
+                            .where((c) => c.id == widget.presetClientId)
+                            .map((c) => c.name)
+                            .join(),
+                      ),
+                    )
+                  else
+                    DropdownButtonFormField<String>(
+                      initialValue: _clientId,
+                      decoration: const InputDecoration(labelText: 'Cliente'),
+                      items: [
+                        for (final c in clients)
+                          DropdownMenuItem(value: c.id, child: Text(c.name)),
+                      ],
+                      onChanged: (v) => setState(() {
+                        _clientId = v;
+                        _parentLocationId = null;
+                      }),
+                      validator: (v) =>
+                          v == null ? 'Escolha um cliente.' : null,
+                    ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String?>(
                     initialValue: parents.any((l) => l.id == _parentLocationId)
@@ -366,6 +396,10 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                 ),
                 if (!widget.isNew) ...[
                   const SizedBox(height: 32),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  LocationEquipmentsSection(locationId: widget.locationId),
+                  const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 8),
                   ContactSection(

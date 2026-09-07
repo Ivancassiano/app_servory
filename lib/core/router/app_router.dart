@@ -102,8 +102,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: ':id',
-            builder: (_, state) =>
-                LocationDetailScreen(locationId: state.pathParameters['id']!),
+            builder: (_, state) => LocationDetailScreen(
+              locationId: state.pathParameters['id']!,
+              presetClientId: state.uri.queryParameters['clientId'],
+            ),
           ),
         ],
       ),
@@ -113,8 +115,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: ':id',
-            builder: (_, state) =>
-                EquipmentDetailScreen(equipmentId: state.pathParameters['id']!),
+            builder: (_, state) => EquipmentDetailScreen(
+              equipmentId: state.pathParameters['id']!,
+              presetLocationId: state.uri.queryParameters['locationId'],
+            ),
           ),
         ],
       ),

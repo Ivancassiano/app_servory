@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/data/paged_source.dart';
 import '../../../core/data/remote_collection.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
@@ -214,7 +215,8 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
 
 // ---------------------------------------------------------------------------
 
-class RemoteLocationRepository implements LocationRepository {
+class RemoteLocationRepository
+    implements LocationRepository, PagedListRepository {
   RemoteLocationRepository(Dio dio, String orgId)
     : _collection = RemoteCollection<LocalLocation>(
         dio: dio,
@@ -222,9 +224,13 @@ class RemoteLocationRepository implements LocationRepository {
         listKey: 'locations',
         fromJson: (j) => locationFromApiJson(j, organizationId: orgId),
         idOf: (l) => l.id,
+        pageSize: 50,
       );
 
   final RemoteCollection<LocalLocation> _collection;
+
+  @override
+  PagedSource? get listPaging => _collection;
 
   void dispose() => _collection.dispose();
 

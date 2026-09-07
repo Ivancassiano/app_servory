@@ -5,6 +5,64 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: navegação por hierarquia (cliente → locais → equipamentos) ✅
+
+O vínculo já era gravado (`location.client_id`, `equipment.location_id`
+obrigatórios na criação), mas não dava pra percorrer a árvore no app. Agora:
+
+- **`ChildListSection`** (`lib/core/widgets/child_list_section.dart`): bloco
+  genérico "filhos de um registro" (título + contagem + lista + botão de criar).
+- **`ClientLocationsSection`** na tela do cliente: lista os locais deste cliente
+  (filtro client-side sobre `locationListProvider`) + "Novo local" que abre a
+  criação com o cliente **fixo**.
+- **`LocationEquipmentsSection`** na tela do local: idem para equipamentos +
+  "Novo equipamento" com o local fixo.
+- Rotas `/locations/new?clientId=…` e `/equipments/new?locationId=…`; os
+  formulários leem o query param, pré-selecionam e mostram o pai como campo
+  travado (`InputDecorator` desabilitado) em vez do dropdown.
+- **Limitação (web):** as seções filtram sobre a 1ª página paginada — um
+  cliente com >50 locais no total truncaria. Nos apps é tudo do drift, correto.
+- Verificado ao vivo nas 3 plataformas (ver abaixo).
+
+## `app_servory` — `feature/service-orders`: paginação real das listas (web) ✅
+
+Item #7 do roadmap de v1. Antes as listas web puxavam `size: 500` numa
+tacada — e o backend **corta em `size` 25** (`maxPageSize` 100, `defaultPageSize`
+25), então o web só mostrava 25 registros por lista, silenciosamente. Agora:
+
+- **`RemoteCollection`** ganha modo paginado opt-in (`pageSize`): `refresh()`
+  busca a página 1 (`page`/`size` + lê `total`), `loadMore()` anexa a próxima,
+  `loadAll()` esgota. Sem `pageSize` o comportamento é o antigo (sub-recursos
+  pequenos — contatos, peças, recomendações, membros — não mudam). Passa a ser
+  `ChangeNotifier` para a UI reagir ao estado de carga.
+- **`PagedSource`** (`lib/core/data/paged_source.dart`): interface que a
+  `SearchableListView` consome (`hasMore` / `isLoadingMore` / `loadMore` /
+  `loadAll`) + marcador `PagedListRepository` + helper `pagingOf(repo)`.
+- **`SearchableListView`** ganha `paging`: rolar até ~400px do fim chama
+  `loadMore` (rodapé com spinner); **começar a digitar uma busca chama
+  `loadAll`** — a busca é client-side e daria resultado parcial sobre uma lista
+  incompleta. Nos apps `paging` é nulo (a lista inteira vem do drift), nada
+  muda.
+- Ligado em **clientes, locais, equipamentos** (web) e **empresas** (REST nos
+  dois alvos — empresas não sincronizam), `pageSize: 50`. A **lista de ordens
+  de serviço fica de fora**: o nome do cliente vem de um segundo provider
+  (`clientListProvider`), que também é paginado — paginar as ordens exigiria um
+  join server-side que não existe. Registrado como follow-up.
+- 120 testes (era 113): `remote_collection_paged_test.dart` (4),
+  `client_locations_section_test.dart` (2), +1 na `searchable_list_view_test.dart`.
+  `flutter analyze` limpo, `flutter build web` OK.
+
+### Verificação ao vivo (Docker + Android + iOS + Chrome)
+
+- **Android** (Pixel9): cliente → "Locais (2)" → "Novo local" (cliente travado
+  = "Padaria Central Web") → criou "Cozinha Teste Android"; local → "Equipamentos
+  (0)" → "Novo equipamento" (local travado) → criou "Forno Teste". `curl`
+  confirmou `client_id`/`location_id` corretos no backend.
+- **Chrome**: cliente → "Locais (3)", "Novo local" com cliente travado; lista de
+  Locais renderiza + busca com acento (`deposito` acha `Depósito`).
+- **iOS** (iPhone 17 Pro): cliente → "Locais (3)", local → "Equipamentos (1)"
+  ("Forno principal"). Layout idêntico às outras plataformas (abordagem B).
+
 ## `app_servory` — `feature/service-orders`: testes de widget das telas principais ✅
 
 Item #10 do roadmap de v1. As telas só tinham cobertura de login; o resto era

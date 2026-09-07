@@ -28,6 +28,7 @@ class EquipmentListScreen extends ConsumerWidget {
       ),
       body: SearchableListView<LocalEquipment>(
         async: async,
+        paging: ref.watch(equipmentListPagingProvider),
         onRefresh: () => ref.read(equipmentRepositoryProvider).refresh(),
         hintText: 'Buscar equipamento',
         emptyMessage:

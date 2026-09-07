@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/data/paged_source.dart';
 import '../../../core/data/remote_collection.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/api_parse.dart';
@@ -130,7 +131,7 @@ Map<String, dynamic> _companyBody({
   'notes': notes,
 };
 
-class CompanyRepository {
+class CompanyRepository implements PagedListRepository {
   CompanyRepository(this._dio);
   final Dio _dio;
 
@@ -140,7 +141,11 @@ class CompanyRepository {
     listKey: 'companies',
     fromJson: Company.fromApiJson,
     idOf: (c) => c.id,
+    pageSize: 50,
   );
+
+  @override
+  PagedSource? get listPaging => _companies;
 
   final _members = <String, RemoteCollection<CompanyMember>>{};
 
@@ -299,6 +304,11 @@ final companyRepositoryProvider = Provider<CompanyRepository>((ref) {
 
 final companyListProvider = StreamProvider<List<Company>>(
   (ref) => ref.watch(companyRepositoryProvider).watchList(),
+);
+
+/// Fonte paginada da lista de empresas (REST nos dois alvos — não sincronizam).
+final companyListPagingProvider = Provider<PagedSource?>(
+  (ref) => ref.watch(companyRepositoryProvider).listPaging,
 );
 
 final companyByIdProvider = StreamProvider.family<Company?, String>(

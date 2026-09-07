@@ -24,6 +24,7 @@ class CompanyListScreen extends ConsumerWidget {
       ),
       body: SearchableListView<Company>(
         async: async,
+        paging: ref.watch(companyListPagingProvider),
         onRefresh: () => ref.read(companyRepositoryProvider).refresh(),
         hintText: 'Buscar empresa',
         emptyMessage: 'Nenhuma empresa cadastrada.',

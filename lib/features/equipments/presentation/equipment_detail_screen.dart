@@ -16,9 +16,17 @@ import '../application/equipments_provider.dart';
 /// e `cost` ficam fora do formulário (campos sensíveis, sem checagem de
 /// permissão de escrita no app ainda).
 class EquipmentDetailScreen extends ConsumerStatefulWidget {
-  const EquipmentDetailScreen({super.key, required this.equipmentId});
+  const EquipmentDetailScreen({
+    super.key,
+    required this.equipmentId,
+    this.presetLocationId,
+  });
 
   final String equipmentId;
+
+  /// Local pré-selecionado ao criar a partir da tela do local — fica fixo.
+  final String? presetLocationId;
+
   bool get isNew => equipmentId == 'new';
 
   @override
@@ -53,6 +61,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
   void initState() {
     super.initState();
     if (widget.isNew) {
+      _locationId = widget.presetLocationId;
       // Best effort: puxa os tipos do servidor pro seletor (no web/1ª vez).
       Future.microtask(
         () => ref.read(equipmentTypeRepositoryProvider).refresh(),
@@ -178,16 +187,30 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (widget.isNew) ...[
-                  DropdownButtonFormField<String>(
-                    initialValue: _locationId,
-                    decoration: const InputDecoration(labelText: 'Local'),
-                    items: [
-                      for (final l in locations)
-                        DropdownMenuItem(value: l.id, child: Text(l.name)),
-                    ],
-                    onChanged: (v) => setState(() => _locationId = v),
-                    validator: (v) => v == null ? 'Escolha o local.' : null,
-                  ),
+                  if (widget.presetLocationId != null)
+                    InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Local',
+                        enabled: false,
+                      ),
+                      child: Text(
+                        locations
+                            .where((l) => l.id == widget.presetLocationId)
+                            .map((l) => l.name)
+                            .join(),
+                      ),
+                    )
+                  else
+                    DropdownButtonFormField<String>(
+                      initialValue: _locationId,
+                      decoration: const InputDecoration(labelText: 'Local'),
+                      items: [
+                        for (final l in locations)
+                          DropdownMenuItem(value: l.id, child: Text(l.name)),
+                      ],
+                      onChanged: (v) => setState(() => _locationId = v),
+                      validator: (v) => v == null ? 'Escolha o local.' : null,
+                    ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     initialValue: _equipmentTypeId,

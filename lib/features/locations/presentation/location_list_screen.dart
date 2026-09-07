@@ -21,6 +21,7 @@ class LocationListScreen extends ConsumerWidget {
       ),
       body: SearchableListView<LocalLocation>(
         async: async,
+        paging: ref.watch(locationListPagingProvider),
         onRefresh: () => ref.read(locationRepositoryProvider).refresh(),
         hintText: 'Buscar local',
         emptyMessage: 'Nenhum local ainda. Puxe pra baixo para sincronizar.',

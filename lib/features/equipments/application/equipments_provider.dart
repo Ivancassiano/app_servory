@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/data/paged_source.dart';
 import '../../../core/db/app_database.dart';
 import '../data/equipment_repository.dart';
 
@@ -12,6 +13,11 @@ export '../data/equipment_type_repository.dart'
 /// nome/marca/modelo/série, não o tipo.
 final equipmentListProvider = StreamProvider<List<LocalEquipment>>(
   (ref) => ref.watch(equipmentRepositoryProvider).watchList(),
+);
+
+/// Fonte paginada da lista (só web) — nula nos apps.
+final equipmentListPagingProvider = Provider<PagedSource?>(
+  (ref) => pagingOf(ref.watch(equipmentRepositoryProvider)),
 );
 
 final equipmentByIdProvider = StreamProvider.family<LocalEquipment?, String>(
