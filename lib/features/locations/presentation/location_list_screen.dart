@@ -31,6 +31,9 @@ class LocationListScreen extends ConsumerWidget {
       appBar: brandAppBar(
         title: 'Locais',
         count: total == null ? null : '$total ${total == 1 ? 'local' : 'locais'}',
+        // A vista filtrada por cliente é sempre empilhada (vem da tela do
+        // cliente) — garante o "voltar" mesmo se o implícito falhar.
+        leading: clientId == null ? null : const BackButton(),
       ),
       body: SearchableListView<LocalLocation>(
         async: async,

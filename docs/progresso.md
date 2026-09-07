@@ -5,6 +5,20 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: fix "Ver todos" (chip invisível + sem voltar) ✅
+
+Dois bugs na lista filtrada por cliente (aberta pelo "Ver todos" da tela do
+cliente):
+
+- **Chip do filtro invisível**: o `InputChip` do `ClientFilterBar` renderizava
+  texto branco no branco (tema de chip). Trocado por uma faixa escura
+  (`BrandColor.ink`) com "Cliente: <nome>" em branco + `IconButton` de limpar.
+- **Sem botão de voltar**: o `automaticallyImplyLeading` da AppBar não aparecia
+  nessa rota empilhada. `brandAppBar` ganhou param `leading`; `LocationListScreen`
+  e `EquipmentListScreen` passam `const BackButton()` quando `clientId != null`.
+- Testes atualizados (`location_list_screen`, `equipment_list_screen`): checam
+  `BackButton` presente no modo filtrado.
+
 ## `app_servory` — `feature/service-orders`: empresa abre em leitura ✅
 
 `CompanyDetailScreen` abria já com os campos editáveis, fora do padrão das

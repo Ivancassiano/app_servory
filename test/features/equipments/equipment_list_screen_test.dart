@@ -80,5 +80,6 @@ void main() {
     expect(find.text('Forno'), findsOneWidget);
     expect(find.text('Chopeira'), findsNothing);
     expect(find.text('Cliente: Padaria Central'), findsOneWidget);
+    expect(find.byType(BackButton), findsOneWidget);
   });
 }

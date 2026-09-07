@@ -9,11 +9,13 @@ PreferredSizeWidget brandAppBar({
   required String title,
   String? count,
   List<Widget>? actions,
+  Widget? leading,
   double titleSize = 21,
 }) {
   return AppBar(
     toolbarHeight: count == null ? kToolbarHeight : 74,
     titleSpacing: 16,
+    leading: leading,
     title: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,

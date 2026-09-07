@@ -40,6 +40,7 @@ class EquipmentListScreen extends ConsumerWidget {
         count: total == null
             ? null
             : '$total ${total == 1 ? 'item' : 'itens'}',
+        leading: clientId == null ? null : const BackButton(),
       ),
       body: SearchableListView<LocalEquipment>(
         async: async,

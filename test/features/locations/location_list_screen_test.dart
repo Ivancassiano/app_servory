@@ -64,5 +64,6 @@ void main() {
     expect(find.text('Depósito'), findsOneWidget);
     expect(find.text('Matriz'), findsNothing);
     expect(find.text('Cliente: Bar do Zé'), findsOneWidget);
+    expect(find.byType(BackButton), findsOneWidget);
   });
 }
