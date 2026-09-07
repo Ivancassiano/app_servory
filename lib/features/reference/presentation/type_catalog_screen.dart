@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
+import '../../../core/widgets/form_sheet.dart';
 import '../../items/data/item_type_repository.dart';
 import '../data/reference_repository.dart';
 import '../data/type_catalog_repository.dart';
@@ -95,33 +96,26 @@ class TypeCatalogScreen extends ConsumerWidget {
   }) async {
     final nameCtrl = TextEditingController(text: item?.name ?? '');
     final descCtrl = TextEditingController(text: item?.description ?? '');
-    final ok = await showDialog<bool>(
+    final ok = await showModalBottomSheet<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          item == null ? 'Novo ${kind.singular.toLowerCase()}' : item.name,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              autofocus: true,
-              decoration: const InputDecoration(labelText: 'Nome'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: descCtrl,
-              maxLines: 2,
-              decoration: const InputDecoration(labelText: 'Descrição'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+      isScrollControlled: true,
+      builder: (ctx) => FormSheet(
+        title: item == null
+            ? 'Novo ${kind.singular.toLowerCase()}'
+            : item.name,
+        children: [
+          TextField(
+            controller: nameCtrl,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Nome'),
           ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: descCtrl,
+            maxLines: 2,
+            decoration: const InputDecoration(labelText: 'Descrição'),
+          ),
+          const SizedBox(height: 16),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Salvar'),

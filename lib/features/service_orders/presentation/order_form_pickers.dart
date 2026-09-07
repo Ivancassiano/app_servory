@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../core/widgets/form_sheet.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../items/application/items_provider.dart';
 
@@ -276,23 +277,21 @@ class _ItemNode extends StatelessWidget {
 
 Future<String?> _promptName(BuildContext context, String title) {
   final c = TextEditingController();
-  return showDialog<String>(
+  return showModalBottomSheet<String>(
     context: context,
-    builder: (_) => AlertDialog(
-      title: Text(title),
-      content: TextField(
-        controller: c,
-        autofocus: true,
-        decoration: const InputDecoration(labelText: 'Nome'),
-        onSubmitted: (v) => Navigator.of(context).pop(v.trim()),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
+    isScrollControlled: true,
+    builder: (ctx) => FormSheet(
+      title: title,
+      children: [
+        TextField(
+          controller: c,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Nome'),
+          onSubmitted: (v) => Navigator.of(ctx).pop(v.trim()),
         ),
+        const SizedBox(height: 16),
         FilledButton(
-          onPressed: () => Navigator.of(context).pop(c.text.trim()),
+          onPressed: () => Navigator.of(ctx).pop(c.text.trim()),
           child: const Text('Adicionar'),
         ),
       ],

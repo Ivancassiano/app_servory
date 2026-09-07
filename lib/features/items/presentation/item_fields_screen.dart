@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/widgets/brand_app_bar.dart';
+import '../../../core/widgets/form_sheet.dart';
 import '../application/items_provider.dart';
 
 const _dataTypeLabels = {
@@ -127,62 +128,58 @@ class _ItemFieldsScreenState extends ConsumerState<ItemFieldsScreen> {
     var required = existing?.required ?? false;
     String? typeId = existing?.itemTypeId;
 
-    final saved = await showDialog<bool>(
+    final saved = await showModalBottomSheet<bool>(
       context: context,
+      isScrollControlled: true,
       builder: (c) => StatefulBuilder(
-        builder: (c, setSt) => AlertDialog(
-          title: Text(existing == null ? 'Novo campo' : 'Editar campo'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: labelCtrl,
-                  decoration: const InputDecoration(labelText: 'Descrição'),
-                ),
-                DropdownButtonFormField<String>(
-                  initialValue: dataType,
-                  decoration: const InputDecoration(labelText: 'Tipo do dado'),
-                  items: [
-                    for (final e in _dataTypeLabels.entries)
-                      DropdownMenuItem(value: e.key, child: Text(e.value)),
-                  ],
-                  onChanged: (v) => setSt(() => dataType = v ?? 'text'),
-                ),
-                DropdownButtonFormField<String?>(
-                  initialValue: typeId,
-                  decoration: const InputDecoration(labelText: 'Aplica-se a'),
-                  items: [
-                    const DropdownMenuItem(
-                      value: null,
-                      child: Text('Todos os itens (global)'),
-                    ),
-                    for (final t in types)
-                      DropdownMenuItem(value: t.id, child: Text(t.name)),
-                  ],
-                  onChanged: (v) => setSt(() => typeId = v),
-                ),
-                if (dataType == 'select')
-                  TextField(
-                    controller: optionsCtrl,
-                    maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: 'Opções (uma por linha)',
-                    ),
-                  ),
-                SwitchListTile(
-                  title: const Text('Obrigatório'),
-                  value: required,
-                  onChanged: (v) => setSt(() => required = v),
-                ),
+        builder: (c, setSt) => FormSheet(
+          title: existing == null ? 'Novo campo' : 'Editar campo',
+          children: [
+            TextField(
+              controller: labelCtrl,
+              decoration: const InputDecoration(labelText: 'Descrição'),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: dataType,
+              decoration: const InputDecoration(labelText: 'Tipo do dado'),
+              items: [
+                for (final e in _dataTypeLabels.entries)
+                  DropdownMenuItem(value: e.key, child: Text(e.value)),
               ],
+              onChanged: (v) => setSt(() => dataType = v ?? 'text'),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(c, false),
-              child: const Text('Cancelar'),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String?>(
+              initialValue: typeId,
+              decoration: const InputDecoration(labelText: 'Aplica-se a'),
+              items: [
+                const DropdownMenuItem(
+                  value: null,
+                  child: Text('Todos os itens (global)'),
+                ),
+                for (final t in types)
+                  DropdownMenuItem(value: t.id, child: Text(t.name)),
+              ],
+              onChanged: (v) => setSt(() => typeId = v),
             ),
+            if (dataType == 'select') ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: optionsCtrl,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Opções (uma por linha)',
+                ),
+              ),
+            ],
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Obrigatório'),
+              value: required,
+              onChanged: (v) => setSt(() => required = v),
+            ),
+            const SizedBox(height: 16),
             FilledButton(
               onPressed: () => Navigator.pop(c, true),
               child: const Text('Salvar'),
