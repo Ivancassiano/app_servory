@@ -17,10 +17,12 @@ import '../../features/labels/presentation/label_batch_detail_screen.dart';
 import '../../features/labels/presentation/label_batch_list_screen.dart';
 import '../../features/labels/presentation/label_template_edit_screen.dart';
 import '../../features/labels/presentation/label_template_list_screen.dart';
+import '../../features/labels/presentation/qr_label_print_screen.dart';
 import '../../features/locations/presentation/location_detail_screen.dart';
 import '../../features/locations/presentation/location_list_screen.dart';
 import '../../features/me/presentation/home_screen.dart';
 import '../../features/me/presentation/person_screen.dart';
+import '../../features/me/presentation/settings_screen.dart';
 import '../../features/reference/data/type_catalog_repository.dart';
 import '../../features/reference/presentation/type_catalog_screen.dart';
 import '../../features/service_orders/presentation/service_order_detail_screen.dart';
@@ -85,6 +87,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
       GoRoute(path: '/me/person', builder: (_, _) => const PersonScreen()),
+      GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
       GoRoute(
         path: '/clients',
         builder: (_, _) => const ClientListScreen(),
@@ -150,6 +153,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           initial: state.uri.queryParameters['kind'] == 'service-order'
               ? TypeCatalog.serviceOrderType
               : TypeCatalog.equipmentType,
+        ),
+      ),
+      GoRoute(
+        path: '/qr-label',
+        builder: (_, state) => QrLabelPrintScreen(
+          publicCode: state.uri.queryParameters['code'] ?? '',
+          title: state.uri.queryParameters['title'],
+          subtitle: state.uri.queryParameters['subtitle'],
         ),
       ),
       GoRoute(

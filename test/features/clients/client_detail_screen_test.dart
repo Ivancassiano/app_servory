@@ -71,6 +71,28 @@ void main() {
     child: const MaterialApp(home: ClientDetailScreen(clientId: 'c1')),
   );
 
+  testWidgets('abre em leitura; lápis abre o form; Cancelar volta', (
+    tester,
+  ) async {
+    final repo = _FakeClientRepo(_client(name: 'ACME', version: 2));
+    await tester.pumpWidget(host(repo));
+    await tester.pumpAndSettle();
+
+    // leitura: sem campos de texto editáveis, tem o lápis
+    expect(find.byType(TextFormField), findsNothing);
+    expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
+    expect(find.text('Pessoa jurídica'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(TextFormField, 'ACME'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(TextButton, 'Cancelar'));
+    await tester.pumpAndSettle();
+    expect(find.byType(TextFormField), findsNothing);
+    expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
+  });
+
   testWidgets('conflito de versão mostra o aviso e recarrega do servidor', (
     tester,
   ) async {
@@ -78,7 +100,10 @@ void main() {
     await tester.pumpWidget(host(repo));
     await tester.pumpAndSettle();
 
-    // formulário semeado com o nome atual
+    // abre em leitura — liga a edição pelo lápis
+    expect(find.text('Nome antigo'), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
     expect(find.widgetWithText(TextFormField, 'Nome antigo'), findsOneWidget);
 
     // edita e tenta salvar -> conflito

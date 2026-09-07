@@ -5,6 +5,107 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: tela de Configurações ✅
+
+A home estava com itens de "administração" (o card de identidade/organização,
+Etiquetas e Empresas) misturados com o trabalho do dia. Movidos para uma tela
+de Configurações.
+
+- **`SettingsScreen`** (`lib/features/me/presentation/settings_screen.dart`),
+  rota `/settings`: card de identidade (nome/e-mail/organização/perfil, toca →
+  `/me/person`, mostra o estado de sync), grupo **Empresas** (`/companies`) +
+  **Etiquetas** (`/label-batches`), e **Sair** (era ação da AppBar da home).
+- **Home**: o ícone de `logout` na AppBar virou **engrenagem →
+  `/settings`**. Saíram da grade de atalhos: Etiquetas e Empresas. Ficaram
+  Ordens de serviço, Clientes, Locais, Equipamentos. O card de identidade saiu;
+  no lugar, uma faixa fina só quando sync está em andamento/falhou.
+- 125 testes (era 123): `settings_screen_test.dart` (render + navegação).
+  `flutter analyze` limpo.
+
+## `app_servory` — `feature/service-orders`: imprimir / compartilhar a etiqueta ✅
+
+Faltava um jeito de mandar a etiqueta (QR) pra impressão nas telas de
+cliente / local / equipamento — só dava pra gerar e copiar o código.
+
+- **`buildQrLabelPdf({publicCode, title, subtitle})`**
+  (`lib/features/labels/application/qr_label_pdf.dart`): função pura, gera um
+  PDF 100×60 mm com o QR Code (`pw.BarcodeWidget` + `pw.Barcode.qrCode()`, sem
+  dependência nova) + nome do registro + tipo + código legível + "ServiceReport".
+- **`QrLabelPrintScreen`**: `PdfPreview` do `printing` no nativo (imprimir /
+  compartilhar embutidos), botões diretos no web — mesmo padrão do laudo.
+- Botão **"Imprimir / compartilhar"** no card da etiqueta ativa
+  (`QrLabelSection`, escondido só no estado de conflito). As 3 telas de
+  detalhe passam o nome do registro (`entityLabel`).
+- Backend não tem endpoint de PDF por etiqueta única (só o de folha por lote
+  via worker) — por isso o PDF é montado no cliente.
+- O botão no card é **só o ícone de impressora** (sem texto), um **quadrado
+  preto** (`IconButton` com `shape` de raio zero) — o `IconButton.filled`
+  saía como círculo, fora do padrão de cantos retos do tema.
+- Na tela de preview há um seletor **"Texto da etiqueta (opcional)"** —
+  `— / Empresa: <nome> / Modelo: <nome>` (mesma ideia da folha por lote,
+  ADR-0016/0017). Empresa → nome/endereço/telefone; Modelo → o `body`
+  cadastrado. Trocar o seletor re-renderiza o preview (`ValueKey`).
+- 123 testes (era 121): `qr_label_pdf_test.dart` (PDF válido, com/sem título).
+  `flutter analyze` limpo, `flutter build web` OK.
+- Verificado ao vivo no **Android**: gerar etiqueta → ícone de impressora →
+  preview com QR + nome + código; escolher "Empresa" no seletor adicionou o
+  nome da empresa na etiqueta e o preview atualizou na hora.
+- **Descoberta dos modelos**: os "Modelos de etiqueta" (o texto reutilizável)
+  só eram acessíveis por um ícone no topo da tela "Etiquetas". Agora a tela de
+  preview tem um link **"Criar / gerenciar modelos"** que abre a mesma lista
+  (com o `+` pra criar). A `QrLabelPrintScreen` virou rota go_router
+  (`/qr-label?code=…&title=…&subtitle=…`) pra a navegação compor direito.
+
+## `app_servory` — `feature/service-orders`: ordem de serviço em modo leitura ✅
+
+Estende o modo leitura pra tela de ordem, com a regra pedida: o **lápis
+(editar cabeçalho) só aparece em rascunho**; depois disso o cabeçalho
+(local/equip./tipo/empresa/técnico/agendamento/motivo) fica travado.
+
+- Abre em leitura: botão de transição (Iniciar/Concluir/Reabrir) + `DetailRow`
+  de local/equipamento/motivo + expansor "Mais dados do cabeçalho"
+  (tipo/empresa/técnico/agendamento).
+- **"Laudo"** é uma seção à parte com **"Editar laudo"** (link) — edita só
+  diagnóstico / serviço realizado / condição final / observações, disponível
+  enquanto a ordem **não está concluída**. O `_submit` reenvia o cabeçalho
+  intacto (vem do `_seedFrom`), só troca os campos de laudo.
+- Seções (Peças, Recomendações, Fotos, Assinatura, Gerar PDF) seguem no modo
+  leitura. Salvar volta pra leitura + recarrega (nova `version`).
+- `flutter analyze` limpo, `flutter test` 121, `flutter build web` OK.
+- Verificado ao vivo no **Android**: rascunho → lápis + "Editar laudo";
+  aberta → sem lápis, com "Iniciar" + "Editar laudo"; "Editar laudo" numa
+  ordem aberta salvou o diagnóstico e `curl` confirmou `location_id`/`reason`
+  preservados no backend.
+
+## `app_servory` — `feature/service-orders`: telas de cadastro em modo leitura + expansor ✅
+
+Ajuste de usabilidade pedido pelo usuário. Antes, abrir um cliente/local/
+equipamento já salvo caía direto no formulário editável e despejava todos os
+campos (endereço do local etc.). Agora:
+
+- **Modo leitura por padrão** (registro já salvo): `DetailRow` (rótulo/valor,
+  `lib/core/widgets/detail_view.dart`), lápis no `AppBar` liga a edição.
+  Registro novo (`isNew`) abre direto no formulário.
+- **`DetailExpander`**: bloco recolhível para os dados secundários — no local,
+  "Endereço e observações" (CEP, endereço composto, local-pai, observações);
+  no equipamento, "Detalhes" (marca, modelo, nº de série, observações); no
+  cliente, "Outros dados" (razão social, CNPJ/CPF, e-mail…). Recolhido por
+  padrão.
+- As seções (Locais/Equipamentos, Contatos, Etiqueta) ficam no modo leitura;
+  o formulário de edição mostra só os campos + Salvar/**Cancelar**.
+- **Salvar** num registro existente volta pro modo leitura (não faz `pop`) e
+  recarrega do servidor (pega a nova `version` — evita conflito no próximo
+  salvar). **Cancelar** descarta e volta pra leitura.
+- 121 testes (era 120): +1 em `client_detail_screen_test.dart` (abre em
+  leitura → lápis → form → Cancelar volta); o teste de conflito ajustado
+  para ligar a edição antes.
+- Verificado ao vivo no **Android**: cliente abre em leitura → lápis → edita
+  telefone → Salvar → volta pra leitura com o valor novo; local abre em leitura
+  com "Endereço e observações" recolhido, expande ao tocar. `flutter analyze`
+  limpo, `flutter build web` OK. **Web/iOS**: mesma árvore de widgets
+  (abordagem B); extensão do Chrome caiu no meio, verificação web ao vivo
+  ficou pendente.
+
 ## `app_servory` — `feature/service-orders`: navegação por hierarquia (cliente → locais → equipamentos) ✅
 
 O vínculo já era gravado (`location.client_id`, `equipment.location_id`

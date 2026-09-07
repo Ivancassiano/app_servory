@@ -6,6 +6,7 @@ import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/conflict_notice.dart';
+import '../../../core/widgets/detail_view.dart';
 import '../../../core/widgets/local_file_image.dart';
 import '../../attachments/application/pending_uploads.dart';
 import '../../attachments/application/service_order_attachments_provider.dart';
@@ -63,6 +64,13 @@ class _ServiceOrderDetailScreenState
   bool _conflict = false;
   String? _error;
 
+  /// Modo de edição. `_editing` liga o formulário; `_laudoOnly` restringe a
+  /// edição só aos campos de laudo (diagnóstico, serviço realizado…) — o
+  /// caminho para uma ordem já aberta / em andamento. O lápis do cabeçalho
+  /// completo só aparece em rascunho.
+  bool _editing = false;
+  bool _laudoOnly = false;
+
   /// Atualizado a cada rebuild (não só na 1ª vez, ao contrário do
   /// `_seedFrom`) — as ações nomeadas mudam a `version` e precisam da atual.
   int? _currentVersion;
@@ -76,9 +84,20 @@ class _ServiceOrderDetailScreenState
     });
   }
 
+  void _cancelEdit() {
+    setState(() {
+      _editing = false;
+      _laudoOnly = false;
+      _seeded = false;
+      _conflict = false;
+      _error = null;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    _editing = widget.isNew;
     // Dados de referência REST-only: melhor esforço, pra popular os seletores.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -161,7 +180,11 @@ class _ServiceOrderDetailScreenState
           notes: _notesController.text.trim(),
         );
         if (!mounted) return;
-        Navigator.of(context).pop();
+        setState(() {
+          _editing = false;
+          _laudoOnly = false;
+        });
+        _reloadFromServer();
       }
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -237,11 +260,197 @@ class _ServiceOrderDetailScreenState
           }
           _currentVersion = order.version;
           _seedFrom(order);
-          return _buildForm(context, order: order);
+          return _editing
+              ? _buildForm(context, order: order)
+              : _viewMode(context, order);
         },
       );
     }
     return _buildForm(context, order: null);
+  }
+
+  String _refName(ReferenceKind kind, String? id) {
+    if (id == null) return '';
+    final items = ref.watch(referenceListProvider(kind)).value ?? const [];
+    return items.where((i) => i.id == id).map((i) => i.label).join();
+  }
+
+  static String _fmtDateTime(DateTime? d) {
+    if (d == null) return '';
+    final l = d.toLocal();
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(l.day)}/${two(l.month)}/${l.year} ${two(l.hour)}:${two(l.minute)}';
+  }
+
+  Widget _viewMode(BuildContext context, LocalServiceOrder order) {
+    final clientName = ref
+        .watch(clientByIdProvider(order.clientId))
+        .value
+        ?.name;
+    final locations = ref.watch(locationListProvider).value ?? const [];
+    final equipments = ref.watch(equipmentListProvider).value ?? const [];
+    final locationName = locations
+        .where((l) => l.id == order.locationId)
+        .map((l) => l.name)
+        .join();
+    final equipmentName = equipments
+        .where((e) => e.id == order.equipmentId)
+        .map((e) => e.name)
+        .join();
+    final isDraft = order.status == 'draft';
+    final canEditLaudo = order.status != 'completed';
+
+    final headerExtras = <Widget>[
+      DetailRow(
+        'Tipo',
+        _refName(ReferenceKind.serviceOrderType, order.serviceOrderTypeId),
+      ),
+      DetailRow('Empresa', _refName(ReferenceKind.company, order.companyId)),
+      DetailRow(
+        'Técnico',
+        _refName(ReferenceKind.orgUser, order.assignedUserId),
+      ),
+      DetailRow('Agendamento', _fmtDateTime(order.scheduledFor)),
+    ];
+
+    return Scaffold(
+      appBar: brandAppBar(
+        title: clientName ?? 'Ordem de serviço',
+        count: _statusLabels[order.status] ?? order.status,
+        titleSize: 20,
+        actions: isDraft
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, color: Colors.white),
+                  tooltip: 'Editar',
+                  onPressed: () => setState(() {
+                    _editing = true;
+                    _laudoOnly = false;
+                  }),
+                ),
+              ]
+            : null,
+      ),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await ref.read(serviceOrderRepositoryProvider).refresh();
+            await drainPendingUploads(ref);
+          },
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: switch (order.status) {
+                  'open' => OutlinedButton(
+                    onPressed: _saving ? null : () => _runTransition('start'),
+                    child: const Text('Iniciar'),
+                  ),
+                  'in_progress' => OutlinedButton(
+                    onPressed: _saving
+                        ? null
+                        : () => _runTransition('complete'),
+                    child: const Text('Concluir'),
+                  ),
+                  'completed' => OutlinedButton(
+                    onPressed: _saving ? null : () => _runTransition('reopen'),
+                    child: const Text('Reabrir'),
+                  ),
+                  _ => const SizedBox.shrink(),
+                },
+              ),
+              const SizedBox(height: 8),
+              DetailRow('Local', locationName),
+              DetailRow('Equipamento', equipmentName),
+              DetailRow('Motivo', order.reason),
+              DetailExpander(
+                title: 'Mais dados do cabeçalho',
+                children: headerExtras,
+              ),
+              if (_conflict) ...[
+                const SizedBox(height: 12),
+                ConflictNotice(onReload: _reloadFromServer),
+              ],
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Laudo',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  if (canEditLaudo)
+                    TextButton(
+                      onPressed: () => setState(() {
+                        _editing = true;
+                        _laudoOnly = true;
+                      }),
+                      child: const Text('Editar laudo'),
+                    ),
+                ],
+              ),
+              DetailRow('Diagnóstico', order.diagnosis),
+              DetailRow('Serviço realizado', order.workPerformed),
+              DetailRow('Condição final', order.finalCondition),
+              DetailRow('Observações', order.notes),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 8),
+              Text(
+                'Peças e materiais',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              _PartsSection(serviceOrderId: order.id),
+              const SizedBox(height: 32),
+              const Divider(),
+              const SizedBox(height: 8),
+              Text(
+                'Recomendações para a próxima visita',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              _RecommendationsSection(serviceOrderId: order.id),
+              const SizedBox(height: 32),
+              const Divider(),
+              const SizedBox(height: 8),
+              Text('Fotos', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              _PhotosSection(serviceOrderId: order.id),
+              const SizedBox(height: 32),
+              const Divider(),
+              const SizedBox(height: 8),
+              Text(
+                'Assinatura',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              _SignatureSection(serviceOrderId: order.id),
+              const SizedBox(height: 32),
+              const Divider(),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () =>
+                    context.push('/service-orders/${order.id}/report'),
+                icon: const Icon(Icons.picture_as_pdf_outlined),
+                label: const Text('Gerar PDF (cópia de campo)'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   /// Seletor de um dado de referência REST-only. Se o valor selecionado ainda
@@ -300,6 +509,7 @@ class _ServiceOrderDetailScreenState
     // o dropdown "perdia" a seleção permanentemente (o valor herdado do
     // servidor continuava intacto, só a tela local mostrava errado).
     if (order != null &&
+        !_laudoOnly &&
         (!locationsAsync.hasValue || !equipmentsAsync.hasValue)) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -328,7 +538,9 @@ class _ServiceOrderDetailScreenState
             : (clientNameAsync?.value?.name ?? 'Ordem de serviço'),
         count: order == null
             ? null
-            : (_statusLabels[order.status] ?? order.status),
+            : (_laudoOnly
+                  ? 'Editar laudo'
+                  : (_statusLabels[order.status] ?? order.status)),
         titleSize: 20,
       ),
       body: SafeArea(
@@ -344,34 +556,7 @@ class _ServiceOrderDetailScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (order != null) ...[
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: switch (order.status) {
-                        'open' => OutlinedButton(
-                          onPressed: _saving
-                              ? null
-                              : () => _runTransition('start'),
-                          child: const Text('Iniciar'),
-                        ),
-                        'in_progress' => OutlinedButton(
-                          onPressed: _saving
-                              ? null
-                              : () => _runTransition('complete'),
-                          child: const Text('Concluir'),
-                        ),
-                        'completed' => OutlinedButton(
-                          onPressed: _saving
-                              ? null
-                              : () => _runTransition('reopen'),
-                          child: const Text('Reabrir'),
-                        ),
-                        _ => const SizedBox.shrink(),
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  if (order == null) ...[
+                  if (!_laudoOnly && order == null) ...[
                     clientsAsync.when(
                       loading: () => const LinearProgressIndicator(),
                       error: (e, _) => Text('Erro ao carregar clientes: $e'),
@@ -397,95 +582,97 @@ class _ServiceOrderDetailScreenState
                     ),
                     const SizedBox(height: 16),
                   ],
-                  DropdownButtonFormField<String?>(
-                    initialValue: displayLocationId,
-                    decoration: const InputDecoration(
-                      labelText: 'Local (opcional)',
-                    ),
-                    items: [
-                      const DropdownMenuItem<String?>(
-                        value: null,
-                        child: Text('—'),
+                  if (!_laudoOnly) ...[
+                    DropdownButtonFormField<String?>(
+                      initialValue: displayLocationId,
+                      decoration: const InputDecoration(
+                        labelText: 'Local (opcional)',
                       ),
-                      ...locations.map(
-                        (l) => DropdownMenuItem<String?>(
-                          value: l.id,
-                          child: Text(l.name),
+                      items: [
+                        const DropdownMenuItem<String?>(
+                          value: null,
+                          child: Text('—'),
                         ),
-                      ),
-                    ],
-                    onChanged: _clientId == null
-                        ? null
-                        : (v) => setState(() {
-                            _locationId = v;
-                            _equipmentId = null;
-                          }),
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String?>(
-                    initialValue: displayEquipmentId,
-                    decoration: const InputDecoration(
-                      labelText: 'Equipamento (opcional)',
-                    ),
-                    items: [
-                      const DropdownMenuItem<String?>(
-                        value: null,
-                        child: Text('—'),
-                      ),
-                      ...equipments.map(
-                        (e) => DropdownMenuItem<String?>(
-                          value: e.id,
-                          child: Text(e.name),
+                        ...locations.map(
+                          (l) => DropdownMenuItem<String?>(
+                            value: l.id,
+                            child: Text(l.name),
+                          ),
                         ),
-                      ),
-                    ],
-                    onChanged: _locationId == null
-                        ? null
-                        : (v) => setState(() => _equipmentId = v),
-                  ),
-                  const SizedBox(height: 16),
-                  _referenceDropdown(
-                    kind: ReferenceKind.serviceOrderType,
-                    label: 'Tipo de ordem (opcional)',
-                    value: _serviceOrderTypeId,
-                    onChanged: (v) => setState(() => _serviceOrderTypeId = v),
-                  ),
-                  const SizedBox(height: 16),
-                  _referenceDropdown(
-                    kind: ReferenceKind.company,
-                    label: 'Empresa emitente (opcional)',
-                    value: _companyId,
-                    onChanged: (v) => setState(() => _companyId = v),
-                  ),
-                  const SizedBox(height: 16),
-                  _referenceDropdown(
-                    kind: ReferenceKind.orgUser,
-                    label: 'Técnico responsável (opcional)',
-                    value: _assignedUserId,
-                    onChanged: (v) => setState(() => _assignedUserId = v),
-                  ),
-                  const SizedBox(height: 16),
-                  _ScheduledForField(
-                    value: _scheduledFor,
-                    onChanged: (v) => setState(() => _scheduledFor = v),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _reasonController,
-                    decoration: const InputDecoration(labelText: 'Motivo'),
-                  ),
-                  if (order == null) ...[
+                      ],
+                      onChanged: _clientId == null
+                          ? null
+                          : (v) => setState(() {
+                              _locationId = v;
+                              _equipmentId = null;
+                            }),
+                    ),
                     const SizedBox(height: 16),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Abrir imediatamente'),
-                      subtitle: const Text(
-                        'Desligado salva como rascunho (não visível na agenda).',
+                    DropdownButtonFormField<String?>(
+                      initialValue: displayEquipmentId,
+                      decoration: const InputDecoration(
+                        labelText: 'Equipamento (opcional)',
                       ),
-                      value: _openNow,
-                      onChanged: (v) => setState(() => _openNow = v),
+                      items: [
+                        const DropdownMenuItem<String?>(
+                          value: null,
+                          child: Text('—'),
+                        ),
+                        ...equipments.map(
+                          (e) => DropdownMenuItem<String?>(
+                            value: e.id,
+                            child: Text(e.name),
+                          ),
+                        ),
+                      ],
+                      onChanged: _locationId == null
+                          ? null
+                          : (v) => setState(() => _equipmentId = v),
                     ),
-                  ],
+                    const SizedBox(height: 16),
+                    _referenceDropdown(
+                      kind: ReferenceKind.serviceOrderType,
+                      label: 'Tipo de ordem (opcional)',
+                      value: _serviceOrderTypeId,
+                      onChanged: (v) => setState(() => _serviceOrderTypeId = v),
+                    ),
+                    const SizedBox(height: 16),
+                    _referenceDropdown(
+                      kind: ReferenceKind.company,
+                      label: 'Empresa emitente (opcional)',
+                      value: _companyId,
+                      onChanged: (v) => setState(() => _companyId = v),
+                    ),
+                    const SizedBox(height: 16),
+                    _referenceDropdown(
+                      kind: ReferenceKind.orgUser,
+                      label: 'Técnico responsável (opcional)',
+                      value: _assignedUserId,
+                      onChanged: (v) => setState(() => _assignedUserId = v),
+                    ),
+                    const SizedBox(height: 16),
+                    _ScheduledForField(
+                      value: _scheduledFor,
+                      onChanged: (v) => setState(() => _scheduledFor = v),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _reasonController,
+                      decoration: const InputDecoration(labelText: 'Motivo'),
+                    ),
+                    if (order == null) ...[
+                      const SizedBox(height: 16),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Abrir imediatamente'),
+                        subtitle: const Text(
+                          'Desligado salva como rascunho (não visível na agenda).',
+                        ),
+                        value: _openNow,
+                        onChanged: (v) => setState(() => _openNow = v),
+                      ),
+                    ],
+                  ], // fim if (!_laudoOnly)
                   if (order != null) ...[
                     const SizedBox(height: 16),
                     TextFormField(
@@ -544,53 +731,11 @@ class _ServiceOrderDetailScreenState
                           )
                         : const Text('Salvar'),
                   ),
-                  if (order != null) ...[
-                    const SizedBox(height: 32),
-                    const Divider(),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Peças e materiais',
-                      style: Theme.of(context).textTheme.titleMedium,
+                  if (order != null)
+                    TextButton(
+                      onPressed: _saving ? null : _cancelEdit,
+                      child: const Text('Cancelar'),
                     ),
-                    const SizedBox(height: 8),
-                    _PartsSection(serviceOrderId: order.id),
-                    const SizedBox(height: 32),
-                    const Divider(),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Recomendações para a próxima visita',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    _RecommendationsSection(serviceOrderId: order.id),
-                    const SizedBox(height: 32),
-                    const Divider(),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Fotos',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    _PhotosSection(serviceOrderId: order.id),
-                    const SizedBox(height: 32),
-                    const Divider(),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Assinatura',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    _SignatureSection(serviceOrderId: order.id),
-                    const SizedBox(height: 32),
-                    const Divider(),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      onPressed: () =>
-                          context.push('/service-orders/${order.id}/report'),
-                      icon: const Icon(Icons.picture_as_pdf_outlined),
-                      label: const Text('Gerar PDF (cópia de campo)'),
-                    ),
-                  ],
                 ],
               ),
             ),

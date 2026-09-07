@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/conflict_notice.dart';
+import '../../../core/widgets/detail_view.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../contacts/data/contact_repository.dart';
 import '../../contacts/presentation/contact_section.dart';
@@ -53,6 +54,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
   String? _parentLocationId;
   int? _version;
   bool _seeded = false;
+  bool _editing = false;
   bool _saving = false;
   bool _conflict = false;
   String? _error;
@@ -66,9 +68,19 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
     });
   }
 
+  void _cancelEdit() {
+    setState(() {
+      _editing = false;
+      _seeded = false;
+      _conflict = false;
+      _error = null;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    _editing = widget.isNew;
     if (widget.isNew) _clientId = widget.presetClientId;
   }
 
@@ -154,7 +166,8 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
           address: _address,
         );
         if (!mounted) return;
-        Navigator.of(context).pop();
+        setState(() => _editing = false);
+        _reloadFromServer();
       }
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -196,8 +209,85 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
           );
         }
         _seedFrom(location);
-        return _form(context, title: location.name);
+        return _editing
+            ? _form(context, title: location.name)
+            : _viewMode(context, location);
       },
+    );
+  }
+
+  Widget _viewMode(BuildContext context, LocalLocation location) {
+    final clients = ref.watch(clientListProvider).value ?? const [];
+    final allLocations = ref.watch(locationListProvider).value ?? const [];
+    final clientName = clients
+        .where((c) => c.id == location.clientId)
+        .map((c) => c.name)
+        .join();
+    final parentName = allLocations
+        .where((l) => l.id == location.parentLocationId)
+        .map((l) => l.name)
+        .join();
+    final address = [
+      if (location.street.isNotEmpty)
+        [
+          location.street,
+          location.number,
+        ].where((s) => s.isNotEmpty).join(', '),
+      location.complement,
+      location.district,
+      [location.city, location.state].where((s) => s.isNotEmpty).join(' - '),
+    ].where((s) => s.isNotEmpty).join(' · ');
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(location.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Editar',
+            onPressed: () => setState(() => _editing = true),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            DetailRow('Cliente', clientName),
+            DetailRow('Contato', location.contactPerson),
+            DetailRow('Telefone', location.phone),
+            DetailExpander(
+              title: 'Endereço e observações',
+              children: [
+                if (location.postalCode.isNotEmpty)
+                  DetailRow('CEP', location.postalCode),
+                DetailRow('Endereço', address),
+                if (parentName.isNotEmpty) DetailRow('Local-pai', parentName),
+                if (location.notes.isNotEmpty)
+                  DetailRow('Observações', location.notes),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            LocationEquipmentsSection(locationId: widget.locationId),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            ContactSection(
+              scope: ContactScope.location,
+              parentId: widget.locationId,
+            ),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            QrLabelSection(
+              target: QrTarget.location(widget.locationId),
+              entityLabel: location.name,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -394,23 +484,11 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                         )
                       : const Text('Salvar'),
                 ),
-                if (!widget.isNew) ...[
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  LocationEquipmentsSection(locationId: widget.locationId),
-                  const SizedBox(height: 24),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  ContactSection(
-                    scope: ContactScope.location,
-                    parentId: widget.locationId,
+                if (!widget.isNew)
+                  TextButton(
+                    onPressed: _saving ? null : _cancelEdit,
+                    child: const Text('Cancelar'),
                   ),
-                  const SizedBox(height: 24),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  QrLabelSection(target: QrTarget.location(widget.locationId)),
-                ],
               ],
             ),
           ),

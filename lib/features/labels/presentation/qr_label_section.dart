@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/theme/app_theme.dart';
 import '../data/qr_mapper.dart';
 import '../data/qr_repository.dart';
 import 'qr_scan_sheet.dart';
 
 /// Seção "Etiqueta" das telas de detalhe (cliente / local / equipamento):
 /// mostra o código público da etiqueta ativa e as ações de vincular /
-/// substituir / desativar (Fatia 3b).
+/// substituir / desativar / imprimir (Fatia 3b).
 class QrLabelSection extends ConsumerStatefulWidget {
-  const QrLabelSection({super.key, required this.target});
+  const QrLabelSection({super.key, required this.target, this.entityLabel});
 
   final QrTarget target;
+
+  /// Nome do registro (cliente/local/equipamento) — impresso na etiqueta.
+  final String? entityLabel;
 
   @override
   ConsumerState<QrLabelSection> createState() => _QrLabelSectionState();
@@ -107,6 +112,29 @@ class _QrLabelSectionState extends ConsumerState<QrLabelSection> {
     'Nova etiqueta gerada.',
   );
 
+  void _print(LocalQrCode active) {
+    final code = active.publicCode;
+    if (code == null) return;
+    final t = widget.target;
+    final kindLabel = t.clientId != null
+        ? 'Cliente'
+        : t.locationId != null
+        ? 'Local'
+        : t.equipmentId != null
+        ? 'Equipamento'
+        : null;
+    context.push(
+      Uri(
+        path: '/qr-label',
+        queryParameters: {
+          'code': code,
+          'title': ?widget.entityLabel,
+          'subtitle': ?kindLabel,
+        },
+      ).toString(),
+    );
+  }
+
   Future<bool?> _confirm(String title, String body) => showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -149,6 +177,7 @@ class _QrLabelSectionState extends ConsumerState<QrLabelSection> {
               : _LabelCard(
                   code: code,
                   busy: _busy,
+                  onPrint: code.publicCode == null ? null : () => _print(code),
                   onReplaceScan: () => _replaceByScan(code),
                   onReplaceGenerate: () => _replaceGenerated(code),
                   onDeactivate: () => _deactivate(code),
@@ -210,6 +239,7 @@ class _LabelCard extends StatelessWidget {
   const _LabelCard({
     required this.code,
     required this.busy,
+    required this.onPrint,
     required this.onReplaceScan,
     required this.onReplaceGenerate,
     required this.onDeactivate,
@@ -217,6 +247,7 @@ class _LabelCard extends StatelessWidget {
 
   final LocalQrCode code;
   final bool busy;
+  final VoidCallback? onPrint;
   final VoidCallback onReplaceScan;
   final VoidCallback onReplaceGenerate;
   final VoidCallback onDeactivate;
@@ -278,6 +309,19 @@ class _LabelCard extends StatelessWidget {
             Wrap(
               spacing: 8,
               children: [
+                if (onPrint != null && !conflict)
+                  IconButton(
+                    onPressed: onPrint,
+                    icon: const Icon(Icons.print_outlined),
+                    tooltip: 'Imprimir / compartilhar',
+                    style: IconButton.styleFrom(
+                      backgroundColor: BrandColor.ink,
+                      foregroundColor: Colors.white,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
+                      ),
+                    ),
+                  ),
                 FilledButton.tonalIcon(
                   onPressed: busy ? null : onReplaceScan,
                   icon: const Icon(Icons.qr_code_scanner),

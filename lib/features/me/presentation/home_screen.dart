@@ -5,13 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/brand_mark.dart';
-import '../../auth/application/session_controller.dart';
 import '../../labels/data/label_batch_repository.dart';
 import '../../service_orders/application/service_orders_provider.dart';
 import '../../service_orders/presentation/agenda_card.dart';
 import '../../sync/application/sync_provider.dart';
-import '../application/me_provider.dart';
-import '../data/me_api.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -36,7 +33,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final identityAsync = ref.watch(identityProvider);
     final syncState = ref.watch(syncRunnerProvider);
     final orderCount = ref.watch(serviceOrderListProvider).value?.length;
 
@@ -59,148 +55,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sair',
-            onPressed: () =>
-                ref.read(sessionControllerProvider.notifier).logout(),
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Configurações',
+            onPressed: () => context.push('/settings'),
           ),
         ],
       ),
-      body: identityAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        children: [
+          if (syncState.isLoading) ...[
+            Row(
               children: [
-                const Icon(Icons.error_outline, size: 48),
-                const SizedBox(height: 12),
+                Container(width: 8, height: 8, color: BrandColor.blue),
+                const SizedBox(width: 8),
                 Text(
-                  'Não foi possível carregar sua identidade.\n$error',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton(
-                  onPressed: () => ref.invalidate(identityProvider),
-                  child: const Text('Tentar de novo'),
+                  'sincronizando…',
+                  style: BrandText.listMeta.copyWith(color: BrandColor.blue),
                 ),
               ],
             ),
-          ),
-        ),
-        data: (identity) => ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-          children: [
-            _IdentityCard(identity: identity, sync: syncState),
-            const SizedBox(height: 16),
-            const _QrConflictBanner(),
-            const AgendaCard(),
-            const SizedBox(height: 4),
-            _ShortcutList(
-              items: [
-                _Shortcut(
-                  Icons.assignment_outlined,
-                  'Ordens de serviço',
-                  '/service-orders',
-                  count: orderCount,
+            const SizedBox(height: 12),
+          ] else if (syncState.hasError) ...[
+            Container(
+              decoration: const BoxDecoration(
+                color: BrandColor.errorBg,
+                border: Border(
+                  left: BorderSide(color: BrandColor.errorBar, width: 3),
                 ),
-                _Shortcut(Icons.groups_outlined, 'Clientes', '/clients'),
-                _Shortcut(Icons.place_outlined, 'Locais', '/locations'),
-                _Shortcut(
-                  Icons.handyman_outlined,
-                  'Equipamentos',
-                  '/equipments',
+              ),
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+              child: const Text(
+                'Não foi possível sincronizar agora. Os dados salvos continuam '
+                'disponíveis.',
+                style: TextStyle(
+                  fontFamily: 'Space Grotesk',
+                  fontSize: 12.5,
+                  height: 1.4,
+                  color: BrandColor.errorText,
                 ),
-                _Shortcut(
-                  Icons.qr_code_2_outlined,
-                  'Etiquetas',
-                  '/label-batches',
-                ),
-                _Shortcut(Icons.business_outlined, 'Empresas', '/companies'),
-              ],
+              ),
             ),
+            const SizedBox(height: 12),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _IdentityCard extends StatelessWidget {
-  const _IdentityCard({required this.identity, required this.sync});
-
-  final Identity identity;
-  final AsyncValue<void> sync;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: () => context.push('/me/person'),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      identity.name.isNotEmpty ? identity.name : identity.email,
-                      style: const TextStyle(
-                        fontFamily: 'Space Grotesk',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: BrandColor.ink,
-                      ),
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                    color: BrandColor.onDarkSecondary,
-                  ),
-                ],
+          const _QrConflictBanner(),
+          const AgendaCard(),
+          const SizedBox(height: 4),
+          _ShortcutList(
+            items: [
+              _Shortcut(
+                Icons.assignment_outlined,
+                'Ordens de serviço',
+                '/service-orders',
+                count: orderCount,
               ),
-              const SizedBox(height: 4),
-              Text(
-                identity.email,
-                style: BrandText.listMeta.copyWith(fontSize: 11.5),
+              _Shortcut(Icons.groups_outlined, 'Clientes', '/clients'),
+              _Shortcut(Icons.place_outlined, 'Locais', '/locations'),
+              _Shortcut(
+                Icons.handyman_outlined,
+                'Equipamentos',
+                '/equipments',
               ),
-              const Divider(height: 28),
-              _InfoRow(label: 'Organização', value: identity.organizationName),
-              const SizedBox(height: 6),
-              _InfoRow(label: 'Perfil', value: identity.role),
-              if (sync.isLoading) ...[
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Container(width: 8, height: 8, color: BrandColor.blue),
-                    const SizedBox(width: 8),
-                    Text(
-                      'sincronizando…',
-                      style: BrandText.listMeta.copyWith(
-                        color: BrandColor.blue,
-                      ),
-                    ),
-                  ],
-                ),
-              ] else if (sync.hasError) ...[
-                const SizedBox(height: 16),
-                Text(
-                  'Não foi possível sincronizar agora. Os dados salvos '
-                  'continuam disponíveis.',
-                  style: const TextStyle(
-                    fontFamily: 'Space Grotesk',
-                    fontSize: 12.5,
-                    color: BrandColor.errorText,
-                  ),
-                ),
-              ],
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -331,32 +249,6 @@ class _ShortcutTile extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      children: [
-        SizedBox(
-          width: 104,
-          child: Text(label.toUpperCase(), style: BrandText.fieldLabel),
-        ),
-        Expanded(
-          child: Text(
-            value.isNotEmpty ? value : '—',
-            style: BrandText.fieldValue,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/conflict_notice.dart';
+import '../../../core/widgets/detail_view.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
 import '../../locations/application/locations_provider.dart';
@@ -44,6 +45,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
   String? _equipmentTypeId;
   int? _version;
   bool _seeded = false;
+  bool _editing = false;
   bool _saving = false;
   bool _conflict = false;
   String? _error;
@@ -57,16 +59,25 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
     });
   }
 
+  void _cancelEdit() {
+    setState(() {
+      _editing = false;
+      _seeded = false;
+      _conflict = false;
+      _error = null;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    if (widget.isNew) {
-      _locationId = widget.presetLocationId;
-      // Best effort: puxa os tipos do servidor pro seletor (no web/1ª vez).
-      Future.microtask(
-        () => ref.read(equipmentTypeRepositoryProvider).refresh(),
-      ).ignore();
-    }
+    _editing = widget.isNew;
+    if (widget.isNew) _locationId = widget.presetLocationId;
+    // Best effort: puxa os tipos do servidor — pro seletor (criação) e pro
+    // nome do tipo (leitura).
+    Future.microtask(
+      () => ref.read(equipmentTypeRepositoryProvider).refresh(),
+    ).ignore();
   }
 
   @override
@@ -125,7 +136,8 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
           notes: _notesController.text.trim(),
         );
         if (!mounted) return;
-        Navigator.of(context).pop();
+        setState(() => _editing = false);
+        _reloadFromServer();
       }
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -167,8 +179,62 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
           );
         }
         _seedFrom(equipment);
-        return _form(context, title: equipment.name);
+        return _editing
+            ? _form(context, title: equipment.name)
+            : _viewMode(context, equipment);
       },
+    );
+  }
+
+  Widget _viewMode(BuildContext context, LocalEquipment equipment) {
+    final locations = ref.watch(locationListProvider).value ?? const [];
+    final types = ref.watch(equipmentTypeListProvider).value ?? const [];
+    final locationName = locations
+        .where((l) => l.id == equipment.locationId)
+        .map((l) => l.name)
+        .join();
+    final typeName = types
+        .where((t) => t.id == equipment.equipmentTypeId)
+        .map((t) => t.name)
+        .join();
+
+    final extras = <Widget>[
+      if (equipment.brand.isNotEmpty) DetailRow('Marca', equipment.brand),
+      if (equipment.model.isNotEmpty) DetailRow('Modelo', equipment.model),
+      if ((equipment.serialNumber ?? '').isNotEmpty)
+        DetailRow('Nº de série', equipment.serialNumber),
+      if (equipment.notes.isNotEmpty) DetailRow('Observações', equipment.notes),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(equipment.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Editar',
+            onPressed: () => setState(() => _editing = true),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            DetailRow('Local', locationName),
+            DetailRow('Tipo', typeName),
+            if (extras.isNotEmpty)
+              DetailExpander(title: 'Detalhes', children: extras),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            QrLabelSection(
+              target: QrTarget.equipment(widget.equipmentId),
+              entityLabel: equipment.name,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -273,14 +339,11 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                         )
                       : const Text('Salvar'),
                 ),
-                if (!widget.isNew) ...[
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  QrLabelSection(
-                    target: QrTarget.equipment(widget.equipmentId),
+                if (!widget.isNew)
+                  TextButton(
+                    onPressed: _saving ? null : _cancelEdit,
+                    child: const Text('Cancelar'),
                   ),
-                ],
               ],
             ),
           ),
