@@ -56,6 +56,27 @@ void main() {
     );
   });
 
+  test('bootSplashMinDuration segura o estado em SessionUnknown', () async {
+    final held = ProviderContainer(
+      overrides: [
+        authApiProvider.overrideWithValue(authApi),
+        secureStoreProvider.overrideWithValue(store),
+        bootSplashMinDurationProvider.overrideWithValue(
+          const Duration(milliseconds: 80),
+        ),
+      ],
+    );
+    addTearDown(held.dispose);
+
+    held.read(sessionControllerProvider);
+    await Future<void>.delayed(Duration.zero);
+    // leitura do secure store já resolveu, mas o splash mínimo ainda segura
+    expect(held.read(sessionControllerProvider), isA<SessionUnknown>());
+
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    expect(held.read(sessionControllerProvider), isA<SessionUnauthenticated>());
+  });
+
   test('login com sucesso autentica e salva a sessão', () async {
     when(
       () => authApi.login(

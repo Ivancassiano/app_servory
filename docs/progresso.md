@@ -5,6 +5,18 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: tempo mínimo de splash no boot ✅
+
+O splash sumia num flash quando a sessão restaurava na hora, passando a
+sensação de que o app "não carregou nada". Agora fica pelo menos 1s.
+
+- `bootSplashMinDurationProvider` (`session_controller.dart`): padrão
+  `Duration.zero`; `main.dart` sobrescreve com `1s`. Assim os testes de widget
+  não ganham um timer pendente só por encostarem na sessão.
+- `SessionController._restore` roda um `Future.delayed(minSplash)` em paralelo
+  com a leitura do secure store e só resolve o estado depois dos dois.
+- Teste: estado fica em `SessionUnknown` até o tempo mínimo passar.
+
 ## `app_servory` — `feature/service-orders`: recorte por cliente no cabeçalho ✅
 
 A lista de Locais/Equipamentos aberta pelo "Ver todos" da tela do cliente

@@ -2,7 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'features/auth/application/session_controller.dart';
 
 void main() {
-  runApp(const ProviderScope(child: ServoryApp()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        // Segura o splash por pelo menos 1s no boot, mesmo quando a sessão
+        // restaura na hora — dá ao usuário a sensação de que o app carregou.
+        bootSplashMinDurationProvider.overrideWithValue(
+          const Duration(seconds: 1),
+        ),
+      ],
+      child: const ServoryApp(),
+    ),
+  );
 }

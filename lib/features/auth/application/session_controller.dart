@@ -50,6 +50,14 @@ class SessionController extends Notifier<SessionState> {
   /// primeira chamada de negócio dispara o refresh automático do
   /// [AuthInterceptor] normalmente (GUIA-FLUTTER.md §3.4).
   Future<void> _restore() async {
+    // Tempo mínimo de splash no boot: mesmo quando a restauração resolve na
+    // hora, o usuário vê o app "carregando" por um instante em vez de um
+    // flash. Roda em paralelo com a leitura do armazenamento seguro.
+    final minSplashDuration = ref.read(bootSplashMinDurationProvider);
+    final minSplash = minSplashDuration <= Duration.zero
+        ? Future<void>.value()
+        : Future<void>.delayed(minSplashDuration);
+
     final store = ref.read(secureStoreProvider);
     final accessToken = await store.readAccessToken();
     final refreshToken = await store.readRefreshToken();
@@ -61,6 +69,8 @@ class SessionController extends Notifier<SessionState> {
         refreshToken != null &&
         organizationId != null &&
         userId != null;
+
+    await minSplash;
 
     // O provider pode ter sido descartado enquanto esperávamos o
     // armazenamento seguro (container/widget desmontado no meio do boot) —
@@ -145,6 +155,14 @@ class SessionController extends Notifier<SessionState> {
 
 final sessionControllerProvider =
     NotifierProvider<SessionController, SessionState>(SessionController.new);
+
+/// Tempo mínimo que o splash fica visível no boot (ver [SessionController._restore]).
+/// O padrão é zero (nenhum atraso) — quem liga isso é o `main.dart`, que
+/// sobrescreve com 1s no app de verdade. Assim os testes de widget não ganham
+/// um timer pendente só por encostarem na sessão.
+final bootSplashMinDurationProvider = Provider<Duration>(
+  (_) => Duration.zero,
+);
 
 /// Organização ativa — conveniência para repositórios/mapeadores que
 /// precisam do `organization_id` (o backend não o devolve em todo payload
