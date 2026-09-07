@@ -112,7 +112,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   'Equipamentos',
                   '/equipments',
                 ),
-                _Shortcut(Icons.qr_code_2_outlined, 'Etiquetas', '/label-batches'),
+                _Shortcut(
+                  Icons.qr_code_2_outlined,
+                  'Etiquetas',
+                  '/label-batches',
+                ),
                 _Shortcut(Icons.business_outlined, 'Empresas', '/companies'),
               ],
             ),
@@ -132,54 +136,70 @@ class _IdentityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              identity.name.isNotEmpty ? identity.name : identity.email,
-              style: const TextStyle(
-                fontFamily: 'Space Grotesk',
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: BrandColor.ink,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              identity.email,
-              style: BrandText.listMeta.copyWith(fontSize: 11.5),
-            ),
-            const Divider(height: 28),
-            _InfoRow(label: 'Organização', value: identity.organizationName),
-            const SizedBox(height: 6),
-            _InfoRow(label: 'Perfil', value: identity.role),
-            if (sync.isLoading) ...[
-              const SizedBox(height: 16),
+      child: InkWell(
+        onTap: () => context.push('/me/person'),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(
                 children: [
-                  Container(width: 8, height: 8, color: BrandColor.blue),
-                  const SizedBox(width: 8),
-                  Text(
-                    'sincronizando…',
-                    style: BrandText.listMeta.copyWith(color: BrandColor.blue),
+                  Expanded(
+                    child: Text(
+                      identity.name.isNotEmpty ? identity.name : identity.email,
+                      style: const TextStyle(
+                        fontFamily: 'Space Grotesk',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: BrandColor.ink,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: BrandColor.onDarkSecondary,
                   ),
                 ],
               ),
-            ] else if (sync.hasError) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 4),
               Text(
-                'Não foi possível sincronizar agora. Os dados salvos '
-                'continuam disponíveis.',
-                style: const TextStyle(
-                  fontFamily: 'Space Grotesk',
-                  fontSize: 12.5,
-                  color: BrandColor.errorText,
-                ),
+                identity.email,
+                style: BrandText.listMeta.copyWith(fontSize: 11.5),
               ),
+              const Divider(height: 28),
+              _InfoRow(label: 'Organização', value: identity.organizationName),
+              const SizedBox(height: 6),
+              _InfoRow(label: 'Perfil', value: identity.role),
+              if (sync.isLoading) ...[
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Container(width: 8, height: 8, color: BrandColor.blue),
+                    const SizedBox(width: 8),
+                    Text(
+                      'sincronizando…',
+                      style: BrandText.listMeta.copyWith(
+                        color: BrandColor.blue,
+                      ),
+                    ),
+                  ],
+                ),
+              ] else if (sync.hasError) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'Não foi possível sincronizar agora. Os dados salvos '
+                  'continuam disponíveis.',
+                  style: const TextStyle(
+                    fontFamily: 'Space Grotesk',
+                    fontSize: 12.5,
+                    color: BrandColor.errorText,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -198,9 +218,7 @@ class _QrConflictBanner extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: 4),
       decoration: const BoxDecoration(
         color: BrandColor.errorBg,
-        border: Border(
-          left: BorderSide(color: BrandColor.errorBar, width: 3),
-        ),
+        border: Border(left: BorderSide(color: BrandColor.errorBar, width: 3)),
       ),
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       child: Column(

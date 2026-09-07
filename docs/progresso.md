@@ -5,6 +5,73 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: testes de widget das telas principais ✅
+
+Item #10 do roadmap de v1. As telas só tinham cobertura de login; o resto era
+verificação ao vivo. Adicionados testes de widget que rodam sem backend, via
+`ProviderScope(overrides:)`:
+
+- `test/features/clients/client_detail_screen_test.dart` — semeadura do
+  formulário + fluxo de `VERSION_CONFLICT` ponta a ponta (edita → salva → vê o
+  `ConflictNotice` → "Recarregar" → re-semeia com o dado do servidor). Cobre o
+  #9. Repositório falso implementando `ClientRepository`; `contactsProvider` e
+  `activeQrCodeProvider` sobrescritos para não puxar sessão/Dio.
+- `test/features/me/person_screen_test.dart` — semeadura + salvar + validação
+  de nome obrigatório. Cobre o #11.
+- `test/features/service_orders/service_order_list_screen_test.dart` — filtro
+  pelo chip de status e busca por nome do cliente (`serviceOrderListProvider`
+  sobrescrito com `AsyncValue.data`).
+- 113 testes (era 108). `flutter analyze` limpo (o `?version` no helper de
+  teste em vez de `if (version != null)` — CI é estrita com infos).
+
+## `app_servory` — `feature/service-orders`: conflito de versão com "recarregar e reeditar" ✅
+
+Item #9 do roadmap de v1. Antes, um `VERSION_CONFLICT` (outra pessoa salvou o
+registro no meio da edição) caía na mensagem genérica de erro — o usuário não
+tinha ação clara. Agora:
+
+- **`ConflictNotice`** (`lib/core/widgets/conflict_notice.dart`): barra
+  vermelha ("Outra pessoa alterou este registro…") com botão **Recarregar do
+  servidor**.
+- Os 4 formulários de detalhe (cliente, local, equipamento, ordem de serviço —
+  inclusive as transições `start/complete/reopen`) passam a distinguir
+  `e.code == 'VERSION_CONFLICT'` do resto: em vez de `_error`, ligam `_conflict`
+  e mostram o `ConflictNotice`. `_reloadFromServer()` invalida o
+  `*ByIdProvider`, zera `_seeded` e re-semeia o formulário com o dado atual do
+  servidor — o usuário refaz as alterações sobre a versão certa.
+- **Limitação assumida**: recarregar descarta o que o usuário tinha digitado
+  (é o comportamento correto pela spec §12, "a primeira confirmação do servidor
+  vence" — não dá pra sobrescrever cegamente a alteração do outro).
+- 108 testes (era 106): `test/core/widgets/conflict_notice_test.dart`.
+  `flutter analyze` limpo, `flutter build web` OK.
+- **Não verificado ao vivo** (backend/emulador fora do ar): dois dispositivos
+  editando a mesma ordem, um salva, o outro vê a barra e recarrega.
+
+## `app_servory` — `feature/service-orders`: dados do técnico no laudo (`/v1/me/person`) ✅
+
+Item #11 do roadmap de v1 ("Pessoa do próprio usuário"). Fecha a lacuna de o
+laudo omitir o técnico quando o `/v1/me` não tinha carregado e adiciona o
+registro profissional (CREA/CFT) que a spec §7.6 pede na via de campo.
+
+- **`PersonApi`** (`lib/features/me/data/person_api.dart`): `Person`
+  (`full_name`, `tax_id`, `phone`, `professional_registration`, `notes` — sem
+  `version`, o backend faz merge campo a campo) + `getMyPerson` /
+  `updateMyPerson` (PATCH manda os cinco campos sempre). REST puro nas duas
+  plataformas — pessoa é global à conta, não sincroniza.
+- **`myPersonProvider`** + `personEditControllerProvider`
+  (`person_provider.dart`); tela `PersonScreen` (`/me/person`), aberta tocando
+  o card de identidade na home (ganhou um chevron).
+- **Laudo**: `ServiceOrderReportData.technicianRegistration`; os dois
+  assemblers (io/web) buscam `myPersonProvider` numa chamada tolerante a falha
+  (offline o laudo sai sem a linha) e o `service_order_pdf.dart` imprime
+  "Registro" logo abaixo de "Técnico".
+- 106 testes (era 103): `test/features/me/person_api_test.dart` (shape, GET,
+  PATCH com os cinco campos); `service_order_pdf_test.dart` ajustado para o
+  novo campo obrigatório. `flutter analyze` limpo, `flutter build web` OK.
+- **Ainda não verificado ao vivo** (Docker/emulador fora do ar nesta sessão):
+  home → card de identidade → preencher nome + registro → salvar → gerar laudo
+  e conferir a linha "Registro".
+
 ## `app_servory` — `feature/service-orders`: PDF do laudo (cópia de campo) ✅
 
 Fecha o item §10 do `GUIA-FLUTTER.md` / ADR-0018 ("PDF: continua fora do

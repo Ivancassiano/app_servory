@@ -9,8 +9,7 @@ class ServiceOrderPartController {
   ServiceOrderPartController(this._ref);
   final Ref _ref;
 
-  ServiceOrderRepository get _repo =>
-      _ref.read(serviceOrderRepositoryProvider);
+  ServiceOrderRepository get _repo => _ref.read(serviceOrderRepositoryProvider);
 
   Future<void> addPart({
     required String serviceOrderId,

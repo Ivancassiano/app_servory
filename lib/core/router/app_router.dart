@@ -20,6 +20,7 @@ import '../../features/labels/presentation/label_template_list_screen.dart';
 import '../../features/locations/presentation/location_detail_screen.dart';
 import '../../features/locations/presentation/location_list_screen.dart';
 import '../../features/me/presentation/home_screen.dart';
+import '../../features/me/presentation/person_screen.dart';
 import '../../features/reference/data/type_catalog_repository.dart';
 import '../../features/reference/presentation/type_catalog_screen.dart';
 import '../../features/service_orders/presentation/service_order_detail_screen.dart';
@@ -83,6 +84,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const OfflineExpiredScreen(),
       ),
       GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
+      GoRoute(path: '/me/person', builder: (_, _) => const PersonScreen()),
       GoRoute(
         path: '/clients',
         builder: (_, _) => const ClientListScreen(),
@@ -220,4 +222,3 @@ String? decideRedirect({
       return _gatedRoutes.contains(currentLocation) ? '/' : null;
   }
 }
-

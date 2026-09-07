@@ -28,6 +28,7 @@ class ServiceOrderReportData {
     required this.signaturePng,
     required this.generatedAt,
     required this.technicianName,
+    required this.technicianRegistration,
     required this.organizationName,
     required this.hasPendingUploads,
   });
@@ -43,6 +44,10 @@ class ServiceOrderReportData {
 
   /// `null` quando `/v1/me` nunca carregou nesta sessão (login offline).
   final String? technicianName;
+
+  /// Registro profissional (CREA/CFT) do técnico — de `/v1/me/person`.
+  /// `null` se não cadastrado ou indisponível offline.
+  final String? technicianRegistration;
   final String? organizationName;
 
   /// Ainda há foto/assinatura na fila de upload (só nativo) — o laudo
@@ -54,5 +59,5 @@ class ServiceOrderReportData {
 /// de propósito, não re-renderiza ao vivo.
 final serviceOrderReportDataProvider =
     FutureProvider.family<ServiceOrderReportData, String>(
-  (ref, orderId) => assembleServiceOrderReport(ref, orderId),
-);
+      (ref, orderId) => assembleServiceOrderReport(ref, orderId),
+    );

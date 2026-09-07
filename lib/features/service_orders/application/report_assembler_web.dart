@@ -7,6 +7,7 @@ import '../../clients/application/clients_provider.dart';
 import '../../equipments/application/equipments_provider.dart';
 import '../../locations/application/locations_provider.dart';
 import '../../me/application/me_provider.dart';
+import '../../me/application/person_provider.dart';
 import '../../attachments/application/service_order_attachments_provider.dart';
 import 'service_order_report.dart';
 import 'service_orders_provider.dart';
@@ -56,6 +57,14 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
 
   final identity = ref.read(identityProvider).asData?.value;
 
+  String? registration;
+  try {
+    final reg = (await ref.watch(
+      myPersonProvider.future,
+    )).professionalRegistration;
+    registration = reg.isNotEmpty ? reg : null;
+  } catch (_) {}
+
   return ServiceOrderReportData(
     order: order,
     client: client,
@@ -66,6 +75,7 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
     signaturePng: signaturePng,
     generatedAt: DateTime.now(),
     technicianName: identity?.name.isNotEmpty == true ? identity!.name : null,
+    technicianRegistration: registration,
     organizationName: identity?.organizationName.isNotEmpty == true
         ? identity!.organizationName
         : null,

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/conflict_notice.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
 import '../../locations/application/locations_provider.dart';
@@ -36,7 +37,17 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
   int? _version;
   bool _seeded = false;
   bool _saving = false;
+  bool _conflict = false;
   String? _error;
+
+  void _reloadFromServer() {
+    ref.invalidate(equipmentByIdProvider(widget.equipmentId));
+    setState(() {
+      _seeded = false;
+      _conflict = false;
+      _error = null;
+    });
+  }
 
   @override
   void initState() {
@@ -79,6 +90,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
     setState(() {
       _saving = true;
       _error = null;
+      _conflict = false;
     });
     try {
       final controller = ref.read(equipmentEditControllerProvider);
@@ -108,7 +120,11 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
       }
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.friendlyMessage);
+      if (e.code == 'VERSION_CONFLICT') {
+        setState(() => _conflict = true);
+      } else {
+        setState(() => _error = e.friendlyMessage);
+      }
     } catch (_) {
       if (!mounted) return;
       setState(
@@ -210,6 +226,10 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                   maxLines: 3,
                   decoration: const InputDecoration(labelText: 'Observações'),
                 ),
+                if (_conflict) ...[
+                  const SizedBox(height: 12),
+                  ConflictNotice(onReload: _reloadFromServer),
+                ],
                 if (_error != null) ...[
                   const SizedBox(height: 12),
                   Text(

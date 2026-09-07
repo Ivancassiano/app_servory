@@ -61,6 +61,7 @@ void main() {
       signaturePng: signature,
       generatedAt: DateTime(2026, 5, 9, 14, 30),
       technicianName: 'Técnico Teste',
+      technicianRegistration: 'CREA-SP 123456',
       organizationName: 'ClimaTech Serviços',
       hasPendingUploads: false,
     );
@@ -103,7 +104,11 @@ void main() {
         order,
         parts: parts,
         photos: [
-          ReportPhoto(bytes: _pngPixel, kind: 'before', caption: 'Antes do reparo'),
+          ReportPhoto(
+            bytes: _pngPixel,
+            kind: 'before',
+            caption: 'Antes do reparo',
+          ),
           ReportPhoto(bytes: _pngPixel),
         ],
         signature: _pngPixel,

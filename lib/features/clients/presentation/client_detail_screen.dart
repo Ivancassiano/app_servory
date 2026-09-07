@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/conflict_notice.dart';
 import '../../contacts/data/contact_repository.dart';
 import '../../contacts/presentation/contact_section.dart';
 import '../../labels/data/qr_mapper.dart';
@@ -31,6 +32,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
   int? _version;
   bool _seeded = false;
   bool _saving = false;
+  bool _conflict = false;
   String? _error;
 
   @override
@@ -49,11 +51,23 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
     _seeded = true;
   }
 
+  /// Recarrega o cliente do servidor após um conflito de versão e re-semeia
+  /// o formulário — o usuário refaz as alterações sobre o dado atual.
+  void _reloadFromServer() {
+    ref.invalidate(clientByIdProvider(widget.clientId));
+    setState(() {
+      _seeded = false;
+      _conflict = false;
+      _error = null;
+    });
+  }
+
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() {
       _saving = true;
       _error = null;
+      _conflict = false;
     });
     try {
       final controller = ref.read(clientEditControllerProvider);
@@ -75,7 +89,11 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
       Navigator.of(context).pop();
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.friendlyMessage);
+      if (e.code == 'VERSION_CONFLICT') {
+        setState(() => _conflict = true);
+      } else {
+        setState(() => _error = e.friendlyMessage);
+      }
     } catch (_) {
       if (!mounted) return;
       setState(
@@ -156,6 +174,10 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
                   keyboardType: TextInputType.phone,
                   decoration: const InputDecoration(labelText: 'Telefone'),
                 ),
+                if (_conflict) ...[
+                  const SizedBox(height: 12),
+                  ConflictNotice(onReload: _reloadFromServer),
+                ],
                 if (_error != null) ...[
                   const SizedBox(height: 12),
                   Text(

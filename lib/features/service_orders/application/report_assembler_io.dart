@@ -10,6 +10,7 @@ import '../../clients/application/clients_provider.dart';
 import '../../equipments/application/equipments_provider.dart';
 import '../../locations/application/locations_provider.dart';
 import '../../me/application/me_provider.dart';
+import '../../me/application/person_provider.dart';
 import '../../sync/application/sync_provider.dart';
 import 'service_order_report.dart';
 
@@ -36,12 +37,13 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
       ? null
       : await ref.watch(equipmentByIdProvider(order.equipmentId!).future);
 
-  final parts = await (db.select(db.localServiceOrderParts)
-        ..where(
-          (t) => t.serviceOrderId.equals(orderId) & t.deleted.equals(false),
-        )
-        ..orderBy([(t) => OrderingTerm(expression: t.localUpdatedAt)]))
-      .get();
+  final parts =
+      await (db.select(db.localServiceOrderParts)
+            ..where(
+              (t) => t.serviceOrderId.equals(orderId) & t.deleted.equals(false),
+            )
+            ..orderBy([(t) => OrderingTerm(expression: t.localUpdatedAt)]))
+          .get();
 
   final queued = await (db.select(
     db.uploadQueue,
@@ -63,6 +65,7 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
   );
 
   final identity = ref.read(identityProvider).asData?.value;
+  final registration = await _technicianRegistration(ref);
 
   return ServiceOrderReportData(
     order: order,
@@ -74,11 +77,25 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
     signaturePng: signaturePng,
     generatedAt: DateTime.now(),
     technicianName: identity?.name.isNotEmpty == true ? identity!.name : null,
+    technicianRegistration: registration,
     organizationName: identity?.organizationName.isNotEmpty == true
         ? identity!.organizationName
         : null,
     hasPendingUploads: queued.isNotEmpty,
   );
+}
+
+/// Registro profissional do técnico (`/v1/me/person`). Uma chamada REST
+/// tolerante a falha — offline o laudo simplesmente sai sem a linha.
+Future<String?> _technicianRegistration(Ref ref) async {
+  try {
+    final reg = (await ref.watch(
+      myPersonProvider.future,
+    )).professionalRegistration;
+    return reg.isNotEmpty ? reg : null;
+  } catch (_) {
+    return null;
+  }
 }
 
 Future<List<ReportPhoto>> _readPhotos(

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
+import '../../../core/widgets/conflict_notice.dart';
 import '../../../core/widgets/local_file_image.dart';
 import '../../attachments/application/pending_uploads.dart';
 import '../../attachments/application/service_order_attachments_provider.dart';
@@ -59,11 +60,21 @@ class _ServiceOrderDetailScreenState
   bool _openNow = false;
   bool _seeded = false;
   bool _saving = false;
+  bool _conflict = false;
   String? _error;
 
   /// Atualizado a cada rebuild (não só na 1ª vez, ao contrário do
   /// `_seedFrom`) — as ações nomeadas mudam a `version` e precisam da atual.
   int? _currentVersion;
+
+  void _reloadFromServer() {
+    ref.invalidate(serviceOrderByIdProvider(widget.serviceOrderId));
+    setState(() {
+      _seeded = false;
+      _conflict = false;
+      _error = null;
+    });
+  }
 
   @override
   void initState() {
@@ -114,6 +125,7 @@ class _ServiceOrderDetailScreenState
     setState(() {
       _saving = true;
       _error = null;
+      _conflict = false;
     });
     try {
       final controller = ref.read(serviceOrderEditControllerProvider);
@@ -153,7 +165,11 @@ class _ServiceOrderDetailScreenState
       }
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.friendlyMessage);
+      if (e.code == 'VERSION_CONFLICT') {
+        setState(() => _conflict = true);
+      } else {
+        setState(() => _error = e.friendlyMessage);
+      }
     } catch (e) {
       if (!mounted) return;
       setState(
@@ -169,6 +185,7 @@ class _ServiceOrderDetailScreenState
     setState(() {
       _saving = true;
       _error = null;
+      _conflict = false;
     });
     try {
       final c = ref.read(serviceOrderEditControllerProvider);
@@ -183,7 +200,11 @@ class _ServiceOrderDetailScreenState
       }
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.friendlyMessage);
+      if (e.code == 'VERSION_CONFLICT') {
+        setState(() => _conflict = true);
+      } else {
+        setState(() => _error = e.friendlyMessage);
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() => _error = 'Não foi possível registrar a transição.');
@@ -427,8 +448,7 @@ class _ServiceOrderDetailScreenState
                     kind: ReferenceKind.serviceOrderType,
                     label: 'Tipo de ordem (opcional)',
                     value: _serviceOrderTypeId,
-                    onChanged: (v) =>
-                        setState(() => _serviceOrderTypeId = v),
+                    onChanged: (v) => setState(() => _serviceOrderTypeId = v),
                   ),
                   const SizedBox(height: 16),
                   _referenceDropdown(
@@ -499,6 +519,10 @@ class _ServiceOrderDetailScreenState
                         labelText: 'Observações',
                       ),
                     ),
+                  ],
+                  if (_conflict) ...[
+                    const SizedBox(height: 12),
+                    ConflictNotice(onReload: _reloadFromServer),
                   ],
                   if (_error != null) ...[
                     const SizedBox(height: 12),
@@ -670,7 +694,9 @@ class _PhotosSection extends ConsumerWidget {
                         errorBuilder: (_, _, _) => Container(
                           width: 96,
                           height: 96,
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
                           child: const Icon(Icons.broken_image_outlined),
                         ),
                       ),
@@ -684,11 +710,7 @@ class _PhotosSection extends ConsumerWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: localFileImage(
-                      item.filePath,
-                      width: 96,
-                      height: 96,
-                    ),
+                    child: localFileImage(item.filePath, width: 96, height: 96),
                   ),
                   const Positioned(
                     right: 2,

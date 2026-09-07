@@ -9,8 +9,7 @@ class ServiceOrderEditController {
   ServiceOrderEditController(this._ref);
   final Ref _ref;
 
-  ServiceOrderRepository get _repo =>
-      _ref.read(serviceOrderRepositoryProvider);
+  ServiceOrderRepository get _repo => _ref.read(serviceOrderRepositoryProvider);
 
   Future<String> create({
     required String clientId,

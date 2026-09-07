@@ -24,9 +24,7 @@ const _photoKindLabels = {
 /// Riverpod, dá pra testar direto. As fontes padrão do pacote `pdf`
 /// (Helvetica) cobrem Latin-1, o que basta para português.
 Future<Uint8List> buildServiceOrderPdf(ServiceOrderReportData d) async {
-  final doc = pw.Document(
-    title: 'Ordem de serviço ${_shortId(d.order.id)}',
-  );
+  final doc = pw.Document(title: 'Ordem de serviço ${_shortId(d.order.id)}');
 
   final theme = pw.ThemeData.withFont();
 
@@ -35,8 +33,7 @@ Future<Uint8List> buildServiceOrderPdf(ServiceOrderReportData d) async {
       theme: theme,
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(32, 32, 32, 48),
-      header: (context) =>
-          context.pageNumber == 1 ? _header(d) : pw.SizedBox(),
+      header: (context) => context.pageNumber == 1 ? _header(d) : pw.SizedBox(),
       footer: (context) => _footer(d, context),
       build: (context) => [
         _entitiesBlock(d),
@@ -149,10 +146,7 @@ pw.Widget _footer(ServiceOrderReportData d, pw.Context context) {
               d.hasPendingUploads
                   ? 'Gerado em ${_fmtDateTime(d.generatedAt)} no dispositivo. Há anexos ainda não sincronizados - a via oficial no servidor pode diferir.'
                   : 'Gerado em ${_fmtDateTime(d.generatedAt)} no dispositivo. A via oficial é gerada no servidor após a sincronização.',
-              style: const pw.TextStyle(
-                fontSize: 7,
-                color: PdfColors.grey600,
-              ),
+              style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey600),
             ),
           ),
           pw.SizedBox(width: 12),
@@ -180,8 +174,11 @@ pw.Widget _entitiesBlock(ServiceOrderReportData d) {
           _kv('Telefone', d.client!.phone),
         if (d.location != null) _kv('Local', d.location!.name),
         if (address.isNotEmpty) _kv('Endereço', address),
-        if (d.equipment != null) _kv('Equipamento', _equipmentLine(d.equipment!)),
+        if (d.equipment != null)
+          _kv('Equipamento', _equipmentLine(d.equipment!)),
         if (d.technicianName != null) _kv('Técnico', d.technicianName!),
+        if (d.technicianRegistration != null)
+          _kv('Registro', d.technicianRegistration!),
       ],
     ),
   );
@@ -265,7 +262,9 @@ List<pw.Widget> _partsSection(List<LocalServiceOrderPart> parts) {
     final qty = part.quantity.trim().isEmpty ? '1' : part.quantity.trim();
     final unitPrice = _money(part.unitPrice);
     final qtyNum = double.tryParse(qty.replaceAll(',', '.'));
-    final priceNum = double.tryParse((part.unitPrice ?? '').replaceAll(',', '.'));
+    final priceNum = double.tryParse(
+      (part.unitPrice ?? '').replaceAll(',', '.'),
+    );
     String lineTotal = '-';
     if (qtyNum != null && priceNum != null) {
       final t = qtyNum * priceNum;
@@ -275,7 +274,9 @@ List<pw.Widget> _partsSection(List<LocalServiceOrderPart> parts) {
       total = null; // um item sem preço parseável invalida o total
     }
     rows.add([
-      part.description.trim().isEmpty ? '(sem descrição)' : part.description.trim(),
+      part.description.trim().isEmpty
+          ? '(sem descrição)'
+          : part.description.trim(),
       part.partNumber,
       '$qty ${part.unit}'.trim(),
       unitPrice ?? '-',
@@ -299,10 +300,7 @@ List<pw.Widget> _partsSection(List<LocalServiceOrderPart> parts) {
     pw.TableHelper.fromTextArray(
       headers: ['Descrição', 'Código', 'Qtd.', 'Preço un.', 'Total'],
       data: rows,
-      headerStyle: pw.TextStyle(
-        fontSize: 8,
-        fontWeight: pw.FontWeight.bold,
-      ),
+      headerStyle: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
       cellStyle: const pw.TextStyle(fontSize: 8),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
       cellAlignments: {
@@ -403,11 +401,7 @@ List<pw.Widget> _signatureSection(Uint8List png) {
         border: pw.Border.all(color: PdfColors.grey400, width: .5),
       ),
       padding: const pw.EdgeInsets.all(4),
-      child: pw.Image(
-        pw.MemoryImage(png),
-        height: 90,
-        fit: pw.BoxFit.contain,
-      ),
+      child: pw.Image(pw.MemoryImage(png), height: 90, fit: pw.BoxFit.contain),
     ),
   ];
 }

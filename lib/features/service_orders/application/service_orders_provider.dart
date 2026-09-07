@@ -22,27 +22,27 @@ final _serviceOrdersRawProvider = StreamProvider<List<LocalServiceOrder>>(
 
 final serviceOrderListProvider =
     Provider<AsyncValue<List<ServiceOrderWithClient>>>((ref) {
-  final ordersAsync = ref.watch(_serviceOrdersRawProvider);
-  final clients = ref.watch(clientListProvider).value ?? const [];
-  final nameById = {for (final c in clients) c.id: c.name};
-  return ordersAsync.whenData(
-    (orders) => [
-      for (final o in orders)
-        ServiceOrderWithClient(
-          order: o,
-          clientName: nameById[o.clientId] ?? '—',
-        ),
-    ],
-  );
-});
+      final ordersAsync = ref.watch(_serviceOrdersRawProvider);
+      final clients = ref.watch(clientListProvider).value ?? const [];
+      final nameById = {for (final c in clients) c.id: c.name};
+      return ordersAsync.whenData(
+        (orders) => [
+          for (final o in orders)
+            ServiceOrderWithClient(
+              order: o,
+              clientName: nameById[o.clientId] ?? '—',
+            ),
+        ],
+      );
+    });
 
 final serviceOrderByIdProvider =
     StreamProvider.family<LocalServiceOrder?, String>(
-  (ref, id) => ref.watch(serviceOrderRepositoryProvider).watchById(id),
-);
+      (ref, id) => ref.watch(serviceOrderRepositoryProvider).watchById(id),
+    );
 
 final servicePartsProvider =
     StreamProvider.family<List<LocalServiceOrderPart>, String>(
-  (ref, orderId) =>
-      ref.watch(serviceOrderRepositoryProvider).watchParts(orderId),
-);
+      (ref, orderId) =>
+          ref.watch(serviceOrderRepositoryProvider).watchParts(orderId),
+    );
