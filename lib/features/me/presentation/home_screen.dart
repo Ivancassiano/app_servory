@@ -128,12 +128,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 count: orderCount,
               ),
               _Shortcut(Icons.groups_outlined, 'Clientes', '/clients'),
-              _Shortcut(Icons.place_outlined, 'Locais', '/locations'),
-              _Shortcut(
-                Icons.handyman_outlined,
-                'Equipamentos',
-                '/equipments',
-              ),
+              _Shortcut(Icons.inventory_2_outlined, 'Itens', '/items'),
             ],
           ),
         ],
