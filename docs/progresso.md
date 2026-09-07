@@ -5,6 +5,21 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: empresa abre em leitura ✅
+
+`CompanyDetailScreen` abria já com os campos editáveis, fora do padrão das
+outras telas de cadastro (cliente, equipamento, local, OS). Agora:
+
+- Registro salvo abre em **leitura** (`DetailRow`/`DetailExpander`), com lápis
+  "Editar" + lixeira na AppBar. O form só aparece ao tocar no lápis; botão
+  **Cancelar** volta pra leitura.
+- Seções **Logo** e **Pessoas** passaram pro modo leitura (antes ficavam no
+  fim do form).
+- `_submit` no update deixa de dar `pop()` — volta pra leitura e re-semeia
+  (`_reloadFromServer`, invalida `companyByIdProvider`).
+- Teste novo: `company_detail_screen_test.dart` (leitura → lápis → Cancelar;
+  nova empresa já no form). 139 testes, `flutter analyze` limpo.
+
 ## `app_servory` — `feature/service-orders`: catálogos de tipos em Configurações ✅
 
 O cabeçalho de **Ordens de serviço** tinha um botão que abria a `TypeCatalogScreen`

@@ -5,11 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/detail_view.dart';
 import '../../reference/data/reference_repository.dart';
 import '../data/company_repository.dart';
 
+const _kindLabels = {'legal': 'Pessoa jurídica', 'individual': 'Profissional'};
+
 /// `companyId == 'new'` é o sentinela de criação. `kind` só é escolhido na
 /// criação — imutável depois. Membros e logo aparecem só depois de salva.
+/// Um registro já salvo abre em **leitura**; o lápis no topo liga a edição.
 class CompanyDetailScreen extends ConsumerStatefulWidget {
   const CompanyDetailScreen({super.key, required this.companyId});
 
@@ -35,12 +39,14 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
   String? _personUserId;
   int? _version;
   bool _seeded = false;
+  bool _editing = false;
   bool _saving = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _editing = widget.isNew;
     ref.read(referenceDataRepositoryProvider).refresh(ReferenceKind.orgUser);
   }
 
@@ -75,6 +81,23 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
     _personUserId = c.personUserId;
     _version = c.version;
     _seeded = true;
+  }
+
+  /// Recarrega do servidor e re-semeia — depois de salvar.
+  void _reloadFromServer() {
+    ref.invalidate(companyByIdProvider(widget.companyId));
+    setState(() {
+      _seeded = false;
+      _error = null;
+    });
+  }
+
+  void _cancelEdit() {
+    setState(() {
+      _editing = false;
+      _seeded = false;
+      _error = null;
+    });
   }
 
   Future<void> _submit() async {
@@ -122,7 +145,13 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       await ref
           .read(referenceDataRepositoryProvider)
           .refresh(ReferenceKind.company);
-      if (mounted) Navigator.of(context).pop();
+      if (!mounted) return;
+      if (widget.isNew) {
+        Navigator.of(context).pop();
+      } else {
+        setState(() => _editing = false);
+        _reloadFromServer();
+      }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.friendlyMessage);
     } catch (_) {
@@ -136,7 +165,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isNew) return _form(context, title: 'Nova empresa');
+    if (widget.isNew) return _editForm(context, title: 'Nova empresa');
 
     final async = ref.watch(companyByIdProvider(widget.companyId));
     return async.when(
@@ -156,27 +185,81 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
           );
         }
         _seedFrom(company);
-        return _form(context, title: company.name, company: company);
+        return _editing
+            ? _editForm(context, title: company.name)
+            : _viewMode(context, company);
       },
     );
   }
 
-  Widget _form(BuildContext context, {required String title, Company? company}) {
-    final users = ref.watch(referenceListProvider(ReferenceKind.orgUser)).value ??
+  // --- leitura ------------------------------------------------------------
+
+  Widget _viewMode(BuildContext context, Company company) {
+    final users =
+        ref.watch(referenceListProvider(ReferenceKind.orgUser)).value ??
         const [];
+    final personMatch = users.where((u) => u.id == company.personUserId);
+    final personLabel = personMatch.isEmpty ? '' : personMatch.first.label;
+
+    final extras = <Widget>[
+      if (company.legalName.isNotEmpty)
+        DetailRow('Razão social', company.legalName),
+      if (company.taxId.isNotEmpty) DetailRow('CNPJ / CPF', company.taxId),
+      if (company.taxRegime.isNotEmpty) DetailRow('Regime', company.taxRegime),
+      if (company.email.isNotEmpty) DetailRow('E-mail', company.email),
+      if (company.address.isNotEmpty) DetailRow('Endereço', company.address),
+      if (company.notes.isNotEmpty) DetailRow('Observações', company.notes),
+    ];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(company.name),
         actions: [
-          if (!widget.isNew)
-            IconButton(
-              tooltip: 'Excluir empresa',
-              icon: const Icon(Icons.delete_outline),
-              onPressed: _confirmDelete,
-            ),
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Editar',
+            onPressed: () => setState(() => _editing = true),
+          ),
+          IconButton(
+            tooltip: 'Excluir empresa',
+            icon: const Icon(Icons.delete_outline),
+            onPressed: _confirmDelete,
+          ),
         ],
       ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            DetailRow('Tipo', _kindLabels[company.kind] ?? company.kind),
+            if (company.kind == 'individual' && personLabel.isNotEmpty)
+              DetailRow('Pessoa vinculada', personLabel),
+            DetailRow('Telefone', company.phone),
+            if (extras.isNotEmpty)
+              DetailExpander(title: 'Outros dados', children: extras),
+            const SizedBox(height: 32),
+            const Divider(),
+            const SizedBox(height: 8),
+            _LogoSection(company: company),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            _MembersSection(companyId: widget.companyId),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- edição -----------------------------------------------------------
+
+  Widget _editForm(BuildContext context, {required String title}) {
+    final users =
+        ref.watch(referenceListProvider(ReferenceKind.orgUser)).value ??
+        const [];
+
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -293,16 +376,11 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
                         )
                       : const Text('Salvar'),
                 ),
-                if (!widget.isNew && company != null) ...[
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  _LogoSection(company: company),
-                  const SizedBox(height: 24),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  _MembersSection(companyId: widget.companyId),
-                ],
+                if (!widget.isNew)
+                  TextButton(
+                    onPressed: _saving ? null : _cancelEdit,
+                    child: const Text('Cancelar'),
+                  ),
               ],
             ),
           ),
