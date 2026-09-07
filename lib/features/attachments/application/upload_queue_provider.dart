@@ -63,6 +63,7 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
               filename: p.basename(item.filePath),
               kind: item.photoKind,
               caption: item.caption,
+              serviceOrderItemId: item.serviceOrderItemId,
             );
           } else {
             await api.putSignature(

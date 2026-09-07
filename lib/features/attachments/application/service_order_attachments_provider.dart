@@ -12,12 +12,16 @@ class OrderPhoto {
     required this.downloadUrl,
     this.kind,
     this.caption,
+    this.serviceOrderItemId,
   });
 
   final String id;
   final String downloadUrl;
   final String? kind;
   final String? caption;
+
+  /// Item da visita a que a foto pertence — `null` = foto geral da ordem.
+  final String? serviceOrderItemId;
 }
 
 class OrderSignature {
@@ -53,6 +57,7 @@ final orderPhotosProvider = FutureProvider.family<List<OrderPhoto>, String>((
           downloadUrl: url,
           kind: photo['kind'] as String?,
           caption: photo['caption'] as String?,
+          serviceOrderItemId: photo['service_order_item_id'] as String?,
         ),
       );
     } catch (_) {

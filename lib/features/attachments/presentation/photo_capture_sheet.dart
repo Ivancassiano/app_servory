@@ -10,9 +10,16 @@ import '../application/attachment_controller.dart';
 /// (`kind`/legenda) e envia (GUIA-FLUTTER.md §7). No nativo salva local e
 /// enfileira (funciona offline); no web envia direto.
 class PhotoCaptureSheet extends ConsumerStatefulWidget {
-  const PhotoCaptureSheet({super.key, required this.serviceOrderId});
+  const PhotoCaptureSheet({
+    super.key,
+    required this.serviceOrderId,
+    this.serviceOrderItemId,
+  });
 
   final String serviceOrderId;
+
+  /// Quando setado, a foto fica vinculada a esse item da visita.
+  final String? serviceOrderItemId;
 
   @override
   ConsumerState<PhotoCaptureSheet> createState() => _PhotoCaptureSheetState();
@@ -57,6 +64,7 @@ class _PhotoCaptureSheetState extends ConsumerState<PhotoCaptureSheet> {
         filename: picked.name,
         photoKind: _kind,
         caption: _captionController.text.trim(),
+        serviceOrderItemId: widget.serviceOrderItemId,
       );
       if (mounted) Navigator.of(context).pop();
     } finally {

@@ -89,6 +89,7 @@ void main() {
             filePath: '/tmp/foto.jpg',
             sha256: 'abc123',
             photoKind: const Value('before'),
+            serviceOrderItemId: const Value('soi1'),
             createdAt: DateTime.now(),
           ),
         );
@@ -96,6 +97,7 @@ void main() {
     var pending = await db.select(db.uploadQueue).get();
     expect(pending, hasLength(1));
     expect(pending.single.attempts, 0);
+    expect(pending.single.serviceOrderItemId, 'soi1');
 
     await (db.update(db.uploadQueue)..where((t) => t.id.equals('u1'))).write(
       const UploadQueueCompanion(

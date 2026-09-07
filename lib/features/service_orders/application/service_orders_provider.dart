@@ -52,3 +52,10 @@ final serviceItemsProvider =
       (ref, orderId) =>
           ref.watch(serviceOrderRepositoryProvider).watchItems(orderId),
     );
+
+/// Ordens-filhas (correções agendadas) de uma ordem — derivado da lista.
+final childServiceOrdersProvider =
+    Provider.family<List<LocalServiceOrder>, String>((ref, parentId) {
+      final all = ref.watch(_serviceOrdersRawProvider).value ?? const [];
+      return [for (final o in all) if (o.parentOrderId == parentId) o];
+    });

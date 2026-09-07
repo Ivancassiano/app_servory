@@ -10,7 +10,7 @@ import '../../../core/providers.dart';
 /// (`contact_person`) continua no próprio cliente/local.
 enum ContactScope {
   client('/v1/clients'),
-  location('/v1/locations');
+  item('/v1/items');
 
   const ContactScope(this.basePath);
   final String basePath;

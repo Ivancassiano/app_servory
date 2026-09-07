@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/widgets/brand_app_bar.dart';
-import '../../equipments/application/equipments_provider.dart';
-import '../../locations/application/locations_provider.dart';
+import '../../items/application/items_provider.dart';
 import '../application/service_orders_provider.dart';
+import 'parts_section.dart';
+import 'photos_section.dart';
+import 'recommendations_section.dart';
 
 const _approvalOptions = {
   'pending': 'Pendente',
@@ -71,8 +73,6 @@ class _ServiceOrderItemScreenState
             orderId: widget.serviceOrderId,
             itemId: widget.itemId,
             baseVersion: it.version,
-            locationId: it.locationId,
-            equipmentId: it.equipmentId,
             diagnosis: _diagnosis.text.trim(),
             workPerformed: _work.text.trim(),
             finalCondition: _finalCondition.text.trim(),
@@ -151,21 +151,17 @@ class _ServiceOrderItemScreenState
     }
     _seed(item);
 
-    final locName = (ref.watch(locationListProvider).value ?? const [])
-        .where((l) => l.id == item.locationId)
-        .map((l) => l.name)
-        .join();
-    final eqName = item.equipmentId == null
-        ? ''
-        : (ref.watch(equipmentListProvider).value ?? const [])
-              .where((e) => e.id == item.equipmentId)
-              .map((e) => e.name)
-              .join();
+    final catItem = (ref.watch(itemListProvider).value ?? const [])
+        .where((i) => i.id == item.itemId)
+        .firstOrNull;
+    final itemName = catItem?.name ?? 'Item';
 
     return Scaffold(
       appBar: brandAppBar(
-        title: eqName.isEmpty ? 'Item' : eqName,
-        subtitle: locName.isEmpty ? null : locName,
+        title: itemName,
+        subtitle: catItem?.city.isNotEmpty == true
+            ? '${catItem!.city} - ${catItem.state}'
+            : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),
@@ -226,6 +222,42 @@ class _ServiceOrderItemScreenState
                 showSelectedIcon: false,
                 onSelectionChanged: (s) => _setApproval(s.first),
               ),
+            ),
+            const SizedBox(height: 28),
+            const Divider(),
+            const SizedBox(height: 8),
+            Text(
+              'Peças deste item',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            PartsSection(
+              serviceOrderId: widget.serviceOrderId,
+              serviceOrderItemId: widget.itemId,
+            ),
+            const SizedBox(height: 28),
+            const Divider(),
+            const SizedBox(height: 8),
+            Text(
+              'Recomendações deste item',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            RecommendationsSection(
+              serviceOrderId: widget.serviceOrderId,
+              serviceOrderItemId: widget.itemId,
+            ),
+            const SizedBox(height: 28),
+            const Divider(),
+            const SizedBox(height: 8),
+            Text(
+              'Fotos deste item',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            PhotosSection(
+              serviceOrderId: widget.serviceOrderId,
+              serviceOrderItemId: widget.itemId,
             ),
           ],
         ),

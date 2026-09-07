@@ -28,8 +28,7 @@ abstract interface class ServiceOrderRepository {
 
   Future<String> addItem({
     required String orderId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String diagnosis = '',
     String workPerformed = '',
     String finalCondition = '',
@@ -40,8 +39,6 @@ abstract interface class ServiceOrderRepository {
     required String orderId,
     required String itemId,
     required int? baseVersion,
-    String? locationId,
-    String? equipmentId,
     required String diagnosis,
     required String workPerformed,
     required String finalCondition,
@@ -56,12 +53,18 @@ abstract interface class ServiceOrderRepository {
     required String approval,
   });
 
+  /// Agenda a aplicação das correções: cria a ordem-filha (só itens aprovados)
+  /// ligada a [parentOrderId]. Online-only (POST /v1/service-orders/{id}/follow-up).
+  Future<String> createFollowUp({
+    required String parentOrderId,
+    DateTime? scheduledFor,
+  });
+
   /// [mode] ∈ {`draft`, `open`, `start`} (spec §7.6). `start` já entra em
   /// andamento; `open` agenda/abre; `draft` salva rascunho.
   Future<String> create({
     required String clientId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -73,8 +76,7 @@ abstract interface class ServiceOrderRepository {
   Future<void> update({
     required String id,
     required int? baseVersion,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -102,6 +104,7 @@ abstract interface class ServiceOrderRepository {
     required String unitCost,
     required String unitPrice,
     required String notes,
+    String? serviceOrderItemId,
   });
 
   Future<void> updatePart({
@@ -195,16 +198,13 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
   @override
   Future<String> addItem({
     required String orderId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String diagnosis = '',
     String workPerformed = '',
     String finalCondition = '',
     String note = '',
   }) async {
     final body = serviceOrderItemBody(
-      locationId: locationId,
-      equipmentId: equipmentId,
       diagnosis: diagnosis,
       workPerformed: workPerformed,
       finalCondition: finalCondition,
@@ -232,8 +232,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
               id: id,
               organizationId: orgId,
               serviceOrderId: orderId,
-              locationId: locationId ?? '',
-              equipmentId: Value(equipmentId),
+              itemId: itemId ?? '',
               diagnosis: Value(diagnosis),
               workPerformed: Value(workPerformed),
               finalCondition: Value(finalCondition),
@@ -259,16 +258,12 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     required String orderId,
     required String itemId,
     required int? baseVersion,
-    String? locationId,
-    String? equipmentId,
     required String diagnosis,
     required String workPerformed,
     required String finalCondition,
     required String note,
   }) async {
     final body = serviceOrderItemBody(
-      locationId: locationId,
-      equipmentId: equipmentId,
       diagnosis: diagnosis,
       workPerformed: workPerformed,
       finalCondition: finalCondition,
@@ -298,10 +293,6 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
             ..where((t) => t.id.equals(itemId)))
           .write(
         LocalServiceOrderItemsCompanion(
-          locationId: locationId == null
-              ? const Value.absent()
-              : Value(locationId),
-          equipmentId: Value(equipmentId),
           diagnosis: Value(diagnosis),
           workPerformed: Value(workPerformed),
           finalCondition: Value(finalCondition),
@@ -380,13 +371,32 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
   }
 
   @override
+  Future<String> createFollowUp({
+    required String parentOrderId,
+    DateTime? scheduledFor,
+  }) async {
+    final r = await restCall(
+      () => dio.post(
+        '/v1/service-orders/$parentOrderId/follow-up',
+        data: {'scheduled_for': ?scheduledFor?.toUtc().toIso8601String()},
+      ),
+    );
+    final child = serviceOrderFromApiJson(
+      r.data as Map<String, dynamic>,
+      organizationId: orgId,
+    );
+    await db.into(db.localServiceOrders).insertOnConflictUpdate(child);
+    unawaited(trySyncNow()); // puxa os itens copiados
+    return child.id;
+  }
+
+  @override
   Future<void> refresh() => runSync();
 
   @override
   Future<String> create({
     required String clientId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -396,8 +406,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
   }) async {
     final body = serviceOrderCreateBody(
       clientId: clientId,
-      locationId: locationId,
-      equipmentId: equipmentId,
+      itemId: itemId,
       serviceOrderTypeId: serviceOrderTypeId,
       companyId: companyId,
       assignedUserId: assignedUserId,
@@ -427,8 +436,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
               id: id,
               organizationId: orgId,
               clientId: clientId,
-              locationId: Value(locationId),
-              equipmentId: Value(equipmentId),
+              itemId: Value(itemId),
               serviceOrderTypeId: Value(serviceOrderTypeId),
               companyId: Value(companyId),
               assignedUserId: Value(assignedUserId),
@@ -456,8 +464,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
   Future<void> update({
     required String id,
     required int? baseVersion,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -469,8 +476,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     required String notes,
   }) async {
     final body = serviceOrderUpdateBody(
-      locationId: locationId,
-      equipmentId: equipmentId,
+      itemId: itemId,
       serviceOrderTypeId: serviceOrderTypeId,
       companyId: companyId,
       assignedUserId: assignedUserId,
@@ -504,12 +510,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
       await (db.update(db.localServiceOrders)..where((t) => t.id.equals(id)))
           .write(
         LocalServiceOrdersCompanion(
-          locationId: locationId != null
-              ? Value(locationId)
-              : const Value.absent(),
-          equipmentId: equipmentId != null
-              ? Value(equipmentId)
-              : const Value.absent(),
+          itemId: itemId != null ? Value(itemId) : const Value.absent(),
           serviceOrderTypeId: serviceOrderTypeId != null
               ? Value(serviceOrderTypeId)
               : const Value.absent(),
@@ -610,6 +611,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     required String unitCost,
     required String unitPrice,
     required String notes,
+    String? serviceOrderItemId,
   }) async {
     final body = servicePartCreateBody(
       description: description,
@@ -619,6 +621,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
       unitCost: unitCost,
       unitPrice: unitPrice,
       notes: notes,
+      serviceOrderItemId: serviceOrderItemId,
     );
     if (online) {
       try {
@@ -643,6 +646,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
               id: id,
               organizationId: orgId,
               serviceOrderId: orderId,
+              serviceOrderItemId: Value(serviceOrderItemId),
               description: Value(description),
               partNumber: Value(partNumber),
               quantity: Value(quantity.isEmpty ? '1' : quantity),
@@ -831,8 +835,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
   @override
   Future<String> create({
     required String clientId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -843,8 +846,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
     final order = await _orders.create(
       serviceOrderCreateBody(
         clientId: clientId,
-        locationId: locationId,
-        equipmentId: equipmentId,
+        itemId: itemId,
         serviceOrderTypeId: serviceOrderTypeId,
         companyId: companyId,
         assignedUserId: assignedUserId,
@@ -860,8 +862,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
   Future<void> update({
     required String id,
     required int? baseVersion,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -874,8 +875,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
   }) async {
     await _orders.update(id, {
       ...serviceOrderUpdateBody(
-        locationId: locationId,
-        equipmentId: equipmentId,
+        itemId: itemId,
         serviceOrderTypeId: serviceOrderTypeId,
         companyId: companyId,
         assignedUserId: assignedUserId,
@@ -909,6 +909,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
     required String unitCost,
     required String unitPrice,
     required String notes,
+    String? serviceOrderItemId,
   }) async {
     await _parts(orderId).create(
       servicePartCreateBody(
@@ -919,6 +920,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
         unitCost: unitCost,
         unitPrice: unitPrice,
         notes: notes,
+        serviceOrderItemId: serviceOrderItemId,
       ),
     );
   }
@@ -980,8 +982,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
   @override
   Future<String> addItem({
     required String orderId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String diagnosis = '',
     String workPerformed = '',
     String finalCondition = '',
@@ -989,8 +990,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
   }) async {
     final it = await _items(orderId).create(
       serviceOrderItemBody(
-        locationId: locationId,
-        equipmentId: equipmentId,
+        itemId: itemId,
         diagnosis: diagnosis,
         workPerformed: workPerformed,
         finalCondition: finalCondition,
@@ -1005,8 +1005,6 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
     required String orderId,
     required String itemId,
     required int? baseVersion,
-    String? locationId,
-    String? equipmentId,
     required String diagnosis,
     required String workPerformed,
     required String finalCondition,
@@ -1014,8 +1012,6 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
   }) async {
     await _items(orderId).update(itemId, {
       ...serviceOrderItemBody(
-        locationId: locationId,
-        equipmentId: equipmentId,
         diagnosis: diagnosis,
         workPerformed: workPerformed,
         finalCondition: finalCondition,
@@ -1040,5 +1036,19 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
     required String approval,
   }) async {
     await _items(orderId).action(itemId, 'approval', {'approval': approval});
+  }
+
+  @override
+  Future<String> createFollowUp({
+    required String parentOrderId,
+    DateTime? scheduledFor,
+  }) async {
+    final r = await restCall(
+      () => _dio.post(
+        '/v1/service-orders/$parentOrderId/follow-up',
+        data: {'scheduled_for': ?scheduledFor?.toUtc().toIso8601String()},
+      ),
+    );
+    return (r.data as Map<String, dynamic>)['id'] as String;
   }
 }

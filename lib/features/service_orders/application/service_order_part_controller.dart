@@ -20,6 +20,7 @@ class ServiceOrderPartController {
     required String unitCost,
     required String unitPrice,
     required String notes,
+    String? serviceOrderItemId,
   }) => _repo.addPart(
     orderId: serviceOrderId,
     description: description,
@@ -29,6 +30,7 @@ class ServiceOrderPartController {
     unitCost: unitCost,
     unitPrice: unitPrice,
     notes: notes,
+    serviceOrderItemId: serviceOrderItemId,
   );
 
   Future<void> updatePart({

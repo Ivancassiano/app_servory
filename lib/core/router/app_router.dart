@@ -11,15 +11,14 @@ import '../../features/clients/presentation/client_detail_screen.dart';
 import '../../features/clients/presentation/client_list_screen.dart';
 import '../../features/companies/presentation/company_detail_screen.dart';
 import '../../features/companies/presentation/company_list_screen.dart';
-import '../../features/equipments/presentation/equipment_detail_screen.dart';
-import '../../features/equipments/presentation/equipment_list_screen.dart';
 import '../../features/labels/presentation/label_batch_detail_screen.dart';
 import '../../features/labels/presentation/label_batch_list_screen.dart';
 import '../../features/labels/presentation/label_template_edit_screen.dart';
 import '../../features/labels/presentation/label_template_list_screen.dart';
 import '../../features/labels/presentation/qr_label_print_screen.dart';
-import '../../features/locations/presentation/location_detail_screen.dart';
-import '../../features/locations/presentation/location_list_screen.dart';
+import '../../features/items/presentation/item_detail_screen.dart';
+import '../../features/items/presentation/item_fields_screen.dart';
+import '../../features/items/presentation/item_list_screen.dart';
 import '../../features/me/presentation/home_screen.dart';
 import '../../features/me/presentation/person_screen.dart';
 import '../../features/me/presentation/settings_screen.dart';
@@ -101,35 +100,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
-        path: '/locations',
-        builder: (_, state) => LocationListScreen(
+        path: '/items',
+        builder: (_, state) => ItemListScreen(
           clientId: state.uri.queryParameters['clientId'],
         ),
         routes: [
           GoRoute(
             path: ':id',
-            builder: (_, state) => LocationDetailScreen(
-              locationId: state.pathParameters['id']!,
+            builder: (_, state) => ItemDetailScreen(
+              itemId: state.pathParameters['id']!,
               presetClientId: state.uri.queryParameters['clientId'],
+              presetParentId: state.uri.queryParameters['parentId'],
             ),
           ),
         ],
       ),
       GoRoute(
-        path: '/equipments',
-        builder: (_, state) => EquipmentListScreen(
-          clientId: state.uri.queryParameters['clientId'],
-        ),
-        routes: [
-          GoRoute(
-            path: ':id',
-            builder: (_, state) => EquipmentDetailScreen(
-              equipmentId: state.pathParameters['id']!,
-              presetLocationId: state.uri.queryParameters['locationId'],
-              presetClientId: state.uri.queryParameters['clientId'],
-            ),
-          ),
-        ],
+        path: '/item-fields',
+        builder: (_, _) => const ItemFieldsScreen(),
       ),
       GoRoute(
         path: '/companies',
@@ -158,7 +146,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => TypeCatalogScreen(
           kind: state.uri.queryParameters['kind'] == 'service-order'
               ? TypeCatalog.serviceOrderType
-              : TypeCatalog.equipmentType,
+              : TypeCatalog.itemType,
         ),
       ),
       GoRoute(
@@ -185,8 +173,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/service-orders',
         builder: (_, state) => ServiceOrderListScreen(
           clientId: state.uri.queryParameters['clientId'],
-          locationId: state.uri.queryParameters['locationId'],
-          equipmentId: state.uri.queryParameters['equipmentId'],
+          itemId: state.uri.queryParameters['itemId'],
         ),
         routes: [
           GoRoute(

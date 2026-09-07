@@ -4,6 +4,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../core/db/app_database.dart';
+import 'report_items.dart';
 import 'service_order_report.dart';
 
 const _statusLabels = {
@@ -40,6 +41,7 @@ Future<Uint8List> buildServiceOrderPdf(ServiceOrderReportData d) async {
         _datesBlock(d),
         ..._textSections(d.order),
         if (d.parts.isNotEmpty) ..._partsSection(d.parts),
+        if (d.items.isNotEmpty) ..._itemsSection(d.items),
         if (d.photos.isNotEmpty) ..._photosSection(d.photos),
         if (d.signaturePng != null) ..._signatureSection(d.signaturePng!),
       ],
@@ -161,7 +163,7 @@ pw.Widget _footer(ServiceOrderReportData d, pw.Context context) {
 }
 
 pw.Widget _entitiesBlock(ServiceOrderReportData d) {
-  final address = _addressLine(d.location);
+  final address = _addressLine(d.item);
   return pw.Container(
     margin: const pw.EdgeInsets.only(top: 12),
     child: pw.Column(
@@ -172,10 +174,8 @@ pw.Widget _entitiesBlock(ServiceOrderReportData d) {
           _kv('CNPJ/CPF', d.client!.taxId),
         if (d.client != null && d.client!.phone.isNotEmpty)
           _kv('Telefone', d.client!.phone),
-        if (d.location != null) _kv('Local', d.location!.name),
+        if (d.item != null) _kv('Item', _itemLine(d.item!, d.itemType)),
         if (address.isNotEmpty) _kv('Endereço', address),
-        if (d.equipment != null)
-          _kv('Equipamento', _equipmentLine(d.equipment!)),
         if (d.technicianName != null) _kv('Técnico', d.technicianName!),
         if (d.technicianRegistration != null)
           _kv('Registro', d.technicianRegistration!),
@@ -184,27 +184,28 @@ pw.Widget _entitiesBlock(ServiceOrderReportData d) {
   );
 }
 
-String _addressLine(LocalLocation? l) {
-  if (l == null) return '';
+String _addressLine(LocalItem? i) {
+  if (i == null) return '';
   final parts = <String>[
-    if (l.street.isNotEmpty) l.street,
-    if (l.number.isNotEmpty) l.number,
-    if (l.complement.isNotEmpty) l.complement,
-    if (l.district.isNotEmpty) l.district,
-    if (l.city.isNotEmpty) l.city,
-    if (l.state.isNotEmpty) l.state,
-    if (l.postalCode.isNotEmpty) 'CEP ${l.postalCode}',
+    if (i.street.isNotEmpty) i.street,
+    if (i.number.isNotEmpty) i.number,
+    if (i.complement.isNotEmpty) i.complement,
+    if (i.district.isNotEmpty) i.district,
+    if (i.city.isNotEmpty) i.city,
+    if (i.state.isNotEmpty) i.state,
+    if (i.postalCode.isNotEmpty) 'CEP ${i.postalCode}',
   ];
   return parts.join(', ');
 }
 
-String _equipmentLine(LocalEquipment e) {
+String _itemLine(LocalItem i, LocalItemType? type) {
+  final name = type == null ? i.name : '${type.name} — ${i.name}';
   final extras = <String>[
-    if (e.brand.isNotEmpty) e.brand,
-    if (e.model.isNotEmpty) e.model,
-    if ((e.serialNumber ?? '').isNotEmpty) 'nº série ${e.serialNumber}',
+    if (i.brand.isNotEmpty) i.brand,
+    if (i.model.isNotEmpty) i.model,
+    if ((i.serialNumber ?? '').isNotEmpty) 'nº série ${i.serialNumber}',
   ];
-  return extras.isEmpty ? e.name : '${e.name} (${extras.join(' · ')})';
+  return extras.isEmpty ? name : '$name (${extras.join(' · ')})';
 }
 
 pw.Widget _datesBlock(ServiceOrderReportData d) {
@@ -252,6 +253,59 @@ List<pw.Widget> _textSections(LocalServiceOrder o) {
             ],
           ),
         ),
+  ];
+}
+
+List<pw.Widget> _itemsSection(List<ReportItem> items) {
+  final approved = items.where((i) => i.row.approval == 'approved').length;
+  return [
+    pw.Container(
+      margin: const pw.EdgeInsets.only(top: 16),
+      child: pw.Text(
+        'ITENS DA VISITA',
+        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+      ),
+    ),
+    for (final ri in items)
+      pw.Container(
+        margin: const pw.EdgeInsets.only(top: 10),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              ri.itemName,
+              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+            ),
+            pw.Text(
+              'Aprovação: ${approvalLabel(ri.row.approval)}',
+              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+            ),
+            for (final s in <List<String>>[
+              ['Diagnóstico', ri.row.diagnosis],
+              ['Serviço realizado', ri.row.workPerformed],
+              ['Condição final', ri.row.finalCondition],
+              ['Observações', ri.row.note],
+            ])
+              if (s[1].trim().isNotEmpty)
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(top: 3),
+                  child: pw.Text(
+                    '${s[0]}: ${s[1].trim()}',
+                    style: const pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+            if (ri.parts.isNotEmpty) ..._partsSection(ri.parts),
+            if (ri.photos.isNotEmpty) ..._photosSection(ri.photos),
+          ],
+        ),
+      ),
+    pw.Container(
+      margin: const pw.EdgeInsets.only(top: 10),
+      child: pw.Text(
+        'Resumo: $approved de ${items.length} itens aprovados',
+        style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+      ),
+    ),
   ];
 }
 

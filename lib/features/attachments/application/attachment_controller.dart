@@ -16,6 +16,7 @@ abstract interface class AttachmentController {
     required String filename,
     required String photoKind,
     String? caption,
+    String? serviceOrderItemId,
   });
 
   Future<void> submitSignature({

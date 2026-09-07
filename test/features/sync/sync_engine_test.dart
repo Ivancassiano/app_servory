@@ -279,46 +279,27 @@ void main() {
   );
 
   test(
-    'push: location e equipment também gravam de volta na tabela certa (não só client)',
+    'push: item também grava de volta na tabela certa (não só client)',
     () async {
       final now = DateTime.now();
       await db.batch((b) {
-        b.insertAll(db.localLocations, [
-          LocalLocationsCompanion.insert(
-            id: 'l1',
+        b.insertAll(db.localItems, [
+          LocalItemsCompanion.insert(
+            id: 'i1',
             organizationId: 'org1',
             clientId: 'c1',
             name: 'Filial',
             localUpdatedAt: now,
           ),
         ]);
-        b.insertAll(db.localEquipments, [
-          LocalEquipmentsCompanion.insert(
-            id: 'e1',
-            organizationId: 'org1',
-            locationId: 'l1',
-            equipmentTypeId: 't1',
-            name: 'Ar-condicionado',
-            localUpdatedAt: now,
-          ),
-        ]);
         b.insertAll(db.syncOutbox, [
           SyncOutboxCompanion.insert(
-            operationId: 'op-loc',
+            operationId: 'op-item',
             organizationId: 'org1',
-            entityType: 'location',
-            entityId: 'l1',
+            entityType: 'item',
+            entityId: 'i1',
             operationType: 'update',
             payload: '{"name":"Filial 2"}',
-            occurredAt: now,
-          ),
-          SyncOutboxCompanion.insert(
-            operationId: 'op-eq',
-            organizationId: 'org1',
-            entityType: 'equipment',
-            entityId: 'e1',
-            operationType: 'update',
-            payload: '{"notes":"revisado"}',
             occurredAt: now,
           ),
         ]);
@@ -327,38 +308,26 @@ void main() {
       when(() => api.push(any())).thenAnswer(
         (_) async => const [
           SyncOperationResult(
-            operationId: 'op-loc',
+            operationId: 'op-item',
             status: 'accepted',
             version: 2,
-          ),
-          SyncOperationResult(
-            operationId: 'op-eq',
-            status: 'conflict',
-            errorCode: 'VERSION_CONFLICT',
           ),
         ],
       );
 
       await engine.pushPending();
 
-      final location = await (db.select(
-        db.localLocations,
-      )..where((t) => t.id.equals('l1'))).getSingle();
-      expect(location.version, 2);
-      expect(location.syncStatus, 'synced');
-
-      final equipment = await (db.select(
-        db.localEquipments,
-      )..where((t) => t.id.equals('e1'))).getSingle();
-      expect(equipment.syncStatus, 'conflict');
-      expect(equipment.syncError, 'VERSION_CONFLICT');
-
+      final item = await (db.select(
+        db.localItems,
+      )..where((t) => t.id.equals('i1'))).getSingle();
+      expect(item.version, 2);
+      expect(item.syncStatus, 'synced');
       expect(await db.select(db.syncOutbox).get(), isEmpty);
     },
   );
 
   test('bootstrap também popula service_order e service_order_part', () async {
-    for (final entityType in ['client', 'location', 'equipment']) {
+    for (final entityType in ['client', 'item']) {
       when(
         () => api.bootstrap(
           entityType: entityType,
@@ -418,6 +387,30 @@ void main() {
         cursor: 7,
       ),
     );
+    when(
+      () => api.bootstrap(
+        entityType: 'service_order_recommendation',
+        page: any(named: 'page'),
+      ),
+    ).thenAnswer(
+      (_) async => const SyncBootstrapPage(
+        items: [
+          {
+            'id': 'r1',
+            'service_order_id': 'so1',
+            'service_order_item_id': 'it1',
+            'description': 'Trocar correia',
+            'priority': 'high',
+            'status': 'open',
+            'version': 1,
+          },
+        ],
+        total: 1,
+        page: 1,
+        size: 100,
+        cursor: 7,
+      ),
+    );
 
     await engine.bootstrap();
 
@@ -434,6 +427,14 @@ void main() {
     expect(part.serviceOrderId, 'so1');
     expect(part.description, 'Filtro');
     expect(part.quantity, '2');
+
+    final rec = await (db.select(
+      db.localServiceOrderRecommendations,
+    )..where((t) => t.id.equals('r1'))).getSingle();
+    expect(rec.serviceOrderId, 'so1');
+    expect(rec.serviceOrderItemId, 'it1');
+    expect(rec.description, 'Trocar correia');
+    expect(rec.syncStatus, 'synced');
   });
 
   test('push: ação nomeada (start) da ordem e create/update/delete de peça '

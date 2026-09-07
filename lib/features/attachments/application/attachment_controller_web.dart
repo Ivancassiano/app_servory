@@ -22,6 +22,7 @@ class _WebAttachmentController implements AttachmentController {
     required String filename,
     required String photoKind,
     String? caption,
+    String? serviceOrderItemId,
   }) async {
     await _ref.read(attachmentsApiProvider).addPhoto(
       serviceOrderId: orderId,
@@ -29,6 +30,7 @@ class _WebAttachmentController implements AttachmentController {
       filename: filename,
       kind: photoKind,
       caption: caption,
+      serviceOrderItemId: serviceOrderItemId,
     );
     _ref.invalidate(orderPhotosProvider(orderId));
   }

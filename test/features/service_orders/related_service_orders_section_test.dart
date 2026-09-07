@@ -8,16 +8,14 @@ import 'package:servory/features/service_orders/presentation/related_service_ord
 
 ServiceOrderWithClient _order(
   String id, {
-  String? locationId,
-  String? equipmentId,
+  String? itemId,
   String status = 'open',
   String? createdAt,
 }) {
   final o = serviceOrderFromApiJson({
     'id': id,
     'client_id': 'c1',
-    'location_id': locationId,
-    'equipment_id': equipmentId,
+    'item_id': itemId,
     'status': status,
     'reason': 'motivo $id',
     'created_at': createdAt,
@@ -32,7 +30,7 @@ void main() {
         path: '/',
         builder: (_, _) => const Scaffold(
           body: SingleChildScrollView(
-            child: RelatedServiceOrdersSection(equipmentId: 'eq-1'),
+            child: RelatedServiceOrdersSection(itemId: 'eq-1'),
           ),
         ),
       ),
@@ -58,12 +56,12 @@ void main() {
       host([
         _order(
           '1',
-          equipmentId: 'eq-1',
+          itemId: 'eq-1',
           status: 'completed',
           createdAt: '2026-01-10T09:05:00Z',
         ),
-        _order('2', equipmentId: 'eq-1', createdAt: '2026-03-22T14:30:00Z'),
-        _order('3', equipmentId: 'outro', createdAt: '2026-05-01T08:00:00Z'),
+        _order('2', itemId: 'eq-1', createdAt: '2026-03-22T14:30:00Z'),
+        _order('3', itemId: 'outro', createdAt: '2026-05-01T08:00:00Z'),
       ]),
     );
     await tester.pumpAndSettle();
@@ -92,11 +90,11 @@ void main() {
 
     await tester.tap(find.text('Ver todos (2)'));
     await tester.pumpAndSettle();
-    expect(find.text('lista equipmentId=eq-1'), findsOneWidget);
+    expect(find.text('lista itemId=eq-1'), findsOneWidget);
   });
 
   testWidgets('sem laudos mostra o vazio', (tester) async {
-    await tester.pumpWidget(host([_order('9', equipmentId: 'outro')]));
+    await tester.pumpWidget(host([_order('9', itemId: 'outro')]));
     await tester.pumpAndSettle();
 
     expect(find.text('Laudos (0)'), findsOneWidget);

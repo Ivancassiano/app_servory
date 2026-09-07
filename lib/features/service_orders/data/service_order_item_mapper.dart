@@ -12,8 +12,7 @@ LocalServiceOrderItem serviceOrderItemFromApiJson(
     id: j['id'] as String,
     organizationId: organizationId,
     serviceOrderId: stringOr(j['service_order_id']),
-    locationId: stringOr(j['location_id']),
-    equipmentId: j['equipment_id'] as String?,
+    itemId: stringOr(j['item_id']),
     position: (j['position'] as num?)?.toInt() ?? 0,
     diagnosis: stringOr(j['diagnosis']),
     workPerformed: stringOr(j['work_performed']),
@@ -35,16 +34,14 @@ LocalServiceOrderItem serviceOrderItemFromApiJson(
 /// `service_order_id` (vem no path). O `payload` da fila de sync acrescenta
 /// `service_order_id` (§8.4).
 Map<String, dynamic> serviceOrderItemBody({
-  String? locationId,
-  String? equipmentId,
+  String? itemId,
   int? position,
   required String diagnosis,
   required String workPerformed,
   required String finalCondition,
   required String note,
 }) => {
-  'location_id': ?locationId,
-  'equipment_id': ?equipmentId,
+  'item_id': ?itemId,
   'position': ?position,
   'diagnosis': diagnosis,
   'work_performed': workPerformed,

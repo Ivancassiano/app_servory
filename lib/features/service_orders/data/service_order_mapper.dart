@@ -13,8 +13,8 @@ LocalServiceOrder serviceOrderFromApiJson(
     id: j['id'] as String,
     organizationId: organizationId,
     clientId: stringOr(j['client_id']),
-    locationId: j['location_id'] as String?,
-    equipmentId: j['equipment_id'] as String?,
+    itemId: j['item_id'] as String?,
+    parentOrderId: j['parent_order_id'] as String?,
     serviceOrderTypeId: j['service_order_type_id'] as String?,
     companyId: j['company_id'] as String?,
     assignedUserId: j['assigned_user_id'] as String?,
@@ -72,8 +72,7 @@ String? _rfc3339(DateTime? d) => d?.toUtc().toIso8601String();
 
 Map<String, dynamic> serviceOrderCreateBody({
   required String clientId,
-  String? locationId,
-  String? equipmentId,
+  String? itemId,
   String? serviceOrderTypeId,
   String? companyId,
   String? assignedUserId,
@@ -82,8 +81,7 @@ Map<String, dynamic> serviceOrderCreateBody({
   required String reason,
 }) => {
   'client_id': clientId,
-  'location_id': ?locationId,
-  'equipment_id': ?equipmentId,
+  'item_id': ?itemId,
   'service_order_type_id': ?serviceOrderTypeId,
   'company_id': ?companyId,
   'assigned_user_id': ?assignedUserId,
@@ -98,8 +96,7 @@ Map<String, dynamic> serviceOrderCreateBody({
 /// consegue *limpar* um valor já gravado — só trocá-lo (limitação REST/sync
 /// conhecida, documentada nas sobras da Fatia 2).
 Map<String, dynamic> serviceOrderUpdateBody({
-  String? locationId,
-  String? equipmentId,
+  String? itemId,
   String? serviceOrderTypeId,
   String? companyId,
   String? assignedUserId,
@@ -110,8 +107,7 @@ Map<String, dynamic> serviceOrderUpdateBody({
   required String finalCondition,
   required String notes,
 }) => {
-  'location_id': ?locationId,
-  'equipment_id': ?equipmentId,
+  'item_id': ?itemId,
   'service_order_type_id': ?serviceOrderTypeId,
   'company_id': ?companyId,
   'assigned_user_id': ?assignedUserId,

@@ -13,8 +13,7 @@ class ServiceOrderEditController {
 
   Future<String> create({
     required String clientId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -23,8 +22,7 @@ class ServiceOrderEditController {
     required String reason,
   }) => _repo.create(
     clientId: clientId,
-    locationId: locationId,
-    equipmentId: equipmentId,
+    itemId: itemId,
     serviceOrderTypeId: serviceOrderTypeId,
     companyId: companyId,
     assignedUserId: assignedUserId,
@@ -36,8 +34,7 @@ class ServiceOrderEditController {
   Future<void> update({
     required String serviceOrderId,
     int? baseVersion,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -50,8 +47,7 @@ class ServiceOrderEditController {
   }) => _repo.update(
     id: serviceOrderId,
     baseVersion: baseVersion,
-    locationId: locationId,
-    equipmentId: equipmentId,
+    itemId: itemId,
     serviceOrderTypeId: serviceOrderTypeId,
     companyId: companyId,
     assignedUserId: assignedUserId,

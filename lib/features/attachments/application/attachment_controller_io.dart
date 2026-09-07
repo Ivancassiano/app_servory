@@ -21,12 +21,14 @@ class _IoAttachmentController implements AttachmentController {
     required String filename,
     required String photoKind,
     String? caption,
+    String? serviceOrderItemId,
   }) => _ref.read(uploadQueueControllerProvider).enqueuePhoto(
     serviceOrderId: orderId,
     bytes: bytes,
     extension: p.extension(filename),
     photoKind: photoKind,
     caption: caption,
+    serviceOrderItemId: serviceOrderItemId,
   );
 
   @override

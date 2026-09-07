@@ -7,8 +7,7 @@ import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../../attachments/application/pending_uploads.dart';
 import '../../clients/application/clients_provider.dart';
-import '../../equipments/application/equipments_provider.dart';
-import '../../locations/application/locations_provider.dart';
+import '../../items/application/items_provider.dart';
 import '../application/service_orders_provider.dart';
 
 const _statusLabels = {
@@ -22,18 +21,15 @@ class ServiceOrderListScreen extends ConsumerStatefulWidget {
   const ServiceOrderListScreen({
     super.key,
     this.clientId,
-    this.locationId,
-    this.equipmentId,
+    this.itemId,
   });
 
   /// Quando um deles é setado, a tela vira "Laudos" daquele registro: lista
   /// só as ordens ligadas a ele, com o nome no cabeçalho e botão de voltar.
   final String? clientId;
-  final String? locationId;
-  final String? equipmentId;
+  final String? itemId;
 
-  bool get scoped =>
-      clientId != null || locationId != null || equipmentId != null;
+  bool get scoped => clientId != null || itemId != null;
 
   @override
   ConsumerState<ServiceOrderListScreen> createState() =>
@@ -47,8 +43,7 @@ class _ServiceOrderListScreenState
   bool _inScope(ServiceOrderWithClient e) {
     final o = e.order;
     return (widget.clientId == null || o.clientId == widget.clientId) &&
-        (widget.locationId == null || o.locationId == widget.locationId) &&
-        (widget.equipmentId == null || o.equipmentId == widget.equipmentId);
+        (widget.itemId == null || o.itemId == widget.itemId);
   }
 
   String? _scopeName() {
@@ -58,16 +53,10 @@ class _ServiceOrderListScreenState
           .map((c) => c.name)
           .join();
     }
-    if (widget.locationId != null) {
-      return (ref.watch(locationListProvider).value ?? const [])
-          .where((l) => l.id == widget.locationId)
-          .map((l) => l.name)
-          .join();
-    }
-    if (widget.equipmentId != null) {
-      return (ref.watch(equipmentListProvider).value ?? const [])
-          .where((eq) => eq.id == widget.equipmentId)
-          .map((eq) => eq.name)
+    if (widget.itemId != null) {
+      return (ref.watch(itemListProvider).value ?? const [])
+          .where((i) => i.id == widget.itemId)
+          .map((i) => i.name)
           .join();
     }
     return null;

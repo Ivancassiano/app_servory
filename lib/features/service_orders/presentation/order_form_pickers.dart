@@ -3,12 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../clients/application/clients_provider.dart';
-import '../../equipments/application/equipments_provider.dart';
-import '../../locations/application/locations_provider.dart';
+import '../../items/application/items_provider.dart';
 
-/// Um alvo escolhido no seletor: um local (equipmentId nulo) ou um equipamento
-/// (o local vem junto por conveniência de exibição).
-typedef OrderTarget = ({String locationId, String? equipmentId});
+/// Um alvo escolhido no seletor: um item do cadastro. Cada alvo vira uma
+/// linha da ordem.
+typedef OrderTarget = ({String itemId});
 
 /// minúsculas + sem acento (mesma lógica de SearchableListView).
 String accentFold(String s) {
@@ -23,11 +22,12 @@ String accentFold(String s) {
 }
 
 /// Bottom sheet de busca + seleção de cliente. Retorna o id escolhido.
-Future<String?> pickClient(BuildContext context) => showModalBottomSheet<String>(
-  context: context,
-  isScrollControlled: true,
-  builder: (_) => const _ClientPickerSheet(),
-);
+Future<String?> pickClient(BuildContext context) =>
+    showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const _ClientPickerSheet(),
+    );
 
 class _ClientPickerSheet extends ConsumerStatefulWidget {
   const _ClientPickerSheet();
@@ -42,10 +42,15 @@ class _ClientPickerSheetState extends ConsumerState<_ClientPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final clients = (ref.watch(clientListProvider).value ?? const <LocalClient>[])
-        .where((c) => _q.isEmpty || accentFold(c.name).contains(accentFold(_q)))
-        .toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final clients =
+        (ref.watch(clientListProvider).value ?? const <LocalClient>[])
+            .where(
+              (c) => _q.isEmpty || accentFold(c.name).contains(accentFold(_q)),
+            )
+            .toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
 
     return _SheetScaffold(
       title: 'Cliente',
@@ -88,9 +93,9 @@ class _ClientPickerSheetState extends ConsumerState<_ClientPickerSheet> {
   }
 }
 
-/// Bottom sheet: árvore local › equipamentos do cliente, com checkbox em
-/// qualquer nível, busca e cadastro rápido (só nome). Retorna os alvos
-/// marcados; não sobrepõe o que já estava selecionado (`initial`).
+/// Bottom sheet: a árvore de itens do cliente, com checkbox em qualquer nível,
+/// busca e cadastro rápido (só nome). Retorna os itens marcados; `initial`
+/// pré-marca o que já estava selecionado.
 Future<List<OrderTarget>?> pickOrderTargets(
   BuildContext context, {
   required String clientId,
@@ -113,95 +118,45 @@ class _TargetsPickerSheet extends ConsumerStatefulWidget {
 
 class _TargetsPickerSheetState extends ConsumerState<_TargetsPickerSheet> {
   String _q = '';
-  late final Set<String> _locSel; // locais marcados (item sem equipamento)
-  late final Set<String> _eqSel; // equipamentos marcados
-
-  @override
-  void initState() {
-    super.initState();
-    _locSel = {
-      for (final t in widget.initial)
-        if (t.equipmentId == null) t.locationId,
-    };
-    _eqSel = {
-      for (final t in widget.initial)
-        if (t.equipmentId != null) t.equipmentId!,
-    };
-  }
+  late final Set<String> _sel = {for (final t in widget.initial) t.itemId};
 
   bool _matches(String text) =>
       _q.isEmpty || accentFold(text).contains(accentFold(_q));
 
-  Future<void> _newLocation() async {
-    final name = await _promptName(context, 'Novo local');
+  Future<void> _newItem(String? parentId) async {
+    final name = await _promptName(context, 'Novo item');
     if (name == null || name.isEmpty) return;
     final id = await ref
-        .read(locationRepositoryProvider)
+        .read(itemRepositoryProvider)
         .create(
           clientId: widget.clientId,
-          name: name,
-          contactPerson: '',
-          phone: '',
-          notes: '',
+          parentItemId: parentId,
+          fields: ItemFields(name: name),
         );
-    if (mounted) setState(() => _locSel.add(id));
-  }
-
-  Future<void> _newEquipment(String locationId) async {
-    final name = await _promptName(context, 'Novo equipamento');
-    if (name == null || name.isEmpty) return;
-    final id = await ref
-        .read(equipmentRepositoryProvider)
-        .create(
-          locationId: locationId,
-          name: name,
-          brand: '',
-          model: '',
-          notes: '',
-        );
-    if (mounted) setState(() => _eqSel.add(id));
+    if (mounted) setState(() => _sel.add(id));
   }
 
   @override
   Widget build(BuildContext context) {
-    final locations =
-        (ref.watch(locationListProvider).value ?? const <LocalLocation>[])
-            .where((l) => l.clientId == widget.clientId)
-            .toList()
-          ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-    final equipsByLoc = <String, List<LocalEquipment>>{};
-    for (final e
-        in ref.watch(equipmentListProvider).value ?? const <LocalEquipment>[]) {
-      equipsByLoc.putIfAbsent(e.locationId, () => []).add(e);
+    final items = ref.watch(itemsByClientProvider(widget.clientId)).toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final childrenOf = <String?, List<LocalItem>>{};
+    for (final i in items) {
+      childrenOf.putIfAbsent(i.parentItemId, () => []).add(i);
     }
-
-    final total = _locSel.length + _eqSel.length;
+    final roots = childrenOf[null] ?? const <LocalItem>[];
 
     return _SheetScaffold(
-      title: 'Locais e equipamentos',
-      confirmLabel: total == 0 ? 'Adicionar' : 'Adicionar ($total)',
-      onConfirm: () {
-        final out = <OrderTarget>[
-          for (final l in _locSel) (locationId: l, equipmentId: null),
-          for (final e in _eqSel)
-            (
-              locationId: equipsByLoc.entries
-                  .firstWhere(
-                    (kv) => kv.value.any((x) => x.id == e),
-                    orElse: () => const MapEntry('', []),
-                  )
-                  .key,
-              equipmentId: e,
-            ),
-        ];
-        Navigator.of(context).pop(out);
-      },
+      title: 'Itens da visita',
+      confirmLabel: _sel.isEmpty ? 'Adicionar' : 'Adicionar (${_sel.length})',
+      onConfirm: () =>
+          Navigator.of(context).pop([for (final id in _sel) (itemId: id)]),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             decoration: const InputDecoration(
-              hintText: 'Pesquise local ou equipamento',
+              hintText: 'Pesquise um item',
               prefixIcon: Icon(Icons.search),
             ),
             onChanged: (v) => setState(() => _q = v),
@@ -211,26 +166,22 @@ class _TargetsPickerSheetState extends ConsumerState<_TargetsPickerSheet> {
             child: ListView(
               shrinkWrap: true,
               children: [
-                for (final loc in locations)
-                  _LocationNode(
-                    loc: loc,
-                    equips: equipsByLoc[loc.id] ?? const [],
+                for (final r in roots)
+                  _ItemNode(
+                    item: r,
+                    childrenOf: childrenOf,
+                    depth: 0,
                     query: _q,
                     matches: _matches,
-                    locChecked: _locSel.contains(loc.id),
-                    eqChecked: _eqSel.contains,
-                    onLocToggle: (v) => setState(
-                      () => v ? _locSel.add(loc.id) : _locSel.remove(loc.id),
-                    ),
-                    onEqToggle: (id, v) => setState(
-                      () => v ? _eqSel.add(id) : _eqSel.remove(id),
-                    ),
-                    onNewEquipment: () => _newEquipment(loc.id),
+                    checked: _sel.contains,
+                    onToggle: (id, v) =>
+                        setState(() => v ? _sel.add(id) : _sel.remove(id)),
+                    onNewChild: (id) => _newItem(id),
                   ),
                 TextButton.icon(
-                  onPressed: _newLocation,
+                  onPressed: () => _newItem(null),
                   icon: const Icon(Icons.add),
-                  label: const Text('Novo local'),
+                  label: const Text('Novo item'),
                 ),
               ],
             ),
@@ -241,36 +192,35 @@ class _TargetsPickerSheetState extends ConsumerState<_TargetsPickerSheet> {
   }
 }
 
-class _LocationNode extends StatelessWidget {
-  const _LocationNode({
-    required this.loc,
-    required this.equips,
+class _ItemNode extends StatelessWidget {
+  const _ItemNode({
+    required this.item,
+    required this.childrenOf,
+    required this.depth,
     required this.query,
     required this.matches,
-    required this.locChecked,
-    required this.eqChecked,
-    required this.onLocToggle,
-    required this.onEqToggle,
-    required this.onNewEquipment,
+    required this.checked,
+    required this.onToggle,
+    required this.onNewChild,
   });
 
-  final LocalLocation loc;
-  final List<LocalEquipment> equips;
+  final LocalItem item;
+  final Map<String?, List<LocalItem>> childrenOf;
+  final int depth;
   final String query;
   final bool Function(String) matches;
-  final bool locChecked;
-  final bool Function(String) eqChecked;
-  final ValueChanged<bool> onLocToggle;
-  final void Function(String id, bool v) onEqToggle;
-  final VoidCallback onNewEquipment;
+  final bool Function(String) checked;
+  final void Function(String id, bool v) onToggle;
+  final void Function(String parentId) onNewChild;
 
   @override
   Widget build(BuildContext context) {
-    final locHit = matches(loc.name);
-    final visibleEquips = equips
-        .where((e) => query.isEmpty || locHit || matches(e.name))
+    final kids = childrenOf[item.id] ?? const <LocalItem>[];
+    final selfHit = matches(item.name);
+    final visibleKids = kids
+        .where((k) => query.isEmpty || selfHit || _subtreeHits(k))
         .toList();
-    if (!locHit && visibleEquips.isEmpty && query.isNotEmpty) {
+    if (!selfHit && visibleKids.isEmpty && query.isNotEmpty) {
       return const SizedBox.shrink();
     }
     return Column(
@@ -278,42 +228,49 @@ class _LocationNode extends StatelessWidget {
       children: [
         CheckboxListTile(
           dense: true,
-          contentPadding: EdgeInsets.zero,
+          contentPadding: EdgeInsets.only(left: 16.0 * depth),
           controlAffinity: ListTileControlAffinity.leading,
-          value: locChecked,
-          onChanged: (v) => onLocToggle(v ?? false),
+          value: checked(item.id),
+          onChanged: (v) => onToggle(item.id, v ?? false),
           title: Text(
-            loc.name.toUpperCase(),
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            item.name,
+            style: depth == 0
+                ? const TextStyle(fontWeight: FontWeight.w600)
+                : null,
           ),
         ),
+        for (final k in visibleKids)
+          _ItemNode(
+            item: k,
+            childrenOf: childrenOf,
+            depth: depth + 1,
+            query: query,
+            matches: matches,
+            checked: checked,
+            onToggle: onToggle,
+            onNewChild: onNewChild,
+          ),
         Padding(
-          padding: const EdgeInsets.only(left: 20),
-          child: Column(
-            children: [
-              for (final e in visibleEquips)
-                CheckboxListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  value: eqChecked(e.id),
-                  onChanged: (v) => onEqToggle(e.id, v ?? false),
-                  title: Text(e.name),
-                ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: onNewEquipment,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Novo equipamento'),
-                ),
-              ),
-            ],
+          padding: EdgeInsets.only(left: 16.0 * (depth + 1)),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => onNewChild(item.id),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Novo subitem'),
+            ),
           ),
         ),
-        const Divider(height: 8),
       ],
     );
+  }
+
+  bool _subtreeHits(LocalItem node) {
+    if (matches(node.name)) return true;
+    for (final k in childrenOf[node.id] ?? const <LocalItem>[]) {
+      if (_subtreeHits(k)) return true;
+    }
+    return false;
   }
 }
 
@@ -379,74 +336,53 @@ class ClientPickerField extends StatelessWidget {
   }
 }
 
-/// Campo "Locais" do form de criação: lista os alvos escolhidos + botão.
+/// Campo "Itens" do form de criação: lista os alvos escolhidos + botão.
 class TargetsField extends StatelessWidget {
   const TargetsField({
     super.key,
     required this.clientId,
     required this.targets,
-    required this.locationName,
-    required this.equipmentName,
+    required this.itemName,
     required this.onAdd,
     required this.onRemove,
   });
 
   final String? clientId;
   final List<OrderTarget> targets;
-  final String Function(String id) locationName;
-  final String Function(String id) equipmentName;
+  final String Function(String id) itemName;
   final VoidCallback onAdd;
   final void Function(OrderTarget) onRemove;
 
   @override
   Widget build(BuildContext context) {
-    final byLoc = <String, List<OrderTarget>>{};
-    for (final t in targets) {
-      byLoc.putIfAbsent(t.locationId, () => []).add(t);
-    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            targets.isEmpty ? 'Locais' : 'Locais (${targets.length})',
+            targets.isEmpty ? 'Itens' : 'Itens (${targets.length})',
             style: Theme.of(context).textTheme.labelLarge,
           ),
         ),
         if (targets.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 6),
-            child: Text('Opcional. Adicione locais/equipamentos da visita.'),
+            child: Text('Opcional. Adicione os itens da visita.'),
           )
         else
-          for (final entry in byLoc.entries) ...[
-            Padding(
-              padding: const EdgeInsets.only(top: 6, bottom: 2),
-              child: Text(
-                locationName(entry.key).isEmpty
-                    ? 'Local'
-                    : locationName(entry.key),
-                style: const TextStyle(fontWeight: FontWeight.w600),
+          for (final t in targets)
+            ListTile(
+              dense: true,
+              contentPadding: const EdgeInsets.only(left: 12),
+              title: Text(
+                itemName(t.itemId).isEmpty ? 'Item' : itemName(t.itemId),
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => onRemove(t),
               ),
             ),
-            for (final t in entry.value)
-              ListTile(
-                dense: true,
-                contentPadding: const EdgeInsets.only(left: 12),
-                title: Text(
-                  t.equipmentId == null
-                      ? 'Local (sem equipamento)'
-                      : (equipmentName(t.equipmentId!).isEmpty
-                            ? 'Equipamento'
-                            : equipmentName(t.equipmentId!)),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => onRemove(t),
-                ),
-              ),
-          ],
         const SizedBox(height: 4),
         OutlinedButton.icon(
           onPressed: clientId == null ? null : onAdd,
@@ -493,10 +429,7 @@ class _SheetScaffold extends StatelessWidget {
               const SizedBox(height: 8),
               Flexible(child: child),
               const SizedBox(height: 12),
-              FilledButton(
-                onPressed: onConfirm,
-                child: Text(confirmLabel),
-              ),
+              FilledButton(onPressed: onConfirm, child: Text(confirmLabel)),
             ],
           ),
         ),

@@ -118,10 +118,8 @@ class _QrLabelSectionState extends ConsumerState<QrLabelSection> {
     final t = widget.target;
     final kindLabel = t.clientId != null
         ? 'Cliente'
-        : t.locationId != null
-        ? 'Local'
-        : t.equipmentId != null
-        ? 'Equipamento'
+        : t.itemId != null
+        ? 'Item'
         : null;
     context.push(
       Uri(

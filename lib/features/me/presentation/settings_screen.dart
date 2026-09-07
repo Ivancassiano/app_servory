@@ -70,9 +70,14 @@ class SettingsScreen extends ConsumerWidget {
                 '/type-catalog?kind=service-order',
               ),
               _SettingsItem(
-                Icons.build_outlined,
-                'Tipos de equipamento',
-                '/type-catalog?kind=equipment',
+                Icons.category_outlined,
+                'Tipos de item',
+                '/type-catalog?kind=item',
+              ),
+              _SettingsItem(
+                Icons.tune_outlined,
+                'Campos de item',
+                '/item-fields',
               ),
             ],
           ),

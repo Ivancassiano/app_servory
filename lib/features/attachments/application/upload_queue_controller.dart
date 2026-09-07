@@ -38,6 +38,7 @@ class UploadQueueController {
     required String extension,
     required String photoKind,
     String? caption,
+    String? serviceOrderItemId,
   }) => _enqueue(
     serviceOrderId: serviceOrderId,
     bytes: bytes,
@@ -45,6 +46,7 @@ class UploadQueueController {
     kind: 'photo',
     photoKind: photoKind,
     caption: caption,
+    serviceOrderItemId: serviceOrderItemId,
   );
 
   Future<void> enqueueSignature({
@@ -64,6 +66,7 @@ class UploadQueueController {
     required String kind,
     String? photoKind,
     String? caption,
+    String? serviceOrderItemId,
   }) async {
     final organizationId = _organizationId;
     final id = const Uuid().v4();
@@ -96,6 +99,7 @@ class UploadQueueController {
             sha256: hash,
             photoKind: Value(photoKind),
             caption: Value(caption),
+            serviceOrderItemId: Value(serviceOrderItemId),
             createdAt: DateTime.now(),
           ),
         );

@@ -19,6 +19,7 @@ class AttachmentsApi {
     required String filename,
     String? kind,
     String? caption,
+    String? serviceOrderItemId,
   }) async {
     try {
       final response = await _dio.post(
@@ -27,6 +28,7 @@ class AttachmentsApi {
           'file': MultipartFile.fromBytes(bytes, filename: filename),
           'kind': ?kind,
           if (caption != null && caption.isNotEmpty) 'caption': caption,
+          'service_order_item_id': ?serviceOrderItemId,
         }),
       );
       return response.data as Map<String, dynamic>;

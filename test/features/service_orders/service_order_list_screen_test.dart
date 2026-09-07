@@ -10,14 +10,12 @@ ServiceOrderWithClient _order(
   String status,
   String client, {
   String? clientId,
-  String? locationId,
-  String? equipmentId,
+  String? itemId,
 }) {
   final o = serviceOrderFromApiJson({
     'id': id,
     'client_id': clientId ?? 'c-$id',
-    'location_id': locationId,
-    'equipment_id': equipmentId,
+    'item_id': itemId,
     'status': status,
     'reason': 'motivo $id',
   }, organizationId: 'org');
@@ -26,9 +24,9 @@ ServiceOrderWithClient _order(
 
 void main() {
   final orders = [
-    _order('1', 'draft', 'Padaria Central', locationId: 'loc-1'),
+    _order('1', 'draft', 'Padaria Central', itemId: 'loc-1'),
     _order('2', 'open', 'Bar do Zé'),
-    _order('3', 'completed', 'Loja Norte', locationId: 'loc-1'),
+    _order('3', 'completed', 'Loja Norte', itemId: 'loc-1'),
   ];
 
   Widget host({Widget screen = const ServiceOrderListScreen()}) => ProviderScope(
@@ -58,7 +56,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      host(screen: const ServiceOrderListScreen(locationId: 'loc-1')),
+      host(screen: const ServiceOrderListScreen(itemId: 'loc-1')),
     );
     await tester.pumpAndSettle();
 

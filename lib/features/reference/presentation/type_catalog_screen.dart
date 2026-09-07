@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
-import '../../equipments/data/equipment_type_repository.dart';
+import '../../items/data/item_type_repository.dart';
 import '../data/reference_repository.dart';
 import '../data/type_catalog_repository.dart';
 
@@ -17,8 +17,8 @@ class TypeCatalogScreen extends ConsumerWidget {
 
   /// Atualiza também os seletores que consomem esses tipos por outro caminho.
   Future<void> _refreshPickers(WidgetRef ref) async {
-    if (kind == TypeCatalog.equipmentType) {
-      await ref.read(equipmentTypeRepositoryProvider).refresh();
+    if (kind == TypeCatalog.itemType) {
+      await ref.read(itemTypeRepositoryProvider).refresh();
     } else {
       await ref
           .read(referenceDataRepositoryProvider)

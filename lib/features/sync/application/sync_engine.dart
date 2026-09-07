@@ -7,9 +7,10 @@ import 'package:drift/drift.dart' show Value;
 
 import '../../../core/db/app_database.dart';
 import '../../clients/data/client_mapper.dart';
-import '../../equipments/data/equipment_mapper.dart';
+import '../../items/data/item_field_value_mapper.dart';
+import '../../items/data/item_mapper.dart';
 import '../../labels/data/qr_mapper.dart';
-import '../../locations/data/location_mapper.dart';
+import '../../service_orders/data/recommendation_mapper.dart';
 import '../../service_orders/data/service_order_item_mapper.dart';
 import '../../service_orders/data/service_order_mapper.dart';
 import '../data/sync_api.dart';
@@ -19,11 +20,12 @@ import '../data/sync_api.dart';
 /// somente leitura; `qr_code` não usa `version` de verdade (§9.3).
 const _readEntityTypes = [
   'client',
-  'location',
-  'equipment',
+  'item',
+  'item_field_value',
   'service_order',
   'service_order_item',
   'service_order_part',
+  'service_order_recommendation',
   'qr_code',
   'qr_batch',
 ];
@@ -151,22 +153,22 @@ class SyncEngine {
             syncError: const Value(null),
           ),
         );
-      case 'location':
+      case 'item':
         await (_db.update(
-          _db.localLocations,
+          _db.localItems,
         )..where((t) => t.id.equals(entityId))).write(
-          LocalLocationsCompanion(
+          LocalItemsCompanion(
             version: Value(version),
             syncStatus: const Value('synced'),
             lastSyncedAt: Value(now),
             syncError: const Value(null),
           ),
         );
-      case 'equipment':
+      case 'item_field_value':
         await (_db.update(
-          _db.localEquipments,
+          _db.localItemFieldValues,
         )..where((t) => t.id.equals(entityId))).write(
-          LocalEquipmentsCompanion(
+          LocalItemFieldValuesCompanion(
             version: Value(version),
             syncStatus: const Value('synced'),
             lastSyncedAt: Value(now),
@@ -206,6 +208,17 @@ class SyncEngine {
             syncError: const Value(null),
           ),
         );
+      case 'service_order_recommendation':
+        await (_db.update(
+          _db.localServiceOrderRecommendations,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrderRecommendationsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
       case 'qr_code':
         // A etiqueta certa vem no próximo `pull` (§9.4); aqui só limpamos o
         // estado pendente da linha que enviamos.
@@ -235,17 +248,14 @@ class SyncEngine {
         await (_db.update(_db.localClients)
               ..where((t) => t.id.equals(entityId)))
             .write(LocalClientsCompanion(syncStatus: status, syncError: error));
-      case 'location':
+      case 'item':
+        await (_db.update(_db.localItems)..where((t) => t.id.equals(entityId)))
+            .write(LocalItemsCompanion(syncStatus: status, syncError: error));
+      case 'item_field_value':
         await (_db.update(
-          _db.localLocations,
+          _db.localItemFieldValues,
         )..where((t) => t.id.equals(entityId))).write(
-          LocalLocationsCompanion(syncStatus: status, syncError: error),
-        );
-      case 'equipment':
-        await (_db.update(
-          _db.localEquipments,
-        )..where((t) => t.id.equals(entityId))).write(
-          LocalEquipmentsCompanion(syncStatus: status, syncError: error),
+          LocalItemFieldValuesCompanion(syncStatus: status, syncError: error),
         );
       case 'service_order':
         await (_db.update(
@@ -265,12 +275,19 @@ class SyncEngine {
         )..where((t) => t.id.equals(entityId))).write(
           LocalServiceOrderPartsCompanion(syncStatus: status, syncError: error),
         );
-      case 'qr_code':
+      case 'service_order_recommendation':
         await (_db.update(
-          _db.localQrCodes,
+          _db.localServiceOrderRecommendations,
         )..where((t) => t.id.equals(entityId))).write(
-          LocalQrCodesCompanion(syncStatus: status, syncError: error),
+          LocalServiceOrderRecommendationsCompanion(
+            syncStatus: status,
+            syncError: error,
+          ),
         );
+      case 'qr_code':
+        await (_db.update(_db.localQrCodes)
+              ..where((t) => t.id.equals(entityId)))
+            .write(LocalQrCodesCompanion(syncStatus: status, syncError: error));
     }
   }
 
@@ -286,17 +303,15 @@ class SyncEngine {
             .insertOnConflictUpdate(
               clientFromApiJson(data, organizationId: org),
             );
-      case 'location':
+      case 'item':
         await _db
-            .into(_db.localLocations)
-            .insertOnConflictUpdate(
-              locationFromApiJson(data, organizationId: org),
-            );
-      case 'equipment':
+            .into(_db.localItems)
+            .insertOnConflictUpdate(itemFromApiJson(data, organizationId: org));
+      case 'item_field_value':
         await _db
-            .into(_db.localEquipments)
+            .into(_db.localItemFieldValues)
             .insertOnConflictUpdate(
-              equipmentFromApiJson(data, organizationId: org),
+              itemFieldValueFromApiJson(data, organizationId: org),
             );
       case 'service_order':
         await _db
@@ -315,6 +330,12 @@ class SyncEngine {
             .into(_db.localServiceOrderParts)
             .insertOnConflictUpdate(
               servicePartFromApiJson(data, organizationId: org),
+            );
+      case 'service_order_recommendation':
+        await _db
+            .into(_db.localServiceOrderRecommendations)
+            .insertOnConflictUpdate(
+              serviceRecommendationFromApiJson(data, organizationId: org),
             );
       case 'qr_code':
         await _db
@@ -337,14 +358,13 @@ class SyncEngine {
         await (_db.update(_db.localClients)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalClientsCompanion(deleted: Value(true)));
-      case 'location':
-        await (_db.update(_db.localLocations)
+      case 'item':
+        await (_db.update(_db.localItems)..where((t) => t.id.equals(entityId)))
+            .write(const LocalItemsCompanion(deleted: Value(true)));
+      case 'item_field_value':
+        await (_db.update(_db.localItemFieldValues)
               ..where((t) => t.id.equals(entityId)))
-            .write(const LocalLocationsCompanion(deleted: Value(true)));
-      case 'equipment':
-        await (_db.update(_db.localEquipments)
-              ..where((t) => t.id.equals(entityId)))
-            .write(const LocalEquipmentsCompanion(deleted: Value(true)));
+            .write(const LocalItemFieldValuesCompanion(deleted: Value(true)));
       case 'service_order':
         await (_db.update(_db.localServiceOrders)
               ..where((t) => t.id.equals(entityId)))
@@ -357,6 +377,14 @@ class SyncEngine {
         await (_db.update(_db.localServiceOrderParts)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalServiceOrderPartsCompanion(deleted: Value(true)));
+      case 'service_order_recommendation':
+        await (_db.update(_db.localServiceOrderRecommendations)
+              ..where((t) => t.id.equals(entityId)))
+            .write(
+              const LocalServiceOrderRecommendationsCompanion(
+                deleted: Value(true),
+              ),
+            );
       case 'qr_code':
         await (_db.update(_db.localQrCodes)
               ..where((t) => t.id.equals(entityId)))

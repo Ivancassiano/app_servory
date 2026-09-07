@@ -28,34 +28,30 @@ String _statusReason(LocalServiceOrder o) {
   return o.reason.isEmpty ? status : '$status · ${o.reason}';
 }
 
-/// "Laudos" numa tela de cliente/local/equipamento — as ordens de serviço
-/// ligadas àquele registro, com prévia curta e um link para a lista completa
-/// já filtrada. Passe exatamente um escopo.
+/// "Laudos" numa tela de cliente/item — as ordens de serviço ligadas àquele
+/// registro, com prévia curta e um link para a lista completa já filtrada.
+/// Passe exatamente um escopo.
 class RelatedServiceOrdersSection extends ConsumerWidget {
   const RelatedServiceOrdersSection({
     super.key,
     this.clientId,
-    this.locationId,
-    this.equipmentId,
+    this.itemId,
   }) : assert(
-         clientId != null || locationId != null || equipmentId != null,
-         'informe um escopo (cliente, local ou equipamento)',
+         clientId != null || itemId != null,
+         'informe um escopo (cliente ou item)',
        );
 
   final String? clientId;
-  final String? locationId;
-  final String? equipmentId;
+  final String? itemId;
 
   String get _query {
     if (clientId != null) return 'clientId=$clientId';
-    if (locationId != null) return 'locationId=$locationId';
-    return 'equipmentId=$equipmentId';
+    return 'itemId=$itemId';
   }
 
   bool _matches(LocalServiceOrder o) =>
       (clientId == null || o.clientId == clientId) &&
-      (locationId == null || o.locationId == locationId) &&
-      (equipmentId == null || o.equipmentId == equipmentId);
+      (itemId == null || o.itemId == itemId);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

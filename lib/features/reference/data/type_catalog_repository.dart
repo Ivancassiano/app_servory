@@ -8,10 +8,10 @@ import '../../../core/network/rest.dart';
 import '../../../core/providers.dart';
 
 /// Catálogos auxiliares com o mesmo shape (`{id, name, description, version}`)
-/// e CRUD idêntico, só mudando o path: tipos de equipamento e tipos de ordem
+/// e CRUD idêntico, só mudando o path: tipos de item e tipos de ordem
 /// de serviço. **REST-only** — cadastro é trabalho de escritório, online.
 enum TypeCatalog {
-  equipmentType('/v1/equipment-types', 'equipment_types', 'Tipo de equipamento'),
+  itemType('/v1/item-types', 'item_types', 'Tipo de item'),
   serviceOrderType(
     '/v1/service-order-types',
     'service_order_types',
@@ -25,7 +25,7 @@ enum TypeCatalog {
 
   /// Título da tela (plural).
   String get title => switch (this) {
-    TypeCatalog.equipmentType => 'Tipos de equipamento',
+    TypeCatalog.itemType => 'Tipos de item',
     TypeCatalog.serviceOrderType => 'Tipos de ordem de serviço',
   };
 }
