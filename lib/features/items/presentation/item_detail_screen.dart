@@ -66,6 +66,13 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     super.initState();
     _clientId = widget.presetClientId;
     _parentId = widget.presetParentId;
+    // Puxa os catálogos de referência (tipos + campos personalizados) ao
+    // abrir — melhor esforço. Sem isto o seletor de tipo pode mostrar um
+    // tipo já apagado no servidor até a tela de catálogo ser reaberta.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(itemTypeRepositoryProvider).refresh().catchError((_) {});
+      ref.read(itemFieldDefRepositoryProvider).refresh().catchError((_) {});
+    });
   }
 
   @override

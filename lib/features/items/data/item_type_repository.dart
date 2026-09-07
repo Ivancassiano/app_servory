@@ -58,7 +58,11 @@ class _LocalItemTypeRepository implements ItemTypeRepository {
     final r = await restCall(() => dio.get('/v1/item-types'));
     final raw =
         (r.data as Map<String, dynamic>)['item_types'] as List? ?? const [];
+    // `/v1/item-types` já devolve a lista completa e viva (sem os
+    // excluídos). Substitui o cache inteiro — só upsert deixaria tipo
+    // apagado no servidor preso no seletor de item (§8.4).
     await _db.transaction(() async {
+      await _db.delete(_db.localItemTypes).go();
       for (final e in raw) {
         await _db
             .into(_db.localItemTypes)
