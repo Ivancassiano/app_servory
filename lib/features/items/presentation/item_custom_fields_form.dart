@@ -73,7 +73,7 @@ class _ItemCustomFieldsFormState extends ConsumerState<ItemCustomFieldsForm> {
           'Campos personalizados',
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        for (final d in defs) ...[const SizedBox(height: 8), _field(d)],
+        for (final d in defs) ...[const SizedBox(height: 16), _field(d)],
       ],
     );
   }

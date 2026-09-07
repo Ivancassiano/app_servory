@@ -317,7 +317,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
-            if (widget.presetClientId == null && existing == null)
+            if (widget.presetClientId == null && existing == null) ...[
               DropdownButtonFormField<String>(
                 initialValue: _clientId,
                 decoration: const InputDecoration(labelText: 'Cliente'),
@@ -331,6 +331,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 }),
                 validator: (v) => v == null ? 'Selecione o cliente' : null,
               ),
+              const SizedBox(height: 16),
+            ],
             DropdownButtonFormField<String?>(
               key: ValueKey('parent:$_clientId'),
               initialValue: _parentId,
@@ -344,6 +346,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               ],
               onChanged: (v) => setState(() => _parentId = v),
             ),
+            const SizedBox(height: 16),
             DropdownButtonFormField<String?>(
               initialValue: _typeId,
               decoration: const InputDecoration(labelText: 'Tipo (opcional)'),
@@ -357,16 +360,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               ],
               onChanged: (v) => setState(() => _typeId = v),
             ),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _name,
               decoration: const InputDecoration(labelText: 'Nome'),
               validator: (v) =>
                   (v == null || v.trim().isEmpty) ? 'Informe o nome' : null,
             ),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _contactPerson,
               decoration: const InputDecoration(labelText: 'Contato'),
             ),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _phone,
               decoration: const InputDecoration(labelText: 'Telefone'),
@@ -379,22 +385,27 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   controller: _postalCode,
                   decoration: const InputDecoration(labelText: 'CEP'),
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _street,
                   decoration: const InputDecoration(labelText: 'Logradouro'),
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _number,
                   decoration: const InputDecoration(labelText: 'Número'),
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _district,
                   decoration: const InputDecoration(labelText: 'Bairro'),
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _city,
                   decoration: const InputDecoration(labelText: 'Cidade'),
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _state,
                   maxLength: 2,
@@ -414,14 +425,17 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   controller: _brand,
                   decoration: const InputDecoration(labelText: 'Marca'),
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _model,
                   decoration: const InputDecoration(labelText: 'Modelo'),
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _serial,
                   decoration: const InputDecoration(labelText: 'Nº de série'),
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _cost,
                   keyboardType: const TextInputType.numberWithOptions(
@@ -431,11 +445,13 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 8),
             TextFormField(
               controller: _notes,
               decoration: const InputDecoration(labelText: 'Observações'),
               maxLines: 3,
             ),
+            const SizedBox(height: 16),
             ItemCustomFieldsForm(
               key: ValueKey('fields:$_typeId'),
               itemTypeId: _typeId,
