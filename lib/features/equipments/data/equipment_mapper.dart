@@ -39,17 +39,20 @@ Map<String, dynamic> equipmentUpdateBody({
   required String notes,
 }) => {'name': name, 'brand': brand, 'model': model, 'notes': notes};
 
-/// `POST /v1/equipments` — `location_id` e `equipment_type_id` obrigatórios.
+/// `POST /v1/equipments` — só `location_id` e `name` obrigatórios; o tipo é
+/// opcional (cadastro rápido a partir do seletor de itens da ordem).
 Map<String, dynamic> equipmentCreateBody({
   required String locationId,
-  required String equipmentTypeId,
+  String? equipmentTypeId,
   required String name,
   required String brand,
   required String model,
   required String notes,
 }) => {
   'location_id': locationId,
-  'equipment_type_id': equipmentTypeId,
+  'equipment_type_id': ?(equipmentTypeId != null && equipmentTypeId.isNotEmpty
+      ? equipmentTypeId
+      : null),
   'name': name,
   'brand': brand,
   'model': model,

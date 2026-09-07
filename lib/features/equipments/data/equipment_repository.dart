@@ -25,7 +25,7 @@ abstract interface class EquipmentRepository {
 
   Future<String> create({
     required String locationId,
-    required String equipmentTypeId,
+    String? equipmentTypeId,
     required String name,
     required String brand,
     required String model,
@@ -80,7 +80,7 @@ class LocalFirstEquipmentRepository extends LocalFirstRepositoryBase
   @override
   Future<String> create({
     required String locationId,
-    required String equipmentTypeId,
+    String? equipmentTypeId,
     required String name,
     required String brand,
     required String model,
@@ -88,7 +88,7 @@ class LocalFirstEquipmentRepository extends LocalFirstRepositoryBase
   }) async {
     final body = equipmentCreateBody(
       locationId: locationId,
-      equipmentTypeId: equipmentTypeId,
+      equipmentTypeId: equipmentTypeId ?? '',
       name: name,
       brand: brand,
       model: model,
@@ -116,7 +116,7 @@ class LocalFirstEquipmentRepository extends LocalFirstRepositoryBase
               id: id,
               organizationId: orgId,
               locationId: locationId,
-              equipmentTypeId: equipmentTypeId,
+              equipmentTypeId: equipmentTypeId ?? '',
               name: name,
               brand: Value(brand),
               model: Value(model),
@@ -227,7 +227,7 @@ class RemoteEquipmentRepository
   @override
   Future<String> create({
     required String locationId,
-    required String equipmentTypeId,
+    String? equipmentTypeId,
     required String name,
     required String brand,
     required String model,
@@ -236,7 +236,7 @@ class RemoteEquipmentRepository
     final eq = await _collection.create(
       equipmentCreateBody(
         locationId: locationId,
-        equipmentTypeId: equipmentTypeId,
+        equipmentTypeId: equipmentTypeId ?? '',
         name: name,
         brand: brand,
         model: model,

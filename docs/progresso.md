@@ -22,6 +22,20 @@ serviço ligadas ao registro. Agora cada uma tem uma seção **Laudos (N)**.
 - Testes: lista recortada por local (`service_order_list_screen_test`); seção
   filtra pelo escopo + navega + estado vazio (`related_service_orders_section_test`).
 
+## `app_servory` — `feature/service-orders`: form de criação da ordem (Fase 2) 🚧
+
+- **Backend** (`auth_servory` `6e4ce48`): `equipment_type_id` opcional
+  (migração 00037) p/ cadastro rápido de equipamento; permissão
+  `service_order.assign_company` (00038, admin) — trocar empresa emitente !=
+  primária do usuário exige ela; `/v1/me` ganha `primary_company_id`.
+- **App**: seletor de **cliente** (bottom sheet com busca + OK); seletor de
+  **locais/equipamentos** em árvore com checkbox, busca e cadastro rápido
+  (`order_form_pickers.dart`); form de "Nova ordem" reescrito — cliente por
+  botão, "Locais" (opcional) viram itens ao salvar, empresa emitente
+  padrão = primária do usuário (travada sem permissão), técnico padrão = ele.
+  `equipmentTypeId` opcional no repo/mapper.
+- **Falta:** 2d-b (peças/recs/fotos por item), Fase 3 (ordem-filha), Fase 4 (PDF).
+
 ## `app_servory` — `feature/service-orders`: itens da ordem (Fase 2) 🚧
 
 Laudo por equipamento. Plano: `~/.claude/plans/indexed-herding-ripple.md`.

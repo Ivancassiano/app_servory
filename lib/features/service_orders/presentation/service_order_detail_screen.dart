@@ -18,8 +18,10 @@ import '../../locations/application/locations_provider.dart';
 import '../../reference/data/reference_repository.dart';
 import '../application/service_order_edit_controller.dart';
 import '../application/service_order_part_controller.dart';
+import '../../me/application/me_provider.dart';
 import '../application/service_orders_provider.dart';
 import '../data/recommendation_repository.dart';
+import 'order_form_pickers.dart';
 
 const _statusLabels = {
   'draft': 'Rascunho',
@@ -59,6 +61,8 @@ class _ServiceOrderDetailScreenState
   String? _assignedUserId;
   DateTime? _scheduledFor;
   bool _seeded = false;
+  bool _seededDefaults = false; // empresa/técnico padrão (só na criação)
+  final List<OrderTarget> _targets = []; // locais/equipamentos p/ virar itens
   bool _saving = false;
   bool _conflict = false;
   String? _error;
@@ -151,8 +155,6 @@ class _ServiceOrderDetailScreenState
       if (widget.isNew) {
         final id = await controller.create(
           clientId: _clientId!,
-          locationId: _locationId,
-          equipmentId: _equipmentId,
           serviceOrderTypeId: _serviceOrderTypeId,
           companyId: _companyId,
           assignedUserId: _assignedUserId,
@@ -160,6 +162,15 @@ class _ServiceOrderDetailScreenState
           mode: mode,
           reason: _reasonController.text.trim(),
         );
+        // Cada local/equipamento escolhido vira um item da ordem.
+        final repo = ref.read(serviceOrderRepositoryProvider);
+        for (final t in _targets) {
+          await repo.addItem(
+            orderId: id,
+            locationId: t.equipmentId == null ? t.locationId : null,
+            equipmentId: t.equipmentId,
+          );
+        }
         if (!mounted) return;
         Navigator.of(context).pop();
         context.push('/service-orders/$id');
@@ -265,6 +276,16 @@ class _ServiceOrderDetailScreenState
               : _viewMode(context, order);
         },
       );
+    }
+    // Criação: empresa emitente = a primária do usuário; técnico = ele mesmo.
+    // Semeado assim que a identidade chega (o dropdown é recriado pela key).
+    if (!_seededDefaults) {
+      final me = ref.watch(identityProvider).value;
+      if (me != null) {
+        _companyId ??= me.primaryCompanyId;
+        _assignedUserId ??= me.userId;
+        _seededDefaults = true;
+      }
     }
     return _buildForm(context, order: null);
   }
@@ -469,18 +490,25 @@ class _ServiceOrderDetailScreenState
     required String label,
     required String? value,
     required ValueChanged<String?> onChanged,
+    bool enabled = true,
   }) {
     final itemsAsync = ref.watch(referenceListProvider(kind));
     final items = itemsAsync.value ?? const <ReferenceItem>[];
     final known = items.any((i) => i.id == value);
     return DropdownButtonFormField<String?>(
+      // Recria o campo quando o valor muda por fora (seed de padrão) — o
+      // FormField não reage a `initialValue` depois do primeiro build.
+      key: ValueKey('$kind:$value'),
       initialValue: value,
       isExpanded: true,
+      onChanged: enabled ? onChanged : null,
       decoration: InputDecoration(
         labelText: label,
-        helperText: itemsAsync.hasError
-            ? 'Não foi possível carregar a lista.'
-            : null,
+        helperText: !enabled
+            ? 'Sem permissão para trocar.'
+            : (itemsAsync.hasError
+                  ? 'Não foi possível carregar a lista.'
+                  : null),
       ),
       items: [
         const DropdownMenuItem<String?>(value: null, child: Text('—')),
@@ -498,7 +526,6 @@ class _ServiceOrderDetailScreenState
             ),
           ),
       ],
-      onChanged: onChanged,
     );
   }
 
@@ -564,33 +591,96 @@ class _ServiceOrderDetailScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // --- criação: cliente por seletor, locais/equipamentos viram itens ---
                   if (!_laudoOnly && order == null) ...[
-                    clientsAsync.when(
-                      loading: () => const LinearProgressIndicator(),
-                      error: (e, _) => Text('Erro ao carregar clientes: $e'),
-                      data: (clients) => DropdownButtonFormField<String>(
-                        initialValue: _clientId,
-                        decoration: const InputDecoration(labelText: 'Cliente'),
-                        items: clients
-                            .map(
-                              (c) => DropdownMenuItem(
-                                value: c.id,
-                                child: Text(c.name),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (v) => setState(() {
-                          _clientId = v;
-                          _locationId = null;
-                          _equipmentId = null;
-                        }),
-                        validator: (v) =>
-                            v == null ? 'Escolha um cliente.' : null,
-                      ),
+                    ClientPickerField(
+                      clientName: _clientId == null
+                          ? null
+                          : (clientsAsync.value ?? const <LocalClient>[])
+                                .where((c) => c.id == _clientId)
+                                .map((c) => c.name)
+                                .join(),
+                      onPick: () async {
+                        final id = await pickClient(context);
+                        if (id != null && mounted) {
+                          setState(() {
+                            _clientId = id;
+                            _targets.clear();
+                          });
+                        }
+                      },
                     ),
                     const SizedBox(height: 16),
+                    TargetsField(
+                      clientId: _clientId,
+                      targets: _targets,
+                      locationName: (id) =>
+                          (ref.watch(locationListProvider).value ?? const [])
+                              .where((l) => l.id == id)
+                              .map((l) => l.name)
+                              .join(),
+                      equipmentName: (id) =>
+                          (ref.watch(equipmentListProvider).value ?? const [])
+                              .where((e) => e.id == id)
+                              .map((e) => e.name)
+                              .join(),
+                      onAdd: () async {
+                        final picked = await pickOrderTargets(
+                          context,
+                          clientId: _clientId!,
+                          initial: _targets.toSet(),
+                        );
+                        if (picked != null && mounted) {
+                          setState(() {
+                            _targets
+                              ..clear()
+                              ..addAll(picked);
+                          });
+                        }
+                      },
+                      onRemove: (t) => setState(() => _targets.remove(t)),
+                    ),
+                    const SizedBox(height: 16),
+                    _referenceDropdown(
+                      kind: ReferenceKind.serviceOrderType,
+                      label: 'Tipo de ordem (opcional)',
+                      value: _serviceOrderTypeId,
+                      onChanged: (v) => setState(() => _serviceOrderTypeId = v),
+                    ),
+                    const SizedBox(height: 16),
+                    _referenceDropdown(
+                      kind: ReferenceKind.company,
+                      label: 'Empresa emitente',
+                      value: _companyId,
+                      enabled:
+                          ref
+                              .watch(permissionsProvider)
+                              .value
+                              ?.keys
+                              .contains('service_order.assign_company') ??
+                          false,
+                      onChanged: (v) => setState(() => _companyId = v),
+                    ),
+                    const SizedBox(height: 16),
+                    _referenceDropdown(
+                      kind: ReferenceKind.orgUser,
+                      label: 'Técnico responsável',
+                      value: _assignedUserId,
+                      onChanged: (v) => setState(() => _assignedUserId = v),
+                    ),
+                    const SizedBox(height: 16),
+                    _ScheduledForField(
+                      value: _scheduledFor,
+                      onChanged: (v) => setState(() => _scheduledFor = v),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _reasonController,
+                      decoration: const InputDecoration(labelText: 'Motivo'),
+                    ),
                   ],
-                  if (!_laudoOnly) ...[
+                  // --- edição do cabeçalho (local/equipamento legados) ---
+                  if (!_laudoOnly && order != null) ...[
                     DropdownButtonFormField<String?>(
                       initialValue: displayLocationId,
                       decoration: const InputDecoration(
@@ -668,7 +758,7 @@ class _ServiceOrderDetailScreenState
                       controller: _reasonController,
                       decoration: const InputDecoration(labelText: 'Motivo'),
                     ),
-                  ], // fim if (!_laudoOnly)
+                  ],
                   if (order != null) ...[
                     const SizedBox(height: 16),
                     TextFormField(

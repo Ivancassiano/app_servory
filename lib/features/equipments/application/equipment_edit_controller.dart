@@ -11,7 +11,7 @@ class EquipmentEditController {
 
   Future<String> create({
     required String locationId,
-    required String equipmentTypeId,
+    String? equipmentTypeId,
     required String name,
     required String brand,
     required String model,
