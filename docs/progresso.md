@@ -15,9 +15,12 @@ com ordens. Movidos para Configurações:
   **Equipamentos**.
 - **`SettingsScreen`**: novo grupo **Catálogos** com **Tipos de ordem de serviço**
   (`/type-catalog?kind=service-order`) e **Tipos de equipamento**
-  (`/type-catalog?kind=equipment`). A tela em si continua com as duas abas.
+  (`/type-catalog?kind=equipment`).
+- **`TypeCatalogScreen`**: deixou de ser tabbed — abre num único catálogo, com
+  `brandAppBar` (título + contagem) igual às demais telas. `kind` obrigatório
+  (era `initial`); novo `TypeCatalog.title` (plural).
 - Testes: `settings_screen_test.dart` cobre os dois itens novos + navegação.
-  `flutter analyze` limpo.
+  `flutter analyze` limpo, 137 testes.
 
 ## `app_servory` — `feature/service-orders`: hierarquia nas listas, buscas e cadastro ✅
 

@@ -155,7 +155,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/type-catalog',
         builder: (_, state) => TypeCatalogScreen(
-          initial: state.uri.queryParameters['kind'] == 'service-order'
+          kind: state.uri.queryParameters['kind'] == 'service-order'
               ? TypeCatalog.serviceOrderType
               : TypeCatalog.equipmentType,
         ),

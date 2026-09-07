@@ -22,6 +22,12 @@ enum TypeCatalog {
   final String path;
   final String listKey;
   final String singular;
+
+  /// Título da tela (plural).
+  String get title => switch (this) {
+    TypeCatalog.equipmentType => 'Tipos de equipamento',
+    TypeCatalog.serviceOrderType => 'Tipos de ordem de serviço',
+  };
 }
 
 class TypeCatalogItem {

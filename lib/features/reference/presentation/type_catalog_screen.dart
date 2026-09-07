@@ -2,45 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/brand_app_bar.dart';
 import '../../equipments/data/equipment_type_repository.dart';
 import '../data/reference_repository.dart';
 import '../data/type_catalog_repository.dart';
 
-/// Cadastro dos catálogos auxiliares (tipos de equipamento / de ordem).
-/// Abre num dos dois pelo `initial`.
-class TypeCatalogScreen extends StatelessWidget {
-  const TypeCatalogScreen({super.key, this.initial = TypeCatalog.equipmentType});
-
-  final TypeCatalog initial;
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      initialIndex: initial == TypeCatalog.equipmentType ? 0 : 1,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Tipos'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Equipamentos'),
-              Tab(text: 'Ordens de serviço'),
-            ],
-          ),
-        ),
-        body: const TabBarView(
-          children: [
-            _CatalogTab(kind: TypeCatalog.equipmentType),
-            _CatalogTab(kind: TypeCatalog.serviceOrderType),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CatalogTab extends ConsumerWidget {
-  const _CatalogTab({required this.kind});
+/// Cadastro de um catálogo auxiliar (tipos de equipamento **ou** tipos de ordem
+/// de serviço — nunca os dois na mesma tela). Acessada por Configurações →
+/// Catálogos.
+class TypeCatalogScreen extends ConsumerWidget {
+  const TypeCatalogScreen({super.key, required this.kind});
 
   final TypeCatalog kind;
 
@@ -58,8 +29,15 @@ class _CatalogTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(typeCatalogListProvider(kind));
+    final total = async.value?.length;
 
     return Scaffold(
+      appBar: brandAppBar(
+        title: kind.title,
+        count: total == null
+            ? null
+            : '$total ${total == 1 ? 'tipo' : 'tipos'}',
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(typeCatalogRepositoryProvider).refresh(kind),
         child: async.when(
@@ -120,7 +98,9 @@ class _CatalogTab extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(item == null ? 'Novo ${kind.singular.toLowerCase()}' : item.name),
+        title: Text(
+          item == null ? 'Novo ${kind.singular.toLowerCase()}' : item.name,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -193,7 +173,9 @@ class _CatalogTab extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Excluir "${item.name}"?'),
-        content: const Text('Não é possível se já houver registros usando este tipo.'),
+        content: const Text(
+          'Não é possível se já houver registros usando este tipo.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
