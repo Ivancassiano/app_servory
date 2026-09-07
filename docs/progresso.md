@@ -5,6 +5,14 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: bottom sheets acima da barra do Android ✅
+
+O botão "Gerar" da folha de etiquetas (e outros) ficava atrás da barra de
+navegação do Android. Os 6 `showModalBottomSheet` só somavam
+`viewInsets.bottom` (teclado) no padding — agora somam também
+`viewPadding.bottom` (barra do sistema): folha de etiquetas, escanear
+etiqueta, capturar foto, contatos, peças e recomendações da OS.
+
 ## `app_servory` — `feature/service-orders`: tela de Configurações ✅
 
 A home estava com itens de "administração" (o card de identidade/organização,

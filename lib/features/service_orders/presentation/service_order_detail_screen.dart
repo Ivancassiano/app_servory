@@ -1140,7 +1140,10 @@ class _PartFormSheetState extends ConsumerState<_PartFormSheet> {
         left: 16,
         right: 16,
         top: 16,
-        bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+        bottom:
+            16 +
+            MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).viewPadding.bottom,
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -1408,7 +1411,10 @@ class _RecommendationFormSheetState
         left: 16,
         right: 16,
         top: 16,
-        bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+        bottom:
+            16 +
+            MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).viewPadding.bottom,
       ),
       child: SingleChildScrollView(
         child: Column(

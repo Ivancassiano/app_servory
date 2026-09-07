@@ -247,7 +247,10 @@ class _ContactFormSheetState extends ConsumerState<_ContactFormSheet> {
         left: 16,
         right: 16,
         top: 16,
-        bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+        bottom:
+            16 +
+            MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).viewPadding.bottom,
       ),
       child: SingleChildScrollView(
         child: Column(

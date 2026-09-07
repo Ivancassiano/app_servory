@@ -227,7 +227,10 @@ class _LabelBatchDetailScreenState
             left: 16,
             right: 16,
             top: 16,
-            bottom: 16 + MediaQuery.of(ctx).viewInsets.bottom,
+            bottom:
+                16 +
+                MediaQuery.of(ctx).viewInsets.bottom +
+                MediaQuery.of(ctx).viewPadding.bottom,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
