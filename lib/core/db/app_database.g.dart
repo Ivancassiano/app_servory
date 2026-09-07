@@ -4851,6 +4851,1132 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
   }
 }
 
+class $LocalServiceOrderItemsTable extends LocalServiceOrderItems
+    with TableInfo<$LocalServiceOrderItemsTable, LocalServiceOrderItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalServiceOrderItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('synced'),
+  );
+  static const VerificationMeta _localUpdatedAtMeta = const VerificationMeta(
+    'localUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> localUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'local_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serviceOrderIdMeta = const VerificationMeta(
+    'serviceOrderId',
+  );
+  @override
+  late final GeneratedColumn<String> serviceOrderId = GeneratedColumn<String>(
+    'service_order_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _locationIdMeta = const VerificationMeta(
+    'locationId',
+  );
+  @override
+  late final GeneratedColumn<String> locationId = GeneratedColumn<String>(
+    'location_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _equipmentIdMeta = const VerificationMeta(
+    'equipmentId',
+  );
+  @override
+  late final GeneratedColumn<String> equipmentId = GeneratedColumn<String>(
+    'equipment_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _diagnosisMeta = const VerificationMeta(
+    'diagnosis',
+  );
+  @override
+  late final GeneratedColumn<String> diagnosis = GeneratedColumn<String>(
+    'diagnosis',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _workPerformedMeta = const VerificationMeta(
+    'workPerformed',
+  );
+  @override
+  late final GeneratedColumn<String> workPerformed = GeneratedColumn<String>(
+    'work_performed',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _finalConditionMeta = const VerificationMeta(
+    'finalCondition',
+  );
+  @override
+  late final GeneratedColumn<String> finalCondition = GeneratedColumn<String>(
+    'final_condition',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _approvalMeta = const VerificationMeta(
+    'approval',
+  );
+  @override
+  late final GeneratedColumn<String> approval = GeneratedColumn<String>(
+    'approval',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _approvedAtMeta = const VerificationMeta(
+    'approvedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> approvedAt = GeneratedColumn<DateTime>(
+    'approved_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    serviceOrderId,
+    locationId,
+    equipmentId,
+    position,
+    diagnosis,
+    workPerformed,
+    finalCondition,
+    note,
+    approval,
+    approvedAt,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_service_order_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalServiceOrderItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('local_updated_at')) {
+      context.handle(
+        _localUpdatedAtMeta,
+        localUpdatedAt.isAcceptableOrUnknown(
+          data['local_updated_at']!,
+          _localUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_localUpdatedAtMeta);
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('service_order_id')) {
+      context.handle(
+        _serviceOrderIdMeta,
+        serviceOrderId.isAcceptableOrUnknown(
+          data['service_order_id']!,
+          _serviceOrderIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_serviceOrderIdMeta);
+    }
+    if (data.containsKey('location_id')) {
+      context.handle(
+        _locationIdMeta,
+        locationId.isAcceptableOrUnknown(data['location_id']!, _locationIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_locationIdMeta);
+    }
+    if (data.containsKey('equipment_id')) {
+      context.handle(
+        _equipmentIdMeta,
+        equipmentId.isAcceptableOrUnknown(
+          data['equipment_id']!,
+          _equipmentIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('diagnosis')) {
+      context.handle(
+        _diagnosisMeta,
+        diagnosis.isAcceptableOrUnknown(data['diagnosis']!, _diagnosisMeta),
+      );
+    }
+    if (data.containsKey('work_performed')) {
+      context.handle(
+        _workPerformedMeta,
+        workPerformed.isAcceptableOrUnknown(
+          data['work_performed']!,
+          _workPerformedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('final_condition')) {
+      context.handle(
+        _finalConditionMeta,
+        finalCondition.isAcceptableOrUnknown(
+          data['final_condition']!,
+          _finalConditionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('approval')) {
+      context.handle(
+        _approvalMeta,
+        approval.isAcceptableOrUnknown(data['approval']!, _approvalMeta),
+      );
+    }
+    if (data.containsKey('approved_at')) {
+      context.handle(
+        _approvedAtMeta,
+        approvedAt.isAcceptableOrUnknown(data['approved_at']!, _approvedAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalServiceOrderItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalServiceOrderItem(
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      localUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}local_updated_at'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      ),
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      serviceOrderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_order_id'],
+      )!,
+      locationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location_id'],
+      )!,
+      equipmentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}equipment_id'],
+      ),
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      diagnosis: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}diagnosis'],
+      )!,
+      workPerformed: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}work_performed'],
+      )!,
+      finalCondition: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}final_condition'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+      approval: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}approval'],
+      )!,
+      approvedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}approved_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $LocalServiceOrderItemsTable createAlias(String alias) {
+    return $LocalServiceOrderItemsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalServiceOrderItem extends DataClass
+    implements Insertable<LocalServiceOrderItem> {
+  final String organizationId;
+  final int? version;
+  final String syncStatus;
+  final DateTime localUpdatedAt;
+  final DateTime? lastSyncedAt;
+  final String? syncError;
+  final bool deleted;
+  final String id;
+  final String serviceOrderId;
+  final String locationId;
+  final String? equipmentId;
+  final int position;
+  final String diagnosis;
+  final String workPerformed;
+  final String finalCondition;
+  final String note;
+  final String approval;
+  final DateTime? approvedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  const LocalServiceOrderItem({
+    required this.organizationId,
+    this.version,
+    required this.syncStatus,
+    required this.localUpdatedAt,
+    this.lastSyncedAt,
+    this.syncError,
+    required this.deleted,
+    required this.id,
+    required this.serviceOrderId,
+    required this.locationId,
+    this.equipmentId,
+    required this.position,
+    required this.diagnosis,
+    required this.workPerformed,
+    required this.finalCondition,
+    required this.note,
+    required this.approval,
+    this.approvedAt,
+    this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['organization_id'] = Variable<String>(organizationId);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['local_updated_at'] = Variable<DateTime>(localUpdatedAt);
+    if (!nullToAbsent || lastSyncedAt != null) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    }
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['deleted'] = Variable<bool>(deleted);
+    map['id'] = Variable<String>(id);
+    map['service_order_id'] = Variable<String>(serviceOrderId);
+    map['location_id'] = Variable<String>(locationId);
+    if (!nullToAbsent || equipmentId != null) {
+      map['equipment_id'] = Variable<String>(equipmentId);
+    }
+    map['position'] = Variable<int>(position);
+    map['diagnosis'] = Variable<String>(diagnosis);
+    map['work_performed'] = Variable<String>(workPerformed);
+    map['final_condition'] = Variable<String>(finalCondition);
+    map['note'] = Variable<String>(note);
+    map['approval'] = Variable<String>(approval);
+    if (!nullToAbsent || approvedAt != null) {
+      map['approved_at'] = Variable<DateTime>(approvedAt);
+    }
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  LocalServiceOrderItemsCompanion toCompanion(bool nullToAbsent) {
+    return LocalServiceOrderItemsCompanion(
+      organizationId: Value(organizationId),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      syncStatus: Value(syncStatus),
+      localUpdatedAt: Value(localUpdatedAt),
+      lastSyncedAt: lastSyncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncedAt),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      deleted: Value(deleted),
+      id: Value(id),
+      serviceOrderId: Value(serviceOrderId),
+      locationId: Value(locationId),
+      equipmentId: equipmentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(equipmentId),
+      position: Value(position),
+      diagnosis: Value(diagnosis),
+      workPerformed: Value(workPerformed),
+      finalCondition: Value(finalCondition),
+      note: Value(note),
+      approval: Value(approval),
+      approvedAt: approvedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(approvedAt),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory LocalServiceOrderItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalServiceOrderItem(
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      version: serializer.fromJson<int?>(json['version']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      localUpdatedAt: serializer.fromJson<DateTime>(json['localUpdatedAt']),
+      lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      id: serializer.fromJson<String>(json['id']),
+      serviceOrderId: serializer.fromJson<String>(json['serviceOrderId']),
+      locationId: serializer.fromJson<String>(json['locationId']),
+      equipmentId: serializer.fromJson<String?>(json['equipmentId']),
+      position: serializer.fromJson<int>(json['position']),
+      diagnosis: serializer.fromJson<String>(json['diagnosis']),
+      workPerformed: serializer.fromJson<String>(json['workPerformed']),
+      finalCondition: serializer.fromJson<String>(json['finalCondition']),
+      note: serializer.fromJson<String>(json['note']),
+      approval: serializer.fromJson<String>(json['approval']),
+      approvedAt: serializer.fromJson<DateTime?>(json['approvedAt']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'organizationId': serializer.toJson<String>(organizationId),
+      'version': serializer.toJson<int?>(version),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'localUpdatedAt': serializer.toJson<DateTime>(localUpdatedAt),
+      'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'syncError': serializer.toJson<String?>(syncError),
+      'deleted': serializer.toJson<bool>(deleted),
+      'id': serializer.toJson<String>(id),
+      'serviceOrderId': serializer.toJson<String>(serviceOrderId),
+      'locationId': serializer.toJson<String>(locationId),
+      'equipmentId': serializer.toJson<String?>(equipmentId),
+      'position': serializer.toJson<int>(position),
+      'diagnosis': serializer.toJson<String>(diagnosis),
+      'workPerformed': serializer.toJson<String>(workPerformed),
+      'finalCondition': serializer.toJson<String>(finalCondition),
+      'note': serializer.toJson<String>(note),
+      'approval': serializer.toJson<String>(approval),
+      'approvedAt': serializer.toJson<DateTime?>(approvedAt),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  LocalServiceOrderItem copyWith({
+    String? organizationId,
+    Value<int?> version = const Value.absent(),
+    String? syncStatus,
+    DateTime? localUpdatedAt,
+    Value<DateTime?> lastSyncedAt = const Value.absent(),
+    Value<String?> syncError = const Value.absent(),
+    bool? deleted,
+    String? id,
+    String? serviceOrderId,
+    String? locationId,
+    Value<String?> equipmentId = const Value.absent(),
+    int? position,
+    String? diagnosis,
+    String? workPerformed,
+    String? finalCondition,
+    String? note,
+    String? approval,
+    Value<DateTime?> approvedAt = const Value.absent(),
+    Value<DateTime?> createdAt = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+  }) => LocalServiceOrderItem(
+    organizationId: organizationId ?? this.organizationId,
+    version: version.present ? version.value : this.version,
+    syncStatus: syncStatus ?? this.syncStatus,
+    localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+    lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    deleted: deleted ?? this.deleted,
+    id: id ?? this.id,
+    serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+    locationId: locationId ?? this.locationId,
+    equipmentId: equipmentId.present ? equipmentId.value : this.equipmentId,
+    position: position ?? this.position,
+    diagnosis: diagnosis ?? this.diagnosis,
+    workPerformed: workPerformed ?? this.workPerformed,
+    finalCondition: finalCondition ?? this.finalCondition,
+    note: note ?? this.note,
+    approval: approval ?? this.approval,
+    approvedAt: approvedAt.present ? approvedAt.value : this.approvedAt,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  LocalServiceOrderItem copyWithCompanion(
+    LocalServiceOrderItemsCompanion data,
+  ) {
+    return LocalServiceOrderItem(
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      version: data.version.present ? data.version.value : this.version,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      localUpdatedAt: data.localUpdatedAt.present
+          ? data.localUpdatedAt.value
+          : this.localUpdatedAt,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      id: data.id.present ? data.id.value : this.id,
+      serviceOrderId: data.serviceOrderId.present
+          ? data.serviceOrderId.value
+          : this.serviceOrderId,
+      locationId: data.locationId.present
+          ? data.locationId.value
+          : this.locationId,
+      equipmentId: data.equipmentId.present
+          ? data.equipmentId.value
+          : this.equipmentId,
+      position: data.position.present ? data.position.value : this.position,
+      diagnosis: data.diagnosis.present ? data.diagnosis.value : this.diagnosis,
+      workPerformed: data.workPerformed.present
+          ? data.workPerformed.value
+          : this.workPerformed,
+      finalCondition: data.finalCondition.present
+          ? data.finalCondition.value
+          : this.finalCondition,
+      note: data.note.present ? data.note.value : this.note,
+      approval: data.approval.present ? data.approval.value : this.approval,
+      approvedAt: data.approvedAt.present
+          ? data.approvedAt.value
+          : this.approvedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalServiceOrderItem(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('locationId: $locationId, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('position: $position, ')
+          ..write('diagnosis: $diagnosis, ')
+          ..write('workPerformed: $workPerformed, ')
+          ..write('finalCondition: $finalCondition, ')
+          ..write('note: $note, ')
+          ..write('approval: $approval, ')
+          ..write('approvedAt: $approvedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    serviceOrderId,
+    locationId,
+    equipmentId,
+    position,
+    diagnosis,
+    workPerformed,
+    finalCondition,
+    note,
+    approval,
+    approvedAt,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalServiceOrderItem &&
+          other.organizationId == this.organizationId &&
+          other.version == this.version &&
+          other.syncStatus == this.syncStatus &&
+          other.localUpdatedAt == this.localUpdatedAt &&
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.syncError == this.syncError &&
+          other.deleted == this.deleted &&
+          other.id == this.id &&
+          other.serviceOrderId == this.serviceOrderId &&
+          other.locationId == this.locationId &&
+          other.equipmentId == this.equipmentId &&
+          other.position == this.position &&
+          other.diagnosis == this.diagnosis &&
+          other.workPerformed == this.workPerformed &&
+          other.finalCondition == this.finalCondition &&
+          other.note == this.note &&
+          other.approval == this.approval &&
+          other.approvedAt == this.approvedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalServiceOrderItemsCompanion
+    extends UpdateCompanion<LocalServiceOrderItem> {
+  final Value<String> organizationId;
+  final Value<int?> version;
+  final Value<String> syncStatus;
+  final Value<DateTime> localUpdatedAt;
+  final Value<DateTime?> lastSyncedAt;
+  final Value<String?> syncError;
+  final Value<bool> deleted;
+  final Value<String> id;
+  final Value<String> serviceOrderId;
+  final Value<String> locationId;
+  final Value<String?> equipmentId;
+  final Value<int> position;
+  final Value<String> diagnosis;
+  final Value<String> workPerformed;
+  final Value<String> finalCondition;
+  final Value<String> note;
+  final Value<String> approval;
+  final Value<DateTime?> approvedAt;
+  final Value<DateTime?> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int> rowid;
+  const LocalServiceOrderItemsCompanion({
+    this.organizationId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.id = const Value.absent(),
+    this.serviceOrderId = const Value.absent(),
+    this.locationId = const Value.absent(),
+    this.equipmentId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.diagnosis = const Value.absent(),
+    this.workPerformed = const Value.absent(),
+    this.finalCondition = const Value.absent(),
+    this.note = const Value.absent(),
+    this.approval = const Value.absent(),
+    this.approvedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalServiceOrderItemsCompanion.insert({
+    required String organizationId,
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required DateTime localUpdatedAt,
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String id,
+    required String serviceOrderId,
+    required String locationId,
+    this.equipmentId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.diagnosis = const Value.absent(),
+    this.workPerformed = const Value.absent(),
+    this.finalCondition = const Value.absent(),
+    this.note = const Value.absent(),
+    this.approval = const Value.absent(),
+    this.approvedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : organizationId = Value(organizationId),
+       localUpdatedAt = Value(localUpdatedAt),
+       id = Value(id),
+       serviceOrderId = Value(serviceOrderId),
+       locationId = Value(locationId);
+  static Insertable<LocalServiceOrderItem> custom({
+    Expression<String>? organizationId,
+    Expression<int>? version,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? localUpdatedAt,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<String>? syncError,
+    Expression<bool>? deleted,
+    Expression<String>? id,
+    Expression<String>? serviceOrderId,
+    Expression<String>? locationId,
+    Expression<String>? equipmentId,
+    Expression<int>? position,
+    Expression<String>? diagnosis,
+    Expression<String>? workPerformed,
+    Expression<String>? finalCondition,
+    Expression<String>? note,
+    Expression<String>? approval,
+    Expression<DateTime>? approvedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (organizationId != null) 'organization_id': organizationId,
+      if (version != null) 'version': version,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (localUpdatedAt != null) 'local_updated_at': localUpdatedAt,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (syncError != null) 'sync_error': syncError,
+      if (deleted != null) 'deleted': deleted,
+      if (id != null) 'id': id,
+      if (serviceOrderId != null) 'service_order_id': serviceOrderId,
+      if (locationId != null) 'location_id': locationId,
+      if (equipmentId != null) 'equipment_id': equipmentId,
+      if (position != null) 'position': position,
+      if (diagnosis != null) 'diagnosis': diagnosis,
+      if (workPerformed != null) 'work_performed': workPerformed,
+      if (finalCondition != null) 'final_condition': finalCondition,
+      if (note != null) 'note': note,
+      if (approval != null) 'approval': approval,
+      if (approvedAt != null) 'approved_at': approvedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalServiceOrderItemsCompanion copyWith({
+    Value<String>? organizationId,
+    Value<int?>? version,
+    Value<String>? syncStatus,
+    Value<DateTime>? localUpdatedAt,
+    Value<DateTime?>? lastSyncedAt,
+    Value<String?>? syncError,
+    Value<bool>? deleted,
+    Value<String>? id,
+    Value<String>? serviceOrderId,
+    Value<String>? locationId,
+    Value<String?>? equipmentId,
+    Value<int>? position,
+    Value<String>? diagnosis,
+    Value<String>? workPerformed,
+    Value<String>? finalCondition,
+    Value<String>? note,
+    Value<String>? approval,
+    Value<DateTime?>? approvedAt,
+    Value<DateTime?>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalServiceOrderItemsCompanion(
+      organizationId: organizationId ?? this.organizationId,
+      version: version ?? this.version,
+      syncStatus: syncStatus ?? this.syncStatus,
+      localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      syncError: syncError ?? this.syncError,
+      deleted: deleted ?? this.deleted,
+      id: id ?? this.id,
+      serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+      locationId: locationId ?? this.locationId,
+      equipmentId: equipmentId ?? this.equipmentId,
+      position: position ?? this.position,
+      diagnosis: diagnosis ?? this.diagnosis,
+      workPerformed: workPerformed ?? this.workPerformed,
+      finalCondition: finalCondition ?? this.finalCondition,
+      note: note ?? this.note,
+      approval: approval ?? this.approval,
+      approvedAt: approvedAt ?? this.approvedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (localUpdatedAt.present) {
+      map['local_updated_at'] = Variable<DateTime>(localUpdatedAt.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (serviceOrderId.present) {
+      map['service_order_id'] = Variable<String>(serviceOrderId.value);
+    }
+    if (locationId.present) {
+      map['location_id'] = Variable<String>(locationId.value);
+    }
+    if (equipmentId.present) {
+      map['equipment_id'] = Variable<String>(equipmentId.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (diagnosis.present) {
+      map['diagnosis'] = Variable<String>(diagnosis.value);
+    }
+    if (workPerformed.present) {
+      map['work_performed'] = Variable<String>(workPerformed.value);
+    }
+    if (finalCondition.present) {
+      map['final_condition'] = Variable<String>(finalCondition.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (approval.present) {
+      map['approval'] = Variable<String>(approval.value);
+    }
+    if (approvedAt.present) {
+      map['approved_at'] = Variable<DateTime>(approvedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalServiceOrderItemsCompanion(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('locationId: $locationId, ')
+          ..write('equipmentId: $equipmentId, ')
+          ..write('position: $position, ')
+          ..write('diagnosis: $diagnosis, ')
+          ..write('workPerformed: $workPerformed, ')
+          ..write('finalCondition: $finalCondition, ')
+          ..write('note: $note, ')
+          ..write('approval: $approval, ')
+          ..write('approvedAt: $approvedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $LocalServiceOrderPartsTable extends LocalServiceOrderParts
     with TableInfo<$LocalServiceOrderPartsTable, LocalServiceOrderPart> {
   @override
@@ -4960,6 +6086,17 @@ class $LocalServiceOrderPartsTable extends LocalServiceOrderParts
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _serviceOrderItemIdMeta =
+      const VerificationMeta('serviceOrderItemId');
+  @override
+  late final GeneratedColumn<String> serviceOrderItemId =
+      GeneratedColumn<String>(
+        'service_order_item_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _descriptionMeta = const VerificationMeta(
     'description',
   );
@@ -5071,6 +6208,7 @@ class $LocalServiceOrderPartsTable extends LocalServiceOrderParts
     deleted,
     id,
     serviceOrderId,
+    serviceOrderItemId,
     description,
     partNumber,
     quantity,
@@ -5163,6 +6301,15 @@ class $LocalServiceOrderPartsTable extends LocalServiceOrderParts
       );
     } else if (isInserting) {
       context.missing(_serviceOrderIdMeta);
+    }
+    if (data.containsKey('service_order_item_id')) {
+      context.handle(
+        _serviceOrderItemIdMeta,
+        serviceOrderItemId.isAcceptableOrUnknown(
+          data['service_order_item_id']!,
+          _serviceOrderItemIdMeta,
+        ),
+      );
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -5266,6 +6413,10 @@ class $LocalServiceOrderPartsTable extends LocalServiceOrderParts
         DriftSqlType.string,
         data['${effectivePrefix}service_order_id'],
       )!,
+      serviceOrderItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_order_item_id'],
+      ),
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}description'],
@@ -5322,6 +6473,7 @@ class LocalServiceOrderPart extends DataClass
   final bool deleted;
   final String id;
   final String serviceOrderId;
+  final String? serviceOrderItemId;
   final String description;
   final String partNumber;
   final String quantity;
@@ -5341,6 +6493,7 @@ class LocalServiceOrderPart extends DataClass
     required this.deleted,
     required this.id,
     required this.serviceOrderId,
+    this.serviceOrderItemId,
     required this.description,
     required this.partNumber,
     required this.quantity,
@@ -5369,6 +6522,9 @@ class LocalServiceOrderPart extends DataClass
     map['deleted'] = Variable<bool>(deleted);
     map['id'] = Variable<String>(id);
     map['service_order_id'] = Variable<String>(serviceOrderId);
+    if (!nullToAbsent || serviceOrderItemId != null) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId);
+    }
     map['description'] = Variable<String>(description);
     map['part_number'] = Variable<String>(partNumber);
     map['quantity'] = Variable<String>(quantity);
@@ -5406,6 +6562,9 @@ class LocalServiceOrderPart extends DataClass
       deleted: Value(deleted),
       id: Value(id),
       serviceOrderId: Value(serviceOrderId),
+      serviceOrderItemId: serviceOrderItemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serviceOrderItemId),
       description: Value(description),
       partNumber: Value(partNumber),
       quantity: Value(quantity),
@@ -5441,6 +6600,9 @@ class LocalServiceOrderPart extends DataClass
       deleted: serializer.fromJson<bool>(json['deleted']),
       id: serializer.fromJson<String>(json['id']),
       serviceOrderId: serializer.fromJson<String>(json['serviceOrderId']),
+      serviceOrderItemId: serializer.fromJson<String?>(
+        json['serviceOrderItemId'],
+      ),
       description: serializer.fromJson<String>(json['description']),
       partNumber: serializer.fromJson<String>(json['partNumber']),
       quantity: serializer.fromJson<String>(json['quantity']),
@@ -5465,6 +6627,7 @@ class LocalServiceOrderPart extends DataClass
       'deleted': serializer.toJson<bool>(deleted),
       'id': serializer.toJson<String>(id),
       'serviceOrderId': serializer.toJson<String>(serviceOrderId),
+      'serviceOrderItemId': serializer.toJson<String?>(serviceOrderItemId),
       'description': serializer.toJson<String>(description),
       'partNumber': serializer.toJson<String>(partNumber),
       'quantity': serializer.toJson<String>(quantity),
@@ -5487,6 +6650,7 @@ class LocalServiceOrderPart extends DataClass
     bool? deleted,
     String? id,
     String? serviceOrderId,
+    Value<String?> serviceOrderItemId = const Value.absent(),
     String? description,
     String? partNumber,
     String? quantity,
@@ -5506,6 +6670,9 @@ class LocalServiceOrderPart extends DataClass
     deleted: deleted ?? this.deleted,
     id: id ?? this.id,
     serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+    serviceOrderItemId: serviceOrderItemId.present
+        ? serviceOrderItemId.value
+        : this.serviceOrderItemId,
     description: description ?? this.description,
     partNumber: partNumber ?? this.partNumber,
     quantity: quantity ?? this.quantity,
@@ -5539,6 +6706,9 @@ class LocalServiceOrderPart extends DataClass
       serviceOrderId: data.serviceOrderId.present
           ? data.serviceOrderId.value
           : this.serviceOrderId,
+      serviceOrderItemId: data.serviceOrderItemId.present
+          ? data.serviceOrderItemId.value
+          : this.serviceOrderItemId,
       description: data.description.present
           ? data.description.value
           : this.description,
@@ -5567,6 +6737,7 @@ class LocalServiceOrderPart extends DataClass
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
           ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
           ..write('description: $description, ')
           ..write('partNumber: $partNumber, ')
           ..write('quantity: $quantity, ')
@@ -5591,6 +6762,7 @@ class LocalServiceOrderPart extends DataClass
     deleted,
     id,
     serviceOrderId,
+    serviceOrderItemId,
     description,
     partNumber,
     quantity,
@@ -5614,6 +6786,7 @@ class LocalServiceOrderPart extends DataClass
           other.deleted == this.deleted &&
           other.id == this.id &&
           other.serviceOrderId == this.serviceOrderId &&
+          other.serviceOrderItemId == this.serviceOrderItemId &&
           other.description == this.description &&
           other.partNumber == this.partNumber &&
           other.quantity == this.quantity &&
@@ -5636,6 +6809,7 @@ class LocalServiceOrderPartsCompanion
   final Value<bool> deleted;
   final Value<String> id;
   final Value<String> serviceOrderId;
+  final Value<String?> serviceOrderItemId;
   final Value<String> description;
   final Value<String> partNumber;
   final Value<String> quantity;
@@ -5656,6 +6830,7 @@ class LocalServiceOrderPartsCompanion
     this.deleted = const Value.absent(),
     this.id = const Value.absent(),
     this.serviceOrderId = const Value.absent(),
+    this.serviceOrderItemId = const Value.absent(),
     this.description = const Value.absent(),
     this.partNumber = const Value.absent(),
     this.quantity = const Value.absent(),
@@ -5677,6 +6852,7 @@ class LocalServiceOrderPartsCompanion
     this.deleted = const Value.absent(),
     required String id,
     required String serviceOrderId,
+    this.serviceOrderItemId = const Value.absent(),
     this.description = const Value.absent(),
     this.partNumber = const Value.absent(),
     this.quantity = const Value.absent(),
@@ -5701,6 +6877,7 @@ class LocalServiceOrderPartsCompanion
     Expression<bool>? deleted,
     Expression<String>? id,
     Expression<String>? serviceOrderId,
+    Expression<String>? serviceOrderItemId,
     Expression<String>? description,
     Expression<String>? partNumber,
     Expression<String>? quantity,
@@ -5722,6 +6899,8 @@ class LocalServiceOrderPartsCompanion
       if (deleted != null) 'deleted': deleted,
       if (id != null) 'id': id,
       if (serviceOrderId != null) 'service_order_id': serviceOrderId,
+      if (serviceOrderItemId != null)
+        'service_order_item_id': serviceOrderItemId,
       if (description != null) 'description': description,
       if (partNumber != null) 'part_number': partNumber,
       if (quantity != null) 'quantity': quantity,
@@ -5745,6 +6924,7 @@ class LocalServiceOrderPartsCompanion
     Value<bool>? deleted,
     Value<String>? id,
     Value<String>? serviceOrderId,
+    Value<String?>? serviceOrderItemId,
     Value<String>? description,
     Value<String>? partNumber,
     Value<String>? quantity,
@@ -5766,6 +6946,7 @@ class LocalServiceOrderPartsCompanion
       deleted: deleted ?? this.deleted,
       id: id ?? this.id,
       serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+      serviceOrderItemId: serviceOrderItemId ?? this.serviceOrderItemId,
       description: description ?? this.description,
       partNumber: partNumber ?? this.partNumber,
       quantity: quantity ?? this.quantity,
@@ -5808,6 +6989,9 @@ class LocalServiceOrderPartsCompanion
     }
     if (serviceOrderId.present) {
       map['service_order_id'] = Variable<String>(serviceOrderId.value);
+    }
+    if (serviceOrderItemId.present) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -5854,6 +7038,7 @@ class LocalServiceOrderPartsCompanion
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
           ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
           ..write('description: $description, ')
           ..write('partNumber: $partNumber, ')
           ..write('quantity: $quantity, ')
@@ -10043,6 +11228,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $LocalServiceOrdersTable localServiceOrders =
       $LocalServiceOrdersTable(this);
+  late final $LocalServiceOrderItemsTable localServiceOrderItems =
+      $LocalServiceOrderItemsTable(this);
   late final $LocalServiceOrderPartsTable localServiceOrderParts =
       $LocalServiceOrderPartsTable(this);
   late final $LocalEquipmentTypesTable localEquipmentTypes =
@@ -10063,6 +11250,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localLocations,
     localEquipments,
     localServiceOrders,
+    localServiceOrderItems,
     localServiceOrderParts,
     localEquipmentTypes,
     localReferenceData,
@@ -12299,6 +13487,542 @@ typedef $$LocalServiceOrdersTableProcessedTableManager =
       LocalServiceOrder,
       PrefetchHooks Function()
     >;
+typedef $$LocalServiceOrderItemsTableCreateCompanionBuilder =
+    LocalServiceOrderItemsCompanion Function({
+      required String organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      required DateTime localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      required String id,
+      required String serviceOrderId,
+      required String locationId,
+      Value<String?> equipmentId,
+      Value<int> position,
+      Value<String> diagnosis,
+      Value<String> workPerformed,
+      Value<String> finalCondition,
+      Value<String> note,
+      Value<String> approval,
+      Value<DateTime?> approvedAt,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalServiceOrderItemsTableUpdateCompanionBuilder =
+    LocalServiceOrderItemsCompanion Function({
+      Value<String> organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      Value<DateTime> localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      Value<String> id,
+      Value<String> serviceOrderId,
+      Value<String> locationId,
+      Value<String?> equipmentId,
+      Value<int> position,
+      Value<String> diagnosis,
+      Value<String> workPerformed,
+      Value<String> finalCondition,
+      Value<String> note,
+      Value<String> approval,
+      Value<DateTime?> approvedAt,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalServiceOrderItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalServiceOrderItemsTable> {
+  $$LocalServiceOrderItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get locationId => $composableBuilder(
+    column: $table.locationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get equipmentId => $composableBuilder(
+    column: $table.equipmentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get diagnosis => $composableBuilder(
+    column: $table.diagnosis,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get workPerformed => $composableBuilder(
+    column: $table.workPerformed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get finalCondition => $composableBuilder(
+    column: $table.finalCondition,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get approval => $composableBuilder(
+    column: $table.approval,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get approvedAt => $composableBuilder(
+    column: $table.approvedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalServiceOrderItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalServiceOrderItemsTable> {
+  $$LocalServiceOrderItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get locationId => $composableBuilder(
+    column: $table.locationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get equipmentId => $composableBuilder(
+    column: $table.equipmentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get diagnosis => $composableBuilder(
+    column: $table.diagnosis,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get workPerformed => $composableBuilder(
+    column: $table.workPerformed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get finalCondition => $composableBuilder(
+    column: $table.finalCondition,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get approval => $composableBuilder(
+    column: $table.approval,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get approvedAt => $composableBuilder(
+    column: $table.approvedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalServiceOrderItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalServiceOrderItemsTable> {
+  $$LocalServiceOrderItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get locationId => $composableBuilder(
+    column: $table.locationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get equipmentId => $composableBuilder(
+    column: $table.equipmentId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<String> get diagnosis =>
+      $composableBuilder(column: $table.diagnosis, builder: (column) => column);
+
+  GeneratedColumn<String> get workPerformed => $composableBuilder(
+    column: $table.workPerformed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get finalCondition => $composableBuilder(
+    column: $table.finalCondition,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get approval =>
+      $composableBuilder(column: $table.approval, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get approvedAt => $composableBuilder(
+    column: $table.approvedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalServiceOrderItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalServiceOrderItemsTable,
+          LocalServiceOrderItem,
+          $$LocalServiceOrderItemsTableFilterComposer,
+          $$LocalServiceOrderItemsTableOrderingComposer,
+          $$LocalServiceOrderItemsTableAnnotationComposer,
+          $$LocalServiceOrderItemsTableCreateCompanionBuilder,
+          $$LocalServiceOrderItemsTableUpdateCompanionBuilder,
+          (
+            LocalServiceOrderItem,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalServiceOrderItemsTable,
+              LocalServiceOrderItem
+            >,
+          ),
+          LocalServiceOrderItem,
+          PrefetchHooks Function()
+        > {
+  $$LocalServiceOrderItemsTableTableManager(
+    _$AppDatabase db,
+    $LocalServiceOrderItemsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalServiceOrderItemsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalServiceOrderItemsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalServiceOrderItemsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> organizationId = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<DateTime> localUpdatedAt = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> serviceOrderId = const Value.absent(),
+                Value<String> locationId = const Value.absent(),
+                Value<String?> equipmentId = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<String> diagnosis = const Value.absent(),
+                Value<String> workPerformed = const Value.absent(),
+                Value<String> finalCondition = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<String> approval = const Value.absent(),
+                Value<DateTime?> approvedAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalServiceOrderItemsCompanion(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                serviceOrderId: serviceOrderId,
+                locationId: locationId,
+                equipmentId: equipmentId,
+                position: position,
+                diagnosis: diagnosis,
+                workPerformed: workPerformed,
+                finalCondition: finalCondition,
+                note: note,
+                approval: approval,
+                approvedAt: approvedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String organizationId,
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required DateTime localUpdatedAt,
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String id,
+                required String serviceOrderId,
+                required String locationId,
+                Value<String?> equipmentId = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<String> diagnosis = const Value.absent(),
+                Value<String> workPerformed = const Value.absent(),
+                Value<String> finalCondition = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<String> approval = const Value.absent(),
+                Value<DateTime?> approvedAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalServiceOrderItemsCompanion.insert(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                serviceOrderId: serviceOrderId,
+                locationId: locationId,
+                equipmentId: equipmentId,
+                position: position,
+                diagnosis: diagnosis,
+                workPerformed: workPerformed,
+                finalCondition: finalCondition,
+                note: note,
+                approval: approval,
+                approvedAt: approvedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $LocalServiceOrderItemsTable,
+                    LocalServiceOrderItem
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalServiceOrderItemsTable,
+                    LocalServiceOrderItem
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalServiceOrderItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalServiceOrderItemsTable,
+      LocalServiceOrderItem,
+      $$LocalServiceOrderItemsTableFilterComposer,
+      $$LocalServiceOrderItemsTableOrderingComposer,
+      $$LocalServiceOrderItemsTableAnnotationComposer,
+      $$LocalServiceOrderItemsTableCreateCompanionBuilder,
+      $$LocalServiceOrderItemsTableUpdateCompanionBuilder,
+      (
+        LocalServiceOrderItem,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalServiceOrderItemsTable,
+          LocalServiceOrderItem
+        >,
+      ),
+      LocalServiceOrderItem,
+      PrefetchHooks Function()
+    >;
 typedef $$LocalServiceOrderPartsTableCreateCompanionBuilder =
     LocalServiceOrderPartsCompanion Function({
       required String organizationId,
@@ -12310,6 +14034,7 @@ typedef $$LocalServiceOrderPartsTableCreateCompanionBuilder =
       Value<bool> deleted,
       required String id,
       required String serviceOrderId,
+      Value<String?> serviceOrderItemId,
       Value<String> description,
       Value<String> partNumber,
       Value<String> quantity,
@@ -12332,6 +14057,7 @@ typedef $$LocalServiceOrderPartsTableUpdateCompanionBuilder =
       Value<bool> deleted,
       Value<String> id,
       Value<String> serviceOrderId,
+      Value<String?> serviceOrderItemId,
       Value<String> description,
       Value<String> partNumber,
       Value<String> quantity,
@@ -12395,6 +14121,11 @@ class $$LocalServiceOrderPartsTableFilterComposer
 
   ColumnFilters<String> get serviceOrderId => $composableBuilder(
     column: $table.serviceOrderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12498,6 +14229,11 @@ class $$LocalServiceOrderPartsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get description => $composableBuilder(
     column: $table.description,
     builder: (column) => ColumnOrderings(column),
@@ -12590,6 +14326,11 @@ class $$LocalServiceOrderPartsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get description => $composableBuilder(
     column: $table.description,
     builder: (column) => column,
@@ -12677,6 +14418,7 @@ class $$LocalServiceOrderPartsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> serviceOrderId = const Value.absent(),
+                Value<String?> serviceOrderItemId = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<String> partNumber = const Value.absent(),
                 Value<String> quantity = const Value.absent(),
@@ -12697,6 +14439,7 @@ class $$LocalServiceOrderPartsTableTableManager
                 deleted: deleted,
                 id: id,
                 serviceOrderId: serviceOrderId,
+                serviceOrderItemId: serviceOrderItemId,
                 description: description,
                 partNumber: partNumber,
                 quantity: quantity,
@@ -12719,6 +14462,7 @@ class $$LocalServiceOrderPartsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 required String id,
                 required String serviceOrderId,
+                Value<String?> serviceOrderItemId = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<String> partNumber = const Value.absent(),
                 Value<String> quantity = const Value.absent(),
@@ -12739,6 +14483,7 @@ class $$LocalServiceOrderPartsTableTableManager
                 deleted: deleted,
                 id: id,
                 serviceOrderId: serviceOrderId,
+                serviceOrderItemId: serviceOrderItemId,
                 description: description,
                 partNumber: partNumber,
                 quantity: quantity,
@@ -14950,6 +16695,11 @@ class $AppDatabaseManager {
       $$LocalEquipmentsTableTableManager(_db, _db.localEquipments);
   $$LocalServiceOrdersTableTableManager get localServiceOrders =>
       $$LocalServiceOrdersTableTableManager(_db, _db.localServiceOrders);
+  $$LocalServiceOrderItemsTableTableManager get localServiceOrderItems =>
+      $$LocalServiceOrderItemsTableTableManager(
+        _db,
+        _db.localServiceOrderItems,
+      );
   $$LocalServiceOrderPartsTableTableManager get localServiceOrderParts =>
       $$LocalServiceOrderPartsTableTableManager(
         _db,

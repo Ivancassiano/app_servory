@@ -10,10 +10,11 @@ import '../../clients/data/client_mapper.dart';
 import '../../equipments/data/equipment_mapper.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../locations/data/location_mapper.dart';
+import '../../service_orders/data/service_order_item_mapper.dart';
 import '../../service_orders/data/service_order_mapper.dart';
 import '../data/sync_api.dart';
 
-/// As 7 entidades sincronizáveis (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`
+/// As entidades sincronizáveis (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`
 /// leem todas; `push` só as que têm operações de escrita. `qr_batch` é
 /// somente leitura; `qr_code` não usa `version` de verdade (§9.3).
 const _readEntityTypes = [
@@ -21,6 +22,7 @@ const _readEntityTypes = [
   'location',
   'equipment',
   'service_order',
+  'service_order_item',
   'service_order_part',
   'qr_code',
   'qr_batch',
@@ -182,6 +184,17 @@ class SyncEngine {
             syncError: const Value(null),
           ),
         );
+      case 'service_order_item':
+        await (_db.update(
+          _db.localServiceOrderItems,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrderItemsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
       case 'service_order_part':
         await (_db.update(
           _db.localServiceOrderParts,
@@ -240,6 +253,12 @@ class SyncEngine {
         )..where((t) => t.id.equals(entityId))).write(
           LocalServiceOrdersCompanion(syncStatus: status, syncError: error),
         );
+      case 'service_order_item':
+        await (_db.update(
+          _db.localServiceOrderItems,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrderItemsCompanion(syncStatus: status, syncError: error),
+        );
       case 'service_order_part':
         await (_db.update(
           _db.localServiceOrderParts,
@@ -285,6 +304,12 @@ class SyncEngine {
             .insertOnConflictUpdate(
               serviceOrderFromApiJson(data, organizationId: org),
             );
+      case 'service_order_item':
+        await _db
+            .into(_db.localServiceOrderItems)
+            .insertOnConflictUpdate(
+              serviceOrderItemFromApiJson(data, organizationId: org),
+            );
       case 'service_order_part':
         await _db
             .into(_db.localServiceOrderParts)
@@ -324,6 +349,10 @@ class SyncEngine {
         await (_db.update(_db.localServiceOrders)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalServiceOrdersCompanion(deleted: Value(true)));
+      case 'service_order_item':
+        await (_db.update(_db.localServiceOrderItems)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalServiceOrderItemsCompanion(deleted: Value(true)));
       case 'service_order_part':
         await (_db.update(_db.localServiceOrderParts)
               ..where((t) => t.id.equals(entityId)))

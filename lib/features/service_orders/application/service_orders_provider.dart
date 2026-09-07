@@ -46,3 +46,9 @@ final servicePartsProvider =
       (ref, orderId) =>
           ref.watch(serviceOrderRepositoryProvider).watchParts(orderId),
     );
+
+final serviceItemsProvider =
+    StreamProvider.family<List<LocalServiceOrderItem>, String>(
+      (ref, orderId) =>
+          ref.watch(serviceOrderRepositoryProvider).watchItems(orderId),
+    );

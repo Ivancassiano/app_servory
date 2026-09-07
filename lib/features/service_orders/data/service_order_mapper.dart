@@ -47,6 +47,7 @@ LocalServiceOrderPart servicePartFromApiJson(
     id: j['id'] as String,
     organizationId: organizationId,
     serviceOrderId: stringOr(j['service_order_id']),
+    serviceOrderItemId: j['service_order_item_id'] as String?,
     description: stringOr(j['description']),
     partNumber: stringOr(j['part_number']),
     quantity: j['quantity']?.toString() ?? '1',
@@ -139,6 +140,7 @@ Map<String, dynamic> servicePartCreateBody({
   required String unitCost,
   required String unitPrice,
   required String notes,
+  String? serviceOrderItemId,
 }) => {
   'description': description,
   'part_number': partNumber,
@@ -147,6 +149,7 @@ Map<String, dynamic> servicePartCreateBody({
   'unit_cost': _money(unitCost),
   'unit_price': _money(unitPrice),
   'notes': notes,
+  'service_order_item_id': ?serviceOrderItemId,
 };
 
 Map<String, dynamic> servicePartUpdateBody({

@@ -140,9 +140,35 @@ class LocalServiceOrders extends Table with _SyncColumns {
 /// `unitPrice` são sensíveis (grupo de campo `cost`) — nullable pelo mesmo
 /// motivo de `serialNumber`/`cost` em [LocalEquipments]: ausência no JSON do
 /// servidor é "sem permissão de leitura", não vazio.
+/// Itens (laudo por equipamento) de uma ordem — espelha `ServiceOrderItem` do
+/// OpenAPI. Opcional: uma ordem pode não ter item e usar só o laudo geral.
+class LocalServiceOrderItems extends Table with _SyncColumns {
+  TextColumn get id => text()();
+  TextColumn get serviceOrderId => text().named('service_order_id')();
+  TextColumn get locationId => text().named('location_id')();
+  TextColumn get equipmentId => text().named('equipment_id').nullable()();
+  IntColumn get position => integer().withDefault(const Constant(0))();
+  TextColumn get diagnosis => text().withDefault(const Constant(''))();
+  TextColumn get workPerformed =>
+      text().named('work_performed').withDefault(const Constant(''))();
+  TextColumn get finalCondition =>
+      text().named('final_condition').withDefault(const Constant(''))();
+  TextColumn get note => text().withDefault(const Constant(''))();
+  TextColumn get approval =>
+      text().withDefault(const Constant('pending'))();
+  DateTimeColumn get approvedAt => dateTime().named('approved_at').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at').nullable()();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 class LocalServiceOrderParts extends Table with _SyncColumns {
   TextColumn get id => text()();
   TextColumn get serviceOrderId => text().named('service_order_id')();
+  TextColumn get serviceOrderItemId =>
+      text().named('service_order_item_id').nullable()();
   TextColumn get description => text().withDefault(const Constant(''))();
   TextColumn get partNumber =>
       text().named('part_number').withDefault(const Constant(''))();
@@ -296,6 +322,7 @@ class UploadQueue extends Table {
     LocalLocations,
     LocalEquipments,
     LocalServiceOrders,
+    LocalServiceOrderItems,
     LocalServiceOrderParts,
     LocalEquipmentTypes,
     LocalReferenceData,
@@ -319,7 +346,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -341,6 +368,13 @@ class AppDatabase extends _$AppDatabase {
       if (from < 6) {
         await m.createTable(localQrCodes);
         await m.createTable(localQrBatches);
+      }
+      if (from < 7) {
+        await m.createTable(localServiceOrderItems);
+        await m.addColumn(
+          localServiceOrderParts,
+          localServiceOrderParts.serviceOrderItemId,
+        );
       }
     },
   );
