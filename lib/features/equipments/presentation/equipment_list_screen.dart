@@ -40,13 +40,6 @@ class EquipmentListScreen extends ConsumerWidget {
         count: total == null
             ? null
             : '$total ${total == 1 ? 'item' : 'itens'}',
-        actions: [
-          IconButton(
-            tooltip: 'Tipos de equipamento',
-            icon: const Icon(Icons.category_outlined),
-            onPressed: () => context.push('/type-catalog?kind=equipment'),
-          ),
-        ],
       ),
       body: SearchableListView<LocalEquipment>(
         async: async,

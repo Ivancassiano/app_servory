@@ -38,13 +38,6 @@ class _ServiceOrderListScreenState
         count: total == null
             ? null
             : '$total ${total == 1 ? 'ordem' : 'ordens'}',
-        actions: [
-          IconButton(
-            tooltip: 'Tipos de ordem',
-            icon: const Icon(Icons.category_outlined),
-            onPressed: () => context.push('/type-catalog?kind=service-order'),
-          ),
-        ],
       ),
       body: SearchableListView<ServiceOrderWithClient>(
         async: async,

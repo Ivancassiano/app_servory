@@ -29,6 +29,12 @@ void main() {
         path: '/label-batches',
         builder: (_, _) => const Scaffold(body: Text('rota etiquetas')),
       ),
+      GoRoute(
+        path: '/type-catalog',
+        builder: (_, state) => Scaffold(
+          body: Text('catálogo ${state.uri.queryParameters['kind']}'),
+        ),
+      ),
     ],
   );
 
@@ -45,6 +51,18 @@ void main() {
     expect(find.text('Empresas'), findsOneWidget);
     expect(find.text('Etiquetas'), findsOneWidget);
     expect(find.text('Sair'), findsOneWidget);
+    expect(find.text('Tipos de ordem de serviço'), findsOneWidget);
+    expect(find.text('Tipos de equipamento'), findsOneWidget);
+  });
+
+  testWidgets('Tipos de ordem de serviço abre o catálogo certo', (tester) async {
+    await tester.pumpWidget(host());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tipos de ordem de serviço'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('catálogo service-order'), findsOneWidget);
   });
 
   testWidgets('Empresas navega para /companies', (tester) async {

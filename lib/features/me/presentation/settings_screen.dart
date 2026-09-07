@@ -10,9 +10,10 @@ import '../application/me_provider.dart';
 import '../data/me_api.dart';
 
 /// Tela de configurações: identidade/organização, cadastros auxiliares
-/// (Empresas, Etiquetas) e sair. Acessada pelo ícone de engrenagem na home —
-/// tira esses itens "de administração" da tela principal, que fica só com o
-/// trabalho do dia (ordens, clientes, locais, equipamentos).
+/// (Empresas, Etiquetas), catálogos de tipos (ordem de serviço / equipamento)
+/// e sair. Acessada pelo ícone de engrenagem na home — tira esses itens "de
+/// administração" da tela principal, que fica só com o trabalho do dia
+/// (ordens, clientes, locais, equipamentos).
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -57,6 +58,21 @@ class SettingsScreen extends ConsumerWidget {
                 Icons.qr_code_2_outlined,
                 'Etiquetas',
                 '/label-batches',
+              ),
+            ],
+          ),
+          const _GroupHeader('Catálogos'),
+          _SettingsGroup(
+            items: [
+              _SettingsItem(
+                Icons.assignment_outlined,
+                'Tipos de ordem de serviço',
+                '/type-catalog?kind=service-order',
+              ),
+              _SettingsItem(
+                Icons.build_outlined,
+                'Tipos de equipamento',
+                '/type-catalog?kind=equipment',
               ),
             ],
           ),
@@ -170,6 +186,19 @@ class _IdentityCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _GroupHeader extends StatelessWidget {
+  const _GroupHeader(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 24, 4, 8),
+      child: Text(label.toUpperCase(), style: BrandText.fieldLabel),
     );
   }
 }

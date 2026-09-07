@@ -5,6 +5,20 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: catálogos de tipos em Configurações ✅
+
+O cabeçalho de **Ordens de serviço** tinha um botão que abria a `TypeCatalogScreen`
+(tabs "Equipamentos" / "Ordens de serviço") — tipos de equipamento não têm a ver
+com ordens. Movidos para Configurações:
+
+- Removido o `IconButton` "Tipos de..." da AppBar de **Ordens de serviço** e de
+  **Equipamentos**.
+- **`SettingsScreen`**: novo grupo **Catálogos** com **Tipos de ordem de serviço**
+  (`/type-catalog?kind=service-order`) e **Tipos de equipamento**
+  (`/type-catalog?kind=equipment`). A tela em si continua com as duas abas.
+- Testes: `settings_screen_test.dart` cobre os dois itens novos + navegação.
+  `flutter analyze` limpo.
+
 ## `app_servory` — `feature/service-orders`: hierarquia nas listas, buscas e cadastro ✅
 
 A associação cliente → local → equipamento já era salva, mas a navegação era
