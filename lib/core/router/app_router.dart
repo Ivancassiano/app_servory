@@ -28,6 +28,8 @@ import '../../features/reference/data/type_catalog_repository.dart';
 import '../../features/reference/presentation/type_catalog_screen.dart';
 import '../../features/service_orders/presentation/service_order_detail_screen.dart';
 import '../../features/service_orders/presentation/service_order_list_screen.dart';
+import '../../features/tasks/presentation/task_detail_screen.dart';
+import '../../features/tasks/presentation/task_list_screen.dart';
 import '../../features/service_orders/presentation/service_order_item_screen.dart';
 import '../../features/service_orders/presentation/service_order_report_screen.dart';
 import '../connectivity/connectivity_provider.dart';
@@ -162,9 +164,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/type-catalog',
         builder: (_, state) => TypeCatalogScreen(
-          kind: state.uri.queryParameters['kind'] == 'service-order'
-              ? TypeCatalog.serviceOrderType
-              : TypeCatalog.itemType,
+          kind: switch (state.uri.queryParameters['kind']) {
+            'service-order' => TypeCatalog.serviceOrderType,
+            'task' => TypeCatalog.taskType,
+            _ => TypeCatalog.itemType,
+          },
         ),
       ),
       GoRoute(
@@ -196,9 +200,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: ':id',
-            builder: (_, state) => ServiceOrderDetailScreen(
-              serviceOrderId: state.pathParameters['id']!,
-            ),
+            builder: (_, state) {
+              final q = state.uri.queryParameters;
+              final ids = (q['presetItemIds'] ?? '')
+                  .split(',')
+                  .where((s) => s.isNotEmpty)
+                  .toList();
+              return ServiceOrderDetailScreen(
+                serviceOrderId: state.pathParameters['id']!,
+                presetClientId: q['presetClientId'],
+                presetItemIds: ids,
+                fromTaskId: q['fromTaskId'],
+              );
+            },
             routes: [
               GoRoute(
                 path: 'report',
@@ -214,6 +228,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/tasks',
+        builder: (_, state) => TaskListScreen(
+          clientId: state.uri.queryParameters['clientId'],
+        ),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, state) => TaskDetailScreen(
+              taskId: state.pathParameters['id']!,
+              presetClientId: state.uri.queryParameters['clientId'],
+            ),
           ),
         ],
       ),

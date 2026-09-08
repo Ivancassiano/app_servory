@@ -14,6 +14,8 @@ import '../../attachments/presentation/signature_pad_sheet.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../items/application/items_provider.dart';
 import '../../reference/data/reference_repository.dart';
+import '../../tasks/application/task_edit_controller.dart';
+import '../../tasks/application/tasks_provider.dart';
 import '../application/service_order_edit_controller.dart';
 import '../../me/application/me_provider.dart';
 import '../application/service_orders_provider.dart';
@@ -33,9 +35,21 @@ const _statusLabels = {
 /// `ClientDetailScreen`). `client_id` só é escolhido na criação — imutável
 /// depois (o protocolo de sync não aceita mudar, GUIA-FLUTTER.md §8.4).
 class ServiceOrderDetailScreen extends ConsumerStatefulWidget {
-  const ServiceOrderDetailScreen({super.key, required this.serviceOrderId});
+  const ServiceOrderDetailScreen({
+    super.key,
+    required this.serviceOrderId,
+    this.presetClientId,
+    this.presetItemIds = const [],
+    this.fromTaskId,
+  });
 
   final String serviceOrderId;
+
+  /// Pré-seleção vinda de "Gerar ordem" numa tarefa (só na criação).
+  final String? presetClientId;
+  final List<String> presetItemIds;
+  final String? fromTaskId;
+
   bool get isNew => serviceOrderId == 'new';
 
   @override
@@ -99,6 +113,10 @@ class _ServiceOrderDetailScreenState
   void initState() {
     super.initState();
     _editing = widget.isNew;
+    if (widget.isNew) {
+      _clientId = widget.presetClientId;
+      _targets.addAll(widget.presetItemIds.map((id) => (itemId: id)));
+    }
     // Dados de referência REST-only: melhor esforço, pra popular os seletores.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -163,6 +181,25 @@ class _ServiceOrderDetailScreenState
         final repo = ref.read(serviceOrderRepositoryProvider);
         for (final t in _targets) {
           await repo.addItem(orderId: id, itemId: t.itemId);
+        }
+        // Veio de "Gerar ordem" numa tarefa → conclui a tarefa e a vincula.
+        if (widget.fromTaskId != null) {
+          try {
+            final task = await ref
+                .read(taskRepositoryProvider)
+                .watchById(widget.fromTaskId!)
+                .first;
+            await ref
+                .read(taskEditControllerProvider)
+                .transition(
+                  taskId: widget.fromTaskId!,
+                  baseVersion: task?.version,
+                  action: 'complete',
+                  generatedOrderId: id,
+                );
+          } catch (_) {
+            // não impede a ordem de ser criada
+          }
         }
         if (!mounted) return;
         Navigator.of(context).pop();

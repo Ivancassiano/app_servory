@@ -121,6 +121,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 4),
           _ShortcutList(
             items: [
+              _Shortcut(Icons.task_alt_outlined, 'Tarefas', '/tasks'),
               _Shortcut(
                 Icons.assignment_outlined,
                 'Ordens de serviço',

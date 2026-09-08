@@ -9,6 +9,7 @@ import '../../contacts/data/contact_repository.dart';
 import '../../contacts/presentation/contact_section.dart';
 import '../../items/presentation/client_items_section.dart';
 import '../../locations/presentation/client_locations_section.dart';
+import '../../tasks/presentation/client_tasks_section.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../labels/presentation/qr_label_section.dart';
 import '../../service_orders/presentation/related_service_orders_section.dart';
@@ -192,6 +193,10 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
             DetailRow('Telefone', client.phone),
             if (extras.isNotEmpty)
               DetailExpander(title: 'Outros dados', children: extras),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            ClientTasksSection(clientId: widget.clientId),
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 8),

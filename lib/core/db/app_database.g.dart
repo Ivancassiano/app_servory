@@ -10230,6 +10230,1662 @@ class LocalServiceOrderRecommendationsCompanion
   }
 }
 
+class $LocalTasksTable extends LocalTasks
+    with TableInfo<$LocalTasksTable, LocalTask> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalTasksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('synced'),
+  );
+  static const VerificationMeta _localUpdatedAtMeta = const VerificationMeta(
+    'localUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> localUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'local_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _taskTypeIdMeta = const VerificationMeta(
+    'taskTypeId',
+  );
+  @override
+  late final GeneratedColumn<String> taskTypeId = GeneratedColumn<String>(
+    'task_type_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _assignedUserIdMeta = const VerificationMeta(
+    'assignedUserId',
+  );
+  @override
+  late final GeneratedColumn<String> assignedUserId = GeneratedColumn<String>(
+    'assigned_user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _companyIdMeta = const VerificationMeta(
+    'companyId',
+  );
+  @override
+  late final GeneratedColumn<String> companyId = GeneratedColumn<String>(
+    'company_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('open'),
+  );
+  static const VerificationMeta _scheduledForMeta = const VerificationMeta(
+    'scheduledFor',
+  );
+  @override
+  late final GeneratedColumn<DateTime> scheduledFor = GeneratedColumn<DateTime>(
+    'scheduled_for',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _scheduledAllDayMeta = const VerificationMeta(
+    'scheduledAllDay',
+  );
+  @override
+  late final GeneratedColumn<bool> scheduledAllDay = GeneratedColumn<bool>(
+    'scheduled_all_day',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("scheduled_all_day" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _recurrenceRuleMeta = const VerificationMeta(
+    'recurrenceRule',
+  );
+  @override
+  late final GeneratedColumn<String> recurrenceRule = GeneratedColumn<String>(
+    'recurrence_rule',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _generatedOrderIdMeta = const VerificationMeta(
+    'generatedOrderId',
+  );
+  @override
+  late final GeneratedColumn<String> generatedOrderId = GeneratedColumn<String>(
+    'generated_order_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _canceledAtMeta = const VerificationMeta(
+    'canceledAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> canceledAt = GeneratedColumn<DateTime>(
+    'canceled_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    clientId,
+    taskTypeId,
+    assignedUserId,
+    companyId,
+    description,
+    notes,
+    status,
+    scheduledFor,
+    scheduledAllDay,
+    recurrenceRule,
+    generatedOrderId,
+    completedAt,
+    canceledAt,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_tasks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalTask> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('local_updated_at')) {
+      context.handle(
+        _localUpdatedAtMeta,
+        localUpdatedAt.isAcceptableOrUnknown(
+          data['local_updated_at']!,
+          _localUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_localUpdatedAtMeta);
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
+    if (data.containsKey('task_type_id')) {
+      context.handle(
+        _taskTypeIdMeta,
+        taskTypeId.isAcceptableOrUnknown(
+          data['task_type_id']!,
+          _taskTypeIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('assigned_user_id')) {
+      context.handle(
+        _assignedUserIdMeta,
+        assignedUserId.isAcceptableOrUnknown(
+          data['assigned_user_id']!,
+          _assignedUserIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('company_id')) {
+      context.handle(
+        _companyIdMeta,
+        companyId.isAcceptableOrUnknown(data['company_id']!, _companyIdMeta),
+      );
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('scheduled_for')) {
+      context.handle(
+        _scheduledForMeta,
+        scheduledFor.isAcceptableOrUnknown(
+          data['scheduled_for']!,
+          _scheduledForMeta,
+        ),
+      );
+    }
+    if (data.containsKey('scheduled_all_day')) {
+      context.handle(
+        _scheduledAllDayMeta,
+        scheduledAllDay.isAcceptableOrUnknown(
+          data['scheduled_all_day']!,
+          _scheduledAllDayMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_rule')) {
+      context.handle(
+        _recurrenceRuleMeta,
+        recurrenceRule.isAcceptableOrUnknown(
+          data['recurrence_rule']!,
+          _recurrenceRuleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('generated_order_id')) {
+      context.handle(
+        _generatedOrderIdMeta,
+        generatedOrderId.isAcceptableOrUnknown(
+          data['generated_order_id']!,
+          _generatedOrderIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('canceled_at')) {
+      context.handle(
+        _canceledAtMeta,
+        canceledAt.isAcceptableOrUnknown(data['canceled_at']!, _canceledAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalTask map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalTask(
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      localUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}local_updated_at'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      ),
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
+      taskTypeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}task_type_id'],
+      ),
+      assignedUserId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}assigned_user_id'],
+      ),
+      companyId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}company_id'],
+      ),
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      scheduledFor: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}scheduled_for'],
+      ),
+      scheduledAllDay: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}scheduled_all_day'],
+      )!,
+      recurrenceRule: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_rule'],
+      )!,
+      generatedOrderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}generated_order_id'],
+      ),
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
+      canceledAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}canceled_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $LocalTasksTable createAlias(String alias) {
+    return $LocalTasksTable(attachedDatabase, alias);
+  }
+}
+
+class LocalTask extends DataClass implements Insertable<LocalTask> {
+  final String organizationId;
+  final int? version;
+  final String syncStatus;
+  final DateTime localUpdatedAt;
+  final DateTime? lastSyncedAt;
+  final String? syncError;
+  final bool deleted;
+  final String id;
+  final String clientId;
+  final String? taskTypeId;
+  final String? assignedUserId;
+  final String? companyId;
+  final String description;
+  final String notes;
+  final String status;
+  final DateTime? scheduledFor;
+  final bool scheduledAllDay;
+  final String recurrenceRule;
+  final String? generatedOrderId;
+  final DateTime? completedAt;
+  final DateTime? canceledAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  const LocalTask({
+    required this.organizationId,
+    this.version,
+    required this.syncStatus,
+    required this.localUpdatedAt,
+    this.lastSyncedAt,
+    this.syncError,
+    required this.deleted,
+    required this.id,
+    required this.clientId,
+    this.taskTypeId,
+    this.assignedUserId,
+    this.companyId,
+    required this.description,
+    required this.notes,
+    required this.status,
+    this.scheduledFor,
+    required this.scheduledAllDay,
+    required this.recurrenceRule,
+    this.generatedOrderId,
+    this.completedAt,
+    this.canceledAt,
+    this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['organization_id'] = Variable<String>(organizationId);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['local_updated_at'] = Variable<DateTime>(localUpdatedAt);
+    if (!nullToAbsent || lastSyncedAt != null) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    }
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['deleted'] = Variable<bool>(deleted);
+    map['id'] = Variable<String>(id);
+    map['client_id'] = Variable<String>(clientId);
+    if (!nullToAbsent || taskTypeId != null) {
+      map['task_type_id'] = Variable<String>(taskTypeId);
+    }
+    if (!nullToAbsent || assignedUserId != null) {
+      map['assigned_user_id'] = Variable<String>(assignedUserId);
+    }
+    if (!nullToAbsent || companyId != null) {
+      map['company_id'] = Variable<String>(companyId);
+    }
+    map['description'] = Variable<String>(description);
+    map['notes'] = Variable<String>(notes);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || scheduledFor != null) {
+      map['scheduled_for'] = Variable<DateTime>(scheduledFor);
+    }
+    map['scheduled_all_day'] = Variable<bool>(scheduledAllDay);
+    map['recurrence_rule'] = Variable<String>(recurrenceRule);
+    if (!nullToAbsent || generatedOrderId != null) {
+      map['generated_order_id'] = Variable<String>(generatedOrderId);
+    }
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    if (!nullToAbsent || canceledAt != null) {
+      map['canceled_at'] = Variable<DateTime>(canceledAt);
+    }
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  LocalTasksCompanion toCompanion(bool nullToAbsent) {
+    return LocalTasksCompanion(
+      organizationId: Value(organizationId),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      syncStatus: Value(syncStatus),
+      localUpdatedAt: Value(localUpdatedAt),
+      lastSyncedAt: lastSyncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncedAt),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      deleted: Value(deleted),
+      id: Value(id),
+      clientId: Value(clientId),
+      taskTypeId: taskTypeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(taskTypeId),
+      assignedUserId: assignedUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assignedUserId),
+      companyId: companyId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(companyId),
+      description: Value(description),
+      notes: Value(notes),
+      status: Value(status),
+      scheduledFor: scheduledFor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scheduledFor),
+      scheduledAllDay: Value(scheduledAllDay),
+      recurrenceRule: Value(recurrenceRule),
+      generatedOrderId: generatedOrderId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(generatedOrderId),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      canceledAt: canceledAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(canceledAt),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory LocalTask.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalTask(
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      version: serializer.fromJson<int?>(json['version']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      localUpdatedAt: serializer.fromJson<DateTime>(json['localUpdatedAt']),
+      lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      id: serializer.fromJson<String>(json['id']),
+      clientId: serializer.fromJson<String>(json['clientId']),
+      taskTypeId: serializer.fromJson<String?>(json['taskTypeId']),
+      assignedUserId: serializer.fromJson<String?>(json['assignedUserId']),
+      companyId: serializer.fromJson<String?>(json['companyId']),
+      description: serializer.fromJson<String>(json['description']),
+      notes: serializer.fromJson<String>(json['notes']),
+      status: serializer.fromJson<String>(json['status']),
+      scheduledFor: serializer.fromJson<DateTime?>(json['scheduledFor']),
+      scheduledAllDay: serializer.fromJson<bool>(json['scheduledAllDay']),
+      recurrenceRule: serializer.fromJson<String>(json['recurrenceRule']),
+      generatedOrderId: serializer.fromJson<String?>(json['generatedOrderId']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      canceledAt: serializer.fromJson<DateTime?>(json['canceledAt']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'organizationId': serializer.toJson<String>(organizationId),
+      'version': serializer.toJson<int?>(version),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'localUpdatedAt': serializer.toJson<DateTime>(localUpdatedAt),
+      'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'syncError': serializer.toJson<String?>(syncError),
+      'deleted': serializer.toJson<bool>(deleted),
+      'id': serializer.toJson<String>(id),
+      'clientId': serializer.toJson<String>(clientId),
+      'taskTypeId': serializer.toJson<String?>(taskTypeId),
+      'assignedUserId': serializer.toJson<String?>(assignedUserId),
+      'companyId': serializer.toJson<String?>(companyId),
+      'description': serializer.toJson<String>(description),
+      'notes': serializer.toJson<String>(notes),
+      'status': serializer.toJson<String>(status),
+      'scheduledFor': serializer.toJson<DateTime?>(scheduledFor),
+      'scheduledAllDay': serializer.toJson<bool>(scheduledAllDay),
+      'recurrenceRule': serializer.toJson<String>(recurrenceRule),
+      'generatedOrderId': serializer.toJson<String?>(generatedOrderId),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'canceledAt': serializer.toJson<DateTime?>(canceledAt),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  LocalTask copyWith({
+    String? organizationId,
+    Value<int?> version = const Value.absent(),
+    String? syncStatus,
+    DateTime? localUpdatedAt,
+    Value<DateTime?> lastSyncedAt = const Value.absent(),
+    Value<String?> syncError = const Value.absent(),
+    bool? deleted,
+    String? id,
+    String? clientId,
+    Value<String?> taskTypeId = const Value.absent(),
+    Value<String?> assignedUserId = const Value.absent(),
+    Value<String?> companyId = const Value.absent(),
+    String? description,
+    String? notes,
+    String? status,
+    Value<DateTime?> scheduledFor = const Value.absent(),
+    bool? scheduledAllDay,
+    String? recurrenceRule,
+    Value<String?> generatedOrderId = const Value.absent(),
+    Value<DateTime?> completedAt = const Value.absent(),
+    Value<DateTime?> canceledAt = const Value.absent(),
+    Value<DateTime?> createdAt = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+  }) => LocalTask(
+    organizationId: organizationId ?? this.organizationId,
+    version: version.present ? version.value : this.version,
+    syncStatus: syncStatus ?? this.syncStatus,
+    localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+    lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    deleted: deleted ?? this.deleted,
+    id: id ?? this.id,
+    clientId: clientId ?? this.clientId,
+    taskTypeId: taskTypeId.present ? taskTypeId.value : this.taskTypeId,
+    assignedUserId: assignedUserId.present
+        ? assignedUserId.value
+        : this.assignedUserId,
+    companyId: companyId.present ? companyId.value : this.companyId,
+    description: description ?? this.description,
+    notes: notes ?? this.notes,
+    status: status ?? this.status,
+    scheduledFor: scheduledFor.present ? scheduledFor.value : this.scheduledFor,
+    scheduledAllDay: scheduledAllDay ?? this.scheduledAllDay,
+    recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+    generatedOrderId: generatedOrderId.present
+        ? generatedOrderId.value
+        : this.generatedOrderId,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    canceledAt: canceledAt.present ? canceledAt.value : this.canceledAt,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  LocalTask copyWithCompanion(LocalTasksCompanion data) {
+    return LocalTask(
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      version: data.version.present ? data.version.value : this.version,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      localUpdatedAt: data.localUpdatedAt.present
+          ? data.localUpdatedAt.value
+          : this.localUpdatedAt,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      id: data.id.present ? data.id.value : this.id,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      taskTypeId: data.taskTypeId.present
+          ? data.taskTypeId.value
+          : this.taskTypeId,
+      assignedUserId: data.assignedUserId.present
+          ? data.assignedUserId.value
+          : this.assignedUserId,
+      companyId: data.companyId.present ? data.companyId.value : this.companyId,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      status: data.status.present ? data.status.value : this.status,
+      scheduledFor: data.scheduledFor.present
+          ? data.scheduledFor.value
+          : this.scheduledFor,
+      scheduledAllDay: data.scheduledAllDay.present
+          ? data.scheduledAllDay.value
+          : this.scheduledAllDay,
+      recurrenceRule: data.recurrenceRule.present
+          ? data.recurrenceRule.value
+          : this.recurrenceRule,
+      generatedOrderId: data.generatedOrderId.present
+          ? data.generatedOrderId.value
+          : this.generatedOrderId,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      canceledAt: data.canceledAt.present
+          ? data.canceledAt.value
+          : this.canceledAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalTask(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('clientId: $clientId, ')
+          ..write('taskTypeId: $taskTypeId, ')
+          ..write('assignedUserId: $assignedUserId, ')
+          ..write('companyId: $companyId, ')
+          ..write('description: $description, ')
+          ..write('notes: $notes, ')
+          ..write('status: $status, ')
+          ..write('scheduledFor: $scheduledFor, ')
+          ..write('scheduledAllDay: $scheduledAllDay, ')
+          ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('generatedOrderId: $generatedOrderId, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('canceledAt: $canceledAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    clientId,
+    taskTypeId,
+    assignedUserId,
+    companyId,
+    description,
+    notes,
+    status,
+    scheduledFor,
+    scheduledAllDay,
+    recurrenceRule,
+    generatedOrderId,
+    completedAt,
+    canceledAt,
+    createdAt,
+    updatedAt,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalTask &&
+          other.organizationId == this.organizationId &&
+          other.version == this.version &&
+          other.syncStatus == this.syncStatus &&
+          other.localUpdatedAt == this.localUpdatedAt &&
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.syncError == this.syncError &&
+          other.deleted == this.deleted &&
+          other.id == this.id &&
+          other.clientId == this.clientId &&
+          other.taskTypeId == this.taskTypeId &&
+          other.assignedUserId == this.assignedUserId &&
+          other.companyId == this.companyId &&
+          other.description == this.description &&
+          other.notes == this.notes &&
+          other.status == this.status &&
+          other.scheduledFor == this.scheduledFor &&
+          other.scheduledAllDay == this.scheduledAllDay &&
+          other.recurrenceRule == this.recurrenceRule &&
+          other.generatedOrderId == this.generatedOrderId &&
+          other.completedAt == this.completedAt &&
+          other.canceledAt == this.canceledAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalTasksCompanion extends UpdateCompanion<LocalTask> {
+  final Value<String> organizationId;
+  final Value<int?> version;
+  final Value<String> syncStatus;
+  final Value<DateTime> localUpdatedAt;
+  final Value<DateTime?> lastSyncedAt;
+  final Value<String?> syncError;
+  final Value<bool> deleted;
+  final Value<String> id;
+  final Value<String> clientId;
+  final Value<String?> taskTypeId;
+  final Value<String?> assignedUserId;
+  final Value<String?> companyId;
+  final Value<String> description;
+  final Value<String> notes;
+  final Value<String> status;
+  final Value<DateTime?> scheduledFor;
+  final Value<bool> scheduledAllDay;
+  final Value<String> recurrenceRule;
+  final Value<String?> generatedOrderId;
+  final Value<DateTime?> completedAt;
+  final Value<DateTime?> canceledAt;
+  final Value<DateTime?> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int> rowid;
+  const LocalTasksCompanion({
+    this.organizationId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.id = const Value.absent(),
+    this.clientId = const Value.absent(),
+    this.taskTypeId = const Value.absent(),
+    this.assignedUserId = const Value.absent(),
+    this.companyId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.status = const Value.absent(),
+    this.scheduledFor = const Value.absent(),
+    this.scheduledAllDay = const Value.absent(),
+    this.recurrenceRule = const Value.absent(),
+    this.generatedOrderId = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.canceledAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalTasksCompanion.insert({
+    required String organizationId,
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required DateTime localUpdatedAt,
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String id,
+    required String clientId,
+    this.taskTypeId = const Value.absent(),
+    this.assignedUserId = const Value.absent(),
+    this.companyId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.status = const Value.absent(),
+    this.scheduledFor = const Value.absent(),
+    this.scheduledAllDay = const Value.absent(),
+    this.recurrenceRule = const Value.absent(),
+    this.generatedOrderId = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.canceledAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : organizationId = Value(organizationId),
+       localUpdatedAt = Value(localUpdatedAt),
+       id = Value(id),
+       clientId = Value(clientId);
+  static Insertable<LocalTask> custom({
+    Expression<String>? organizationId,
+    Expression<int>? version,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? localUpdatedAt,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<String>? syncError,
+    Expression<bool>? deleted,
+    Expression<String>? id,
+    Expression<String>? clientId,
+    Expression<String>? taskTypeId,
+    Expression<String>? assignedUserId,
+    Expression<String>? companyId,
+    Expression<String>? description,
+    Expression<String>? notes,
+    Expression<String>? status,
+    Expression<DateTime>? scheduledFor,
+    Expression<bool>? scheduledAllDay,
+    Expression<String>? recurrenceRule,
+    Expression<String>? generatedOrderId,
+    Expression<DateTime>? completedAt,
+    Expression<DateTime>? canceledAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (organizationId != null) 'organization_id': organizationId,
+      if (version != null) 'version': version,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (localUpdatedAt != null) 'local_updated_at': localUpdatedAt,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (syncError != null) 'sync_error': syncError,
+      if (deleted != null) 'deleted': deleted,
+      if (id != null) 'id': id,
+      if (clientId != null) 'client_id': clientId,
+      if (taskTypeId != null) 'task_type_id': taskTypeId,
+      if (assignedUserId != null) 'assigned_user_id': assignedUserId,
+      if (companyId != null) 'company_id': companyId,
+      if (description != null) 'description': description,
+      if (notes != null) 'notes': notes,
+      if (status != null) 'status': status,
+      if (scheduledFor != null) 'scheduled_for': scheduledFor,
+      if (scheduledAllDay != null) 'scheduled_all_day': scheduledAllDay,
+      if (recurrenceRule != null) 'recurrence_rule': recurrenceRule,
+      if (generatedOrderId != null) 'generated_order_id': generatedOrderId,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (canceledAt != null) 'canceled_at': canceledAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalTasksCompanion copyWith({
+    Value<String>? organizationId,
+    Value<int?>? version,
+    Value<String>? syncStatus,
+    Value<DateTime>? localUpdatedAt,
+    Value<DateTime?>? lastSyncedAt,
+    Value<String?>? syncError,
+    Value<bool>? deleted,
+    Value<String>? id,
+    Value<String>? clientId,
+    Value<String?>? taskTypeId,
+    Value<String?>? assignedUserId,
+    Value<String?>? companyId,
+    Value<String>? description,
+    Value<String>? notes,
+    Value<String>? status,
+    Value<DateTime?>? scheduledFor,
+    Value<bool>? scheduledAllDay,
+    Value<String>? recurrenceRule,
+    Value<String?>? generatedOrderId,
+    Value<DateTime?>? completedAt,
+    Value<DateTime?>? canceledAt,
+    Value<DateTime?>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalTasksCompanion(
+      organizationId: organizationId ?? this.organizationId,
+      version: version ?? this.version,
+      syncStatus: syncStatus ?? this.syncStatus,
+      localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      syncError: syncError ?? this.syncError,
+      deleted: deleted ?? this.deleted,
+      id: id ?? this.id,
+      clientId: clientId ?? this.clientId,
+      taskTypeId: taskTypeId ?? this.taskTypeId,
+      assignedUserId: assignedUserId ?? this.assignedUserId,
+      companyId: companyId ?? this.companyId,
+      description: description ?? this.description,
+      notes: notes ?? this.notes,
+      status: status ?? this.status,
+      scheduledFor: scheduledFor ?? this.scheduledFor,
+      scheduledAllDay: scheduledAllDay ?? this.scheduledAllDay,
+      recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+      generatedOrderId: generatedOrderId ?? this.generatedOrderId,
+      completedAt: completedAt ?? this.completedAt,
+      canceledAt: canceledAt ?? this.canceledAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (localUpdatedAt.present) {
+      map['local_updated_at'] = Variable<DateTime>(localUpdatedAt.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (taskTypeId.present) {
+      map['task_type_id'] = Variable<String>(taskTypeId.value);
+    }
+    if (assignedUserId.present) {
+      map['assigned_user_id'] = Variable<String>(assignedUserId.value);
+    }
+    if (companyId.present) {
+      map['company_id'] = Variable<String>(companyId.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (scheduledFor.present) {
+      map['scheduled_for'] = Variable<DateTime>(scheduledFor.value);
+    }
+    if (scheduledAllDay.present) {
+      map['scheduled_all_day'] = Variable<bool>(scheduledAllDay.value);
+    }
+    if (recurrenceRule.present) {
+      map['recurrence_rule'] = Variable<String>(recurrenceRule.value);
+    }
+    if (generatedOrderId.present) {
+      map['generated_order_id'] = Variable<String>(generatedOrderId.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (canceledAt.present) {
+      map['canceled_at'] = Variable<DateTime>(canceledAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalTasksCompanion(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('clientId: $clientId, ')
+          ..write('taskTypeId: $taskTypeId, ')
+          ..write('assignedUserId: $assignedUserId, ')
+          ..write('companyId: $companyId, ')
+          ..write('description: $description, ')
+          ..write('notes: $notes, ')
+          ..write('status: $status, ')
+          ..write('scheduledFor: $scheduledFor, ')
+          ..write('scheduledAllDay: $scheduledAllDay, ')
+          ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('generatedOrderId: $generatedOrderId, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('canceledAt: $canceledAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalTaskTargetsTable extends LocalTaskTargets
+    with TableInfo<$LocalTaskTargetsTable, LocalTaskTarget> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalTaskTargetsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
+  @override
+  late final GeneratedColumn<String> taskId = GeneratedColumn<String>(
+    'task_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _locationIdMeta = const VerificationMeta(
+    'locationId',
+  );
+  @override
+  late final GeneratedColumn<String> locationId = GeneratedColumn<String>(
+    'location_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
+  @override
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    taskId,
+    locationId,
+    itemId,
+    position,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_task_targets';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalTaskTarget> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('task_id')) {
+      context.handle(
+        _taskIdMeta,
+        taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_taskIdMeta);
+    }
+    if (data.containsKey('location_id')) {
+      context.handle(
+        _locationIdMeta,
+        locationId.isAcceptableOrUnknown(data['location_id']!, _locationIdMeta),
+      );
+    }
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalTaskTarget map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalTaskTarget(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      taskId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}task_id'],
+      )!,
+      locationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location_id'],
+      ),
+      itemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_id'],
+      ),
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalTaskTargetsTable createAlias(String alias) {
+    return $LocalTaskTargetsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalTaskTarget extends DataClass implements Insertable<LocalTaskTarget> {
+  final String id;
+  final String taskId;
+  final String? locationId;
+  final String? itemId;
+  final int position;
+  const LocalTaskTarget({
+    required this.id,
+    required this.taskId,
+    this.locationId,
+    this.itemId,
+    required this.position,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['task_id'] = Variable<String>(taskId);
+    if (!nullToAbsent || locationId != null) {
+      map['location_id'] = Variable<String>(locationId);
+    }
+    if (!nullToAbsent || itemId != null) {
+      map['item_id'] = Variable<String>(itemId);
+    }
+    map['position'] = Variable<int>(position);
+    return map;
+  }
+
+  LocalTaskTargetsCompanion toCompanion(bool nullToAbsent) {
+    return LocalTaskTargetsCompanion(
+      id: Value(id),
+      taskId: Value(taskId),
+      locationId: locationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(locationId),
+      itemId: itemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemId),
+      position: Value(position),
+    );
+  }
+
+  factory LocalTaskTarget.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalTaskTarget(
+      id: serializer.fromJson<String>(json['id']),
+      taskId: serializer.fromJson<String>(json['taskId']),
+      locationId: serializer.fromJson<String?>(json['locationId']),
+      itemId: serializer.fromJson<String?>(json['itemId']),
+      position: serializer.fromJson<int>(json['position']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'taskId': serializer.toJson<String>(taskId),
+      'locationId': serializer.toJson<String?>(locationId),
+      'itemId': serializer.toJson<String?>(itemId),
+      'position': serializer.toJson<int>(position),
+    };
+  }
+
+  LocalTaskTarget copyWith({
+    String? id,
+    String? taskId,
+    Value<String?> locationId = const Value.absent(),
+    Value<String?> itemId = const Value.absent(),
+    int? position,
+  }) => LocalTaskTarget(
+    id: id ?? this.id,
+    taskId: taskId ?? this.taskId,
+    locationId: locationId.present ? locationId.value : this.locationId,
+    itemId: itemId.present ? itemId.value : this.itemId,
+    position: position ?? this.position,
+  );
+  LocalTaskTarget copyWithCompanion(LocalTaskTargetsCompanion data) {
+    return LocalTaskTarget(
+      id: data.id.present ? data.id.value : this.id,
+      taskId: data.taskId.present ? data.taskId.value : this.taskId,
+      locationId: data.locationId.present
+          ? data.locationId.value
+          : this.locationId,
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      position: data.position.present ? data.position.value : this.position,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalTaskTarget(')
+          ..write('id: $id, ')
+          ..write('taskId: $taskId, ')
+          ..write('locationId: $locationId, ')
+          ..write('itemId: $itemId, ')
+          ..write('position: $position')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, taskId, locationId, itemId, position);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalTaskTarget &&
+          other.id == this.id &&
+          other.taskId == this.taskId &&
+          other.locationId == this.locationId &&
+          other.itemId == this.itemId &&
+          other.position == this.position);
+}
+
+class LocalTaskTargetsCompanion extends UpdateCompanion<LocalTaskTarget> {
+  final Value<String> id;
+  final Value<String> taskId;
+  final Value<String?> locationId;
+  final Value<String?> itemId;
+  final Value<int> position;
+  final Value<int> rowid;
+  const LocalTaskTargetsCompanion({
+    this.id = const Value.absent(),
+    this.taskId = const Value.absent(),
+    this.locationId = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalTaskTargetsCompanion.insert({
+    required String id,
+    required String taskId,
+    this.locationId = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       taskId = Value(taskId);
+  static Insertable<LocalTaskTarget> custom({
+    Expression<String>? id,
+    Expression<String>? taskId,
+    Expression<String>? locationId,
+    Expression<String>? itemId,
+    Expression<int>? position,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (taskId != null) 'task_id': taskId,
+      if (locationId != null) 'location_id': locationId,
+      if (itemId != null) 'item_id': itemId,
+      if (position != null) 'position': position,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalTaskTargetsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? taskId,
+    Value<String?>? locationId,
+    Value<String?>? itemId,
+    Value<int>? position,
+    Value<int>? rowid,
+  }) {
+    return LocalTaskTargetsCompanion(
+      id: id ?? this.id,
+      taskId: taskId ?? this.taskId,
+      locationId: locationId ?? this.locationId,
+      itemId: itemId ?? this.itemId,
+      position: position ?? this.position,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (taskId.present) {
+      map['task_id'] = Variable<String>(taskId.value);
+    }
+    if (locationId.present) {
+      map['location_id'] = Variable<String>(locationId.value);
+    }
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalTaskTargetsCompanion(')
+          ..write('id: $id, ')
+          ..write('taskId: $taskId, ')
+          ..write('locationId: $locationId, ')
+          ..write('itemId: $itemId, ')
+          ..write('position: $position, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $LocalReferenceDataTable extends LocalReferenceData
     with TableInfo<$LocalReferenceDataTable, LocalReferenceDataData> {
   @override
@@ -14097,6 +15753,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   localServiceOrderRecommendations = $LocalServiceOrderRecommendationsTable(
     this,
   );
+  late final $LocalTasksTable localTasks = $LocalTasksTable(this);
+  late final $LocalTaskTargetsTable localTaskTargets = $LocalTaskTargetsTable(
+    this,
+  );
   late final $LocalReferenceDataTable localReferenceData =
       $LocalReferenceDataTable(this);
   late final $LocalQrCodesTable localQrCodes = $LocalQrCodesTable(this);
@@ -14120,6 +15780,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localServiceOrderItems,
     localServiceOrderParts,
     localServiceOrderRecommendations,
+    localTasks,
+    localTaskTargets,
     localReferenceData,
     localQrCodes,
     localQrBatches,
@@ -19042,6 +20704,797 @@ typedef $$LocalServiceOrderRecommendationsTableProcessedTableManager =
       LocalServiceOrderRecommendation,
       PrefetchHooks Function()
     >;
+typedef $$LocalTasksTableCreateCompanionBuilder =
+    LocalTasksCompanion Function({
+      required String organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      required DateTime localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      required String id,
+      required String clientId,
+      Value<String?> taskTypeId,
+      Value<String?> assignedUserId,
+      Value<String?> companyId,
+      Value<String> description,
+      Value<String> notes,
+      Value<String> status,
+      Value<DateTime?> scheduledFor,
+      Value<bool> scheduledAllDay,
+      Value<String> recurrenceRule,
+      Value<String?> generatedOrderId,
+      Value<DateTime?> completedAt,
+      Value<DateTime?> canceledAt,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalTasksTableUpdateCompanionBuilder =
+    LocalTasksCompanion Function({
+      Value<String> organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      Value<DateTime> localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      Value<String> id,
+      Value<String> clientId,
+      Value<String?> taskTypeId,
+      Value<String?> assignedUserId,
+      Value<String?> companyId,
+      Value<String> description,
+      Value<String> notes,
+      Value<String> status,
+      Value<DateTime?> scheduledFor,
+      Value<bool> scheduledAllDay,
+      Value<String> recurrenceRule,
+      Value<String?> generatedOrderId,
+      Value<DateTime?> completedAt,
+      Value<DateTime?> canceledAt,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalTasksTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalTasksTable> {
+  $$LocalTasksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get taskTypeId => $composableBuilder(
+    column: $table.taskTypeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get assignedUserId => $composableBuilder(
+    column: $table.assignedUserId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get companyId => $composableBuilder(
+    column: $table.companyId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get scheduledFor => $composableBuilder(
+    column: $table.scheduledFor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get scheduledAllDay => $composableBuilder(
+    column: $table.scheduledAllDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get generatedOrderId => $composableBuilder(
+    column: $table.generatedOrderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get canceledAt => $composableBuilder(
+    column: $table.canceledAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalTasksTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalTasksTable> {
+  $$LocalTasksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get taskTypeId => $composableBuilder(
+    column: $table.taskTypeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get assignedUserId => $composableBuilder(
+    column: $table.assignedUserId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get companyId => $composableBuilder(
+    column: $table.companyId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get scheduledFor => $composableBuilder(
+    column: $table.scheduledFor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get scheduledAllDay => $composableBuilder(
+    column: $table.scheduledAllDay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get generatedOrderId => $composableBuilder(
+    column: $table.generatedOrderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get canceledAt => $composableBuilder(
+    column: $table.canceledAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalTasksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalTasksTable> {
+  $$LocalTasksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get taskTypeId => $composableBuilder(
+    column: $table.taskTypeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get assignedUserId => $composableBuilder(
+    column: $table.assignedUserId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get companyId =>
+      $composableBuilder(column: $table.companyId, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get scheduledFor => $composableBuilder(
+    column: $table.scheduledFor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get scheduledAllDay => $composableBuilder(
+    column: $table.scheduledAllDay,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get generatedOrderId => $composableBuilder(
+    column: $table.generatedOrderId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get canceledAt => $composableBuilder(
+    column: $table.canceledAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalTasksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalTasksTable,
+          LocalTask,
+          $$LocalTasksTableFilterComposer,
+          $$LocalTasksTableOrderingComposer,
+          $$LocalTasksTableAnnotationComposer,
+          $$LocalTasksTableCreateCompanionBuilder,
+          $$LocalTasksTableUpdateCompanionBuilder,
+          (
+            LocalTask,
+            BaseReferences<_$AppDatabase, $LocalTasksTable, LocalTask>,
+          ),
+          LocalTask,
+          PrefetchHooks Function()
+        > {
+  $$LocalTasksTableTableManager(_$AppDatabase db, $LocalTasksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalTasksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalTasksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalTasksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> organizationId = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<DateTime> localUpdatedAt = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> clientId = const Value.absent(),
+                Value<String?> taskTypeId = const Value.absent(),
+                Value<String?> assignedUserId = const Value.absent(),
+                Value<String?> companyId = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> scheduledFor = const Value.absent(),
+                Value<bool> scheduledAllDay = const Value.absent(),
+                Value<String> recurrenceRule = const Value.absent(),
+                Value<String?> generatedOrderId = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime?> canceledAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalTasksCompanion(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                clientId: clientId,
+                taskTypeId: taskTypeId,
+                assignedUserId: assignedUserId,
+                companyId: companyId,
+                description: description,
+                notes: notes,
+                status: status,
+                scheduledFor: scheduledFor,
+                scheduledAllDay: scheduledAllDay,
+                recurrenceRule: recurrenceRule,
+                generatedOrderId: generatedOrderId,
+                completedAt: completedAt,
+                canceledAt: canceledAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String organizationId,
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required DateTime localUpdatedAt,
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String id,
+                required String clientId,
+                Value<String?> taskTypeId = const Value.absent(),
+                Value<String?> assignedUserId = const Value.absent(),
+                Value<String?> companyId = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> scheduledFor = const Value.absent(),
+                Value<bool> scheduledAllDay = const Value.absent(),
+                Value<String> recurrenceRule = const Value.absent(),
+                Value<String?> generatedOrderId = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime?> canceledAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalTasksCompanion.insert(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                clientId: clientId,
+                taskTypeId: taskTypeId,
+                assignedUserId: assignedUserId,
+                companyId: companyId,
+                description: description,
+                notes: notes,
+                status: status,
+                scheduledFor: scheduledFor,
+                scheduledAllDay: scheduledAllDay,
+                recurrenceRule: recurrenceRule,
+                generatedOrderId: generatedOrderId,
+                completedAt: completedAt,
+                canceledAt: canceledAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalTasksTable, LocalTask>(table),
+                  BaseReferences<_$AppDatabase, $LocalTasksTable, LocalTask>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalTasksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalTasksTable,
+      LocalTask,
+      $$LocalTasksTableFilterComposer,
+      $$LocalTasksTableOrderingComposer,
+      $$LocalTasksTableAnnotationComposer,
+      $$LocalTasksTableCreateCompanionBuilder,
+      $$LocalTasksTableUpdateCompanionBuilder,
+      (LocalTask, BaseReferences<_$AppDatabase, $LocalTasksTable, LocalTask>),
+      LocalTask,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalTaskTargetsTableCreateCompanionBuilder =
+    LocalTaskTargetsCompanion Function({
+      required String id,
+      required String taskId,
+      Value<String?> locationId,
+      Value<String?> itemId,
+      Value<int> position,
+      Value<int> rowid,
+    });
+typedef $$LocalTaskTargetsTableUpdateCompanionBuilder =
+    LocalTaskTargetsCompanion Function({
+      Value<String> id,
+      Value<String> taskId,
+      Value<String?> locationId,
+      Value<String?> itemId,
+      Value<int> position,
+      Value<int> rowid,
+    });
+
+class $$LocalTaskTargetsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalTaskTargetsTable> {
+  $$LocalTaskTargetsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get taskId => $composableBuilder(
+    column: $table.taskId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get locationId => $composableBuilder(
+    column: $table.locationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalTaskTargetsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalTaskTargetsTable> {
+  $$LocalTaskTargetsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get taskId => $composableBuilder(
+    column: $table.taskId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get locationId => $composableBuilder(
+    column: $table.locationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalTaskTargetsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalTaskTargetsTable> {
+  $$LocalTaskTargetsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get taskId =>
+      $composableBuilder(column: $table.taskId, builder: (column) => column);
+
+  GeneratedColumn<String> get locationId => $composableBuilder(
+    column: $table.locationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+}
+
+class $$LocalTaskTargetsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalTaskTargetsTable,
+          LocalTaskTarget,
+          $$LocalTaskTargetsTableFilterComposer,
+          $$LocalTaskTargetsTableOrderingComposer,
+          $$LocalTaskTargetsTableAnnotationComposer,
+          $$LocalTaskTargetsTableCreateCompanionBuilder,
+          $$LocalTaskTargetsTableUpdateCompanionBuilder,
+          (
+            LocalTaskTarget,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalTaskTargetsTable,
+              LocalTaskTarget
+            >,
+          ),
+          LocalTaskTarget,
+          PrefetchHooks Function()
+        > {
+  $$LocalTaskTargetsTableTableManager(
+    _$AppDatabase db,
+    $LocalTaskTargetsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalTaskTargetsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalTaskTargetsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalTaskTargetsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> taskId = const Value.absent(),
+                Value<String?> locationId = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalTaskTargetsCompanion(
+                id: id,
+                taskId: taskId,
+                locationId: locationId,
+                itemId: itemId,
+                position: position,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String taskId,
+                Value<String?> locationId = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalTaskTargetsCompanion.insert(
+                id: id,
+                taskId: taskId,
+                locationId: locationId,
+                itemId: itemId,
+                position: position,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalTaskTargetsTable, LocalTaskTarget>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalTaskTargetsTable,
+                    LocalTaskTarget
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalTaskTargetsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalTaskTargetsTable,
+      LocalTaskTarget,
+      $$LocalTaskTargetsTableFilterComposer,
+      $$LocalTaskTargetsTableOrderingComposer,
+      $$LocalTaskTargetsTableAnnotationComposer,
+      $$LocalTaskTargetsTableCreateCompanionBuilder,
+      $$LocalTaskTargetsTableUpdateCompanionBuilder,
+      (
+        LocalTaskTarget,
+        BaseReferences<_$AppDatabase, $LocalTaskTargetsTable, LocalTaskTarget>,
+      ),
+      LocalTaskTarget,
+      PrefetchHooks Function()
+    >;
 typedef $$LocalReferenceDataTableCreateCompanionBuilder =
     LocalReferenceDataCompanion Function({
       required String kind,
@@ -21011,6 +23464,10 @@ class $AppDatabaseManager {
         _db,
         _db.localServiceOrderRecommendations,
       );
+  $$LocalTasksTableTableManager get localTasks =>
+      $$LocalTasksTableTableManager(_db, _db.localTasks);
+  $$LocalTaskTargetsTableTableManager get localTaskTargets =>
+      $$LocalTaskTargetsTableTableManager(_db, _db.localTaskTargets);
   $$LocalReferenceDataTableTableManager get localReferenceData =>
       $$LocalReferenceDataTableTableManager(_db, _db.localReferenceData);
   $$LocalQrCodesTableTableManager get localQrCodes =>

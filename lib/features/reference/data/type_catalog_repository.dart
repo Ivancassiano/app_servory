@@ -16,7 +16,8 @@ enum TypeCatalog {
     '/v1/service-order-types',
     'service_order_types',
     'Tipo de ordem de serviço',
-  );
+  ),
+  taskType('/v1/task-types', 'task_types', 'Tipo de tarefa');
 
   const TypeCatalog(this.path, this.listKey, this.singular);
   final String path;
@@ -27,6 +28,7 @@ enum TypeCatalog {
   String get title => switch (this) {
     TypeCatalog.itemType => 'Tipos de item',
     TypeCatalog.serviceOrderType => 'Tipos de ordem de serviço',
+    TypeCatalog.taskType => 'Tipos de tarefa',
   };
 }
 

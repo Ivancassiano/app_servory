@@ -14,6 +14,7 @@ import '../../labels/data/qr_mapper.dart';
 import '../../service_orders/data/recommendation_mapper.dart';
 import '../../service_orders/data/service_order_item_mapper.dart';
 import '../../service_orders/data/service_order_mapper.dart';
+import '../../tasks/data/task_mapper.dart';
 import '../data/sync_api.dart';
 
 /// As entidades sincronizáveis (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`
@@ -28,6 +29,7 @@ const _readEntityTypes = [
   'service_order_item',
   'service_order_part',
   'service_order_recommendation',
+  'task',
   'qr_code',
   'qr_batch',
 ];
@@ -232,6 +234,17 @@ class SyncEngine {
             syncError: const Value(null),
           ),
         );
+      case 'task':
+        await (_db.update(
+          _db.localTasks,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalTasksCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
       case 'qr_code':
         // A etiqueta certa vem no próximo `pull` (§9.4); aqui só limpamos o
         // estado pendente da linha que enviamos.
@@ -301,6 +314,10 @@ class SyncEngine {
             syncError: error,
           ),
         );
+      case 'task':
+        await (_db.update(_db.localTasks)
+              ..where((t) => t.id.equals(entityId)))
+            .write(LocalTasksCompanion(syncStatus: status, syncError: error));
       case 'qr_code':
         await (_db.update(_db.localQrCodes)
               ..where((t) => t.id.equals(entityId)))
@@ -360,6 +377,21 @@ class SyncEngine {
             .insertOnConflictUpdate(
               serviceRecommendationFromApiJson(data, organizationId: org),
             );
+      case 'task':
+        // `.toCompanion(false)` preserva colunas nulas no upsert (senão o
+        // `insertOnConflictUpdate` de data class as omite e não limpa).
+        await _db
+            .into(_db.localTasks)
+            .insertOnConflictUpdate(
+              taskFromApiJson(data, organizationId: org).toCompanion(false),
+            );
+        // Alvos derivam do payload da tarefa (não são entidade de sync).
+        await (_db.delete(_db.localTaskTargets)
+              ..where((t) => t.taskId.equals(data['id'] as String)))
+            .go();
+        for (final c in taskTargetsFromApiJson(data)) {
+          await _db.into(_db.localTaskTargets).insert(c);
+        }
       case 'qr_code':
         await _db
             .into(_db.localQrCodes)
@@ -404,6 +436,13 @@ class SyncEngine {
         await (_db.update(_db.localServiceOrderParts)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalServiceOrderPartsCompanion(deleted: Value(true)));
+      case 'task':
+        await (_db.update(_db.localTasks)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalTasksCompanion(deleted: Value(true)));
+        await (_db.delete(_db.localTaskTargets)
+              ..where((t) => t.taskId.equals(entityId)))
+            .go();
       case 'service_order_recommendation':
         await (_db.update(_db.localServiceOrderRecommendations)
               ..where((t) => t.id.equals(entityId)))

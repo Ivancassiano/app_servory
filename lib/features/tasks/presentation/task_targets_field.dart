@@ -1,0 +1,323 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/db/app_database.dart';
+import '../../../core/widgets/form_sheet.dart';
+import '../../clients/presentation/client_picker.dart' show accentFold;
+import '../../contacts/data/contact_repository.dart';
+import '../../items/application/items_provider.dart';
+import '../../locations/application/locations_provider.dart';
+import '../../locations/data/location_mapper.dart';
+import '../../locations/presentation/location_picker.dart';
+import '../data/task_mapper.dart';
+
+/// Frame "Alvos" da tarefa: locais e itens do cliente. Um item vinculado a um
+/// local aparece aninhado sob ele; o cabeçalho do local expande para mostrar
+/// endereço + contatos do cliente em texto plano (sem abrir o local).
+class TaskTargetsField extends ConsumerWidget {
+  const TaskTargetsField({
+    super.key,
+    required this.clientId,
+    required this.targets,
+    required this.onChanged,
+    this.readOnly = false,
+  });
+
+  final String? clientId;
+  final List<TaskTargetInput> targets;
+  final ValueChanged<List<TaskTargetInput>> onChanged;
+  final bool readOnly;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final locById = <String, LocalLocation>{
+      for (final l in ref.watch(locationListProvider).value ?? const [])
+        l.id: l,
+    };
+    final itemById = <String, LocalItem>{
+      for (final i in ref.watch(itemListProvider).value ?? const []) i.id: i,
+    };
+
+    // Agrupa: locationId -> itens; e itens soltos (sem local).
+    final byLocation = <String, List<String>>{}; // locId -> [itemId?]
+    final looseItems = <String>[];
+    final looseLocations = <String>{};
+    for (final t in targets) {
+      if (t.locationId != null) {
+        byLocation.putIfAbsent(t.locationId!, () => []);
+        if (t.itemId != null) byLocation[t.locationId!]!.add(t.itemId!);
+        looseLocations.add(t.locationId!);
+      } else if (t.itemId != null) {
+        looseItems.add(t.itemId!);
+      }
+    }
+    // um local só entra em looseLocations se tiver uma linha "só local"
+    final standaloneLocations = targets
+        .where((t) => t.locationId != null && t.itemId == null)
+        .map((t) => t.locationId!)
+        .toSet();
+
+    void remove(bool Function(TaskTargetInput) test) {
+      onChanged([
+        for (final t in targets)
+          if (!test(t)) t,
+      ]);
+    }
+
+    Widget locationGroup(String locId) {
+      final loc = locById[locId];
+      final name = loc == null || loc.name.isEmpty
+          ? 'Local'
+          : loc.name;
+      final addr = loc == null ? '' : locationAddressLine(loc);
+      final childIds = byLocation[locId] ?? const [];
+      return Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          border: Border.all(color: theme.colorScheme.outline),
+        ),
+        child: Theme(
+          data: theme.copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+            childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            title: Text('Local: $name'),
+            subtitle: addr.isEmpty ? null : Text(addr),
+            trailing: readOnly
+                ? const Icon(Icons.expand_more)
+                : IconButton(
+                    icon: const Icon(Icons.close),
+                    tooltip: 'Remover local e seus itens',
+                    onPressed: () => remove((t) => t.locationId == locId),
+                  ),
+            children: [
+              if (loc != null)
+                _LocationInfo(clientId: clientId, location: loc),
+              for (final itemId in childIds)
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.inventory_2_outlined, size: 20),
+                  title: Text(itemById[itemId]?.name ?? 'Item'),
+                  trailing: readOnly
+                      ? null
+                      : IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => remove(
+                            (t) =>
+                                t.locationId == locId && t.itemId == itemId,
+                          ),
+                        ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final locationsToShow = {...standaloneLocations, ...byLocation.keys};
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.colorScheme.outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (targets.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Text(
+                readOnly
+                    ? 'Nenhum local ou item.'
+                    : 'Opcional. Adicione locais e itens do cliente.',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+          for (final locId in locationsToShow) locationGroup(locId),
+          for (final itemId in looseItems)
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: theme.colorScheme.outline),
+              ),
+              child: ListTile(
+                dense: true,
+                leading: const Icon(Icons.inventory_2_outlined, size: 20),
+                title: Text(itemById[itemId]?.name ?? 'Item'),
+                subtitle: const Text('Sem local'),
+                trailing: readOnly
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => remove(
+                          (t) => t.locationId == null && t.itemId == itemId,
+                        ),
+                      ),
+              ),
+            ),
+          if (!readOnly && clientId != null) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _addLocation(context, ref),
+                    icon: const Icon(Icons.add_location_alt_outlined),
+                    label: const Text('Adicionar local'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _addItem(context, ref, itemById, locById),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Adicionar item'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addLocation(BuildContext context, WidgetRef ref) async {
+    final id = await pickLocation(context, clientId: clientId!);
+    if (id == null || id.isEmpty) return;
+    if (targets.any((t) => t.locationId == id && t.itemId == null)) return;
+    onChanged([...targets, TaskTargetInput(locationId: id)]);
+  }
+
+  Future<void> _addItem(
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, LocalItem> itemById,
+    Map<String, LocalLocation> locById,
+  ) async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _ItemPickerSheet(clientId: clientId!),
+    );
+    if (picked == null) return;
+    final it = itemById[picked];
+    final next = [...targets];
+    final locId = it?.locationId;
+    if (locId != null) {
+      // encaixa o item sob o local; remove a linha "só local" redundante
+      next.removeWhere((t) => t.locationId == locId && t.itemId == null);
+      if (!next.any((t) => t.locationId == locId && t.itemId == picked)) {
+        next.add(TaskTargetInput(locationId: locId, itemId: picked));
+      }
+    } else if (!next.any((t) => t.locationId == null && t.itemId == picked)) {
+      next.add(TaskTargetInput(itemId: picked));
+    }
+    onChanged(next);
+  }
+}
+
+/// Endereço + contatos do cliente em texto plano dentro de um sub-frame.
+class _LocationInfo extends ConsumerWidget {
+  const _LocationInfo({required this.clientId, required this.location});
+
+  final String? clientId;
+  final LocalLocation location;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final addr = locationAddressLine(location);
+    final contacts = clientId == null
+        ? const <Contact>[]
+        : (ref
+                  .watch(contactsProvider((ContactScope.client, clientId!)))
+                  .value ??
+              const <Contact>[]);
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.colorScheme.outline),
+        color: theme.colorScheme.surfaceContainerHighest,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Endereço', style: theme.textTheme.labelSmall),
+          Text(addr.isEmpty ? '—' : addr),
+          const SizedBox(height: 6),
+          Text('Contatos do cliente', style: theme.textTheme.labelSmall),
+          if (contacts.isEmpty)
+            const Text('—')
+          else
+            for (final c in contacts)
+              Text(
+                [
+                  c.name,
+                  if (c.role.isNotEmpty) '(${c.role})',
+                  if (c.phone.isNotEmpty) c.phone,
+                  if (c.email.isNotEmpty) c.email,
+                ].join(' · '),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ItemPickerSheet extends ConsumerStatefulWidget {
+  const _ItemPickerSheet({required this.clientId});
+  final String clientId;
+
+  @override
+  ConsumerState<_ItemPickerSheet> createState() => _ItemPickerSheetState();
+}
+
+class _ItemPickerSheetState extends ConsumerState<_ItemPickerSheet> {
+  String _q = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final items =
+        ref
+            .watch(itemsByClientProvider(widget.clientId))
+            .where(
+              (i) =>
+                  _q.isEmpty || accentFold(i.name).contains(accentFold(_q)),
+            )
+            .toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
+    return FormSheet(
+      title: 'Item do cliente',
+      children: [
+        TextField(
+          decoration: const InputDecoration(
+            hintText: 'Pesquise um item',
+            prefixIcon: Icon(Icons.search),
+          ),
+          onChanged: (v) => setState(() => _q = v),
+        ),
+        const SizedBox(height: 8),
+        ...items.map(
+          (i) => ListTile(
+            dense: true,
+            title: Text(i.name),
+            onTap: () => Navigator.of(context).pop(i.id),
+          ),
+        ),
+        if (items.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text('Nenhum item para este cliente.'),
+          ),
+      ],
+    );
+  }
+}

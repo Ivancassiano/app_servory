@@ -70,6 +70,11 @@ class SettingsScreen extends ConsumerWidget {
                 '/type-catalog?kind=service-order',
               ),
               _SettingsItem(
+                Icons.task_alt_outlined,
+                'Tipos de tarefa',
+                '/type-catalog?kind=task',
+              ),
+              _SettingsItem(
                 Icons.category_outlined,
                 'Tipos de item',
                 '/type-catalog?kind=item',

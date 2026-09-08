@@ -251,6 +251,54 @@ class LocalServiceOrderRecommendations extends Table with _SyncColumns {
   Set<Column> get primaryKey => {id};
 }
 
+/// Espelha `Task` do OpenAPI — a camada de planejamento antes da ordem
+/// (spec: tarefa). UM cliente; alvos (locais/itens) ficam em
+/// [LocalTaskTargets], derivada do payload da tarefa no pull (não é entidade
+/// de sync própria). Sincroniza (`entity_type` = `task`); ações
+/// complete/cancel/reopen são operações nomeadas na outbox.
+class LocalTasks extends Table with _SyncColumns {
+  TextColumn get id => text()();
+  TextColumn get clientId => text().named('client_id')();
+  TextColumn get taskTypeId => text().named('task_type_id').nullable()();
+  TextColumn get assignedUserId =>
+      text().named('assigned_user_id').nullable()();
+  TextColumn get companyId => text().named('company_id').nullable()();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  TextColumn get notes => text().withDefault(const Constant(''))();
+  TextColumn get status => text().withDefault(const Constant('open'))();
+  DateTimeColumn get scheduledFor =>
+      dateTime().named('scheduled_for').nullable()();
+  BoolColumn get scheduledAllDay =>
+      boolean().named('scheduled_all_day').withDefault(const Constant(false))();
+  TextColumn get recurrenceRule =>
+      text().named('recurrence_rule').withDefault(const Constant(''))();
+  TextColumn get generatedOrderId =>
+      text().named('generated_order_id').nullable()();
+  DateTimeColumn get completedAt =>
+      dateTime().named('completed_at').nullable()();
+  DateTimeColumn get canceledAt => dateTime().named('canceled_at').nullable()();
+  DateTimeColumn get createdAt => dateTime().named('created_at').nullable()();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Alvos de uma tarefa (local, item, ou item dentro de um local). Tabela
+/// **plana** — não sincroniza sozinha: o `sync_engine` a reescreve inteira a
+/// partir de `data['targets']` do payload da tarefa (pull) e o repositório a
+/// reescreve no create/update local.
+class LocalTaskTargets extends Table {
+  TextColumn get id => text()();
+  TextColumn get taskId => text().named('task_id')();
+  TextColumn get locationId => text().named('location_id').nullable()();
+  TextColumn get itemId => text().named('item_id').nullable()();
+  IntColumn get position => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Outbox local (GUIA-FLUTTER.md §8.1): uma linha por operação pendente de
 /// envio. `payload` é o corpo JSON (mesmo shape do POST/PATCH REST
 /// equivalente) serializado como texto.
@@ -404,6 +452,8 @@ class UploadQueue extends Table {
     LocalServiceOrderItems,
     LocalServiceOrderParts,
     LocalServiceOrderRecommendations,
+    LocalTasks,
+    LocalTaskTargets,
     LocalReferenceData,
     LocalQrCodes,
     LocalQrBatches,
@@ -425,7 +475,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -535,6 +585,13 @@ class AppDatabase extends _$AppDatabase {
         ]) {
           await m.database.customStatement('DELETE FROM $t');
         }
+      }
+      if (from < 14) {
+        // Nova entidade Tarefa. Não há tarefa histórica: o primeiro `pull`
+        // após o upgrade traz tudo com cursor 0 para a entidade nova, sem
+        // precisar de bootstrap. Só cria as duas tabelas.
+        await m.createTable(localTasks);
+        await m.createTable(localTaskTargets);
       }
     },
   );

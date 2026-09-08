@@ -50,9 +50,11 @@ void main() {
     expect(find.text('Servory Dev'), findsOneWidget);
     expect(find.text('Empresas'), findsOneWidget);
     expect(find.text('Etiquetas'), findsOneWidget);
-    expect(find.text('Sair'), findsOneWidget);
     expect(find.text('Tipos de ordem de serviço'), findsOneWidget);
+    expect(find.text('Tipos de tarefa'), findsOneWidget);
     expect(find.text('Tipos de item'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Sair'), 200);
+    expect(find.text('Sair'), findsOneWidget);
   });
 
   testWidgets('Tipos de ordem de serviço abre o catálogo certo', (tester) async {
