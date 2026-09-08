@@ -69,7 +69,6 @@ class _ClientPickerSheetState extends ConsumerState<_ClientPickerSheet> {
                 ),
                 const SizedBox(height: 12),
                 TextField(
-                  autofocus: true,
                   decoration: const InputDecoration(
                     hintText: 'Pesquise o cliente',
                     prefixIcon: Icon(Icons.search),

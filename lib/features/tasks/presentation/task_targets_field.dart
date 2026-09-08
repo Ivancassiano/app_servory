@@ -75,6 +75,7 @@ class TaskTargetsField extends ConsumerWidget {
       return Container(
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
           border: Border.all(color: theme.colorScheme.outline),
         ),
         child: Theme(
@@ -121,6 +122,7 @@ class TaskTargetsField extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
         border: Border.all(color: theme.colorScheme.outline),
       ),
       child: Column(
@@ -141,6 +143,7 @@ class TaskTargetsField extends ConsumerWidget {
             Container(
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
                 border: Border.all(color: theme.colorScheme.outline),
               ),
               child: ListTile(
@@ -187,6 +190,7 @@ class TaskTargetsField extends ConsumerWidget {
 
   Future<void> _addLocation(BuildContext context, WidgetRef ref) async {
     final id = await pickLocation(context, clientId: clientId!);
+    FocusManager.instance.primaryFocus?.unfocus();
     if (id == null || id.isEmpty) return;
     if (targets.any((t) => t.locationId == id && t.itemId == null)) return;
     onChanged([...targets, TaskTargetInput(locationId: id)]);
@@ -203,6 +207,7 @@ class TaskTargetsField extends ConsumerWidget {
       isScrollControlled: true,
       builder: (_) => _ItemPickerSheet(clientId: clientId!),
     );
+    FocusManager.instance.primaryFocus?.unfocus();
     if (picked == null) return;
     final it = itemById[picked];
     final next = [...targets];
@@ -243,7 +248,7 @@ class _LocationInfo extends ConsumerWidget {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         border: Border.all(color: theme.colorScheme.outline),
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: theme.colorScheme.surface,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

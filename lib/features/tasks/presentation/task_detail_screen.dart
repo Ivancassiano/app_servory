@@ -439,25 +439,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     ),
                   ),
                 ),
-              if (existing == null && widget.presetClientId == null) ...[
-                ClientPickerField(
-                  clientName: clientName,
-                  onPick: () async {
-                    final id = await pickClient(context);
-                    if (id != null) {
-                      setState(() {
-                        _clientId = id;
-                        _targets = [];
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-              ] else if (clientName.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: DetailRow('Cliente', clientName),
-                ),
               TextFormField(
                 controller: _description,
                 decoration: const InputDecoration(labelText: 'Descrição'),
@@ -489,19 +470,41 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               const SizedBox(height: 16),
               _scheduleFrame(context),
               const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Alvos',
-                  style: Theme.of(context).textTheme.titleSmall,
+              // Cliente fica logo acima dos alvos; os alvos só aparecem depois
+              // que há um cliente escolhido.
+              if (existing == null && widget.presetClientId == null)
+                ClientPickerField(
+                  clientName: clientName,
+                  onPick: () async {
+                    final id = await pickClient(context);
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    if (!mounted) return;
+                    if (id != null) {
+                      setState(() {
+                        _clientId = id;
+                        _targets = [];
+                      });
+                    }
+                  },
+                )
+              else if (clientName.isNotEmpty)
+                DetailRow('Cliente', clientName),
+              if (_clientId != null) ...[
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Alvos',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              TaskTargetsField(
-                clientId: _clientId,
-                targets: _targets,
-                onChanged: (t) => setState(() => _targets = t),
-              ),
+                const SizedBox(height: 8),
+                TaskTargetsField(
+                  clientId: _clientId,
+                  targets: _targets,
+                  onChanged: (t) => setState(() => _targets = t),
+                ),
+              ],
               const SizedBox(height: 16),
               TextFormField(
                 controller: _notes,
@@ -536,6 +539,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
         border: Border.all(color: theme.colorScheme.outline),
       ),
       child: Column(
@@ -593,7 +597,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 5),
     );
-    if (date == null || !mounted) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (!mounted) return;
+    if (date == null) return;
     if (_allDay) {
       setState(() => _scheduledFor = DateTime(date.year, date.month, date.day));
       return;
@@ -602,6 +608,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       context: context,
       initialTime: TimeOfDay.fromDateTime(base),
     );
+    FocusManager.instance.primaryFocus?.unfocus();
     if (!mounted) return;
     final t = time ?? TimeOfDay.fromDateTime(base);
     setState(
