@@ -6,7 +6,9 @@ import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/detail_view.dart';
+import '../../attachments/application/attachment_controller.dart';
 import '../../attachments/presentation/photos_section.dart';
+import '../../attachments/presentation/staged_photos_field.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../clients/presentation/client_picker.dart';
 import '../../items/application/items_provider.dart';
@@ -50,6 +52,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
   bool _viewMode = true;
   bool _saving = false;
   bool _showAddress = false;
+  List<StagedPhoto> _stagedPhotos = [];
   String? _error;
 
   @override
@@ -104,15 +107,17 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
   LocationFields _collect() => LocationFields(
     name: _name.text.trim(),
     notes: _notes.text.trim(),
-    address: LocationAddressInput(
-      postalCode: _postalCode.text.trim(),
-      street: _street.text.trim(),
-      number: _number.text.trim(),
-      complement: _complement.text.trim(),
-      district: _district.text.trim(),
-      city: _city.text.trim(),
-      state: _state.text.trim().toUpperCase(),
-    ),
+    address: _showAddress
+        ? LocationAddressInput(
+            postalCode: _postalCode.text.trim(),
+            street: _street.text.trim(),
+            number: _number.text.trim(),
+            complement: _complement.text.trim(),
+            district: _district.text.trim(),
+            city: _city.text.trim(),
+            state: _state.text.trim().toUpperCase(),
+          )
+        : LocationAddressInput.empty,
   );
 
   Future<void> _submit(LocalLocation? existing) async {
@@ -132,6 +137,20 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
           clientId: _clientId!,
           fields: _collect(),
         );
+        // Fotos escolhidas no cadastro sobem agora que o local tem id.
+        final attach = ref.read(attachmentControllerProvider);
+        for (final p in _stagedPhotos) {
+          try {
+            await attach.submitPhoto(
+              ownerKind: 'location',
+              ownerId: id,
+              bytes: p.bytes,
+              filename: p.name,
+            );
+          } catch (_) {
+            // uma foto que falha não impede a criação do local
+          }
+        }
         if (mounted) context.pushReplacement('/locations/$id');
       } else {
         await ctrl.update(
@@ -229,6 +248,79 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
     );
   }
 
+  /// Frame com os campos de endereço (aparece ao ligar "Adicionar endereço").
+  Widget _addressFrame(BuildContext context) => Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      border: Border.all(color: Theme.of(context).colorScheme.outline),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextFormField(
+          controller: _postalCode,
+          decoration: const InputDecoration(labelText: 'CEP'),
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _street,
+          decoration: const InputDecoration(labelText: 'Logradouro'),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _number,
+                decoration: const InputDecoration(labelText: 'Número'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: TextFormField(
+                controller: _complement,
+                decoration: const InputDecoration(labelText: 'Complemento'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _district,
+          decoration: const InputDecoration(labelText: 'Bairro'),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: TextFormField(
+                controller: _city,
+                decoration: const InputDecoration(labelText: 'Cidade'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextFormField(
+                controller: _state,
+                maxLength: 2,
+                textCapitalization: TextCapitalization.characters,
+                decoration: const InputDecoration(labelText: 'UF'),
+                validator: (v) =>
+                    (v != null && v.isNotEmpty && v.trim().length != 2)
+                    ? 'UF tem 2 letras'
+                    : null,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+
   Widget _form(BuildContext context, LocalLocation? existing) {
     final clients = ref.watch(clientListProvider).value ?? const [];
     final clientName = clients
@@ -273,94 +365,46 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: () =>
+                      setState(() => _showAddress = !_showAddress),
+                  icon: Icon(
+                    _showAddress
+                        ? Icons.location_off_outlined
+                        : Icons.add_location_alt_outlined,
+                  ),
+                  label: Text(
+                    _showAddress ? 'Remover endereço' : 'Adicionar endereço',
+                  ),
+                ),
+              ),
               if (_showAddress) ...[
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Endereço',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
                 const SizedBox(height: 8),
-                TextFormField(
-                  controller: _postalCode,
-                  decoration: const InputDecoration(labelText: 'CEP'),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _street,
-                  decoration: const InputDecoration(labelText: 'Logradouro'),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _number,
-                        decoration: const InputDecoration(labelText: 'Número'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: TextFormField(
-                        controller: _complement,
-                        decoration: const InputDecoration(
-                          labelText: 'Complemento',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _district,
-                  decoration: const InputDecoration(labelText: 'Bairro'),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: TextFormField(
-                        controller: _city,
-                        decoration: const InputDecoration(labelText: 'Cidade'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _state,
-                        maxLength: 2,
-                        textCapitalization: TextCapitalization.characters,
-                        decoration: const InputDecoration(labelText: 'UF'),
-                        validator: (v) =>
-                            (v != null && v.isNotEmpty && v.trim().length != 2)
-                            ? 'UF tem 2 letras'
-                            : null,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ] else ...[
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: OutlinedButton.icon(
-                    onPressed: () => setState(() => _showAddress = true),
-                    icon: const Icon(Icons.add_location_alt_outlined),
-                    label: const Text('Adicionar endereço'),
-                  ),
-                ),
-                const SizedBox(height: 16),
+                _addressFrame(context),
               ],
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _notes,
                 decoration: const InputDecoration(labelText: 'Observações'),
                 maxLines: 3,
               ),
+              if (existing == null) ...[
+                const SizedBox(height: 24),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Fotos',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                StagedPhotosField(
+                  photos: _stagedPhotos,
+                  onChanged: (p) => setState(() => _stagedPhotos = p),
+                ),
+              ],
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _saving ? null : () => _submit(existing),
