@@ -6,7 +6,9 @@ import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/detail_view.dart';
+import '../../attachments/application/attachment_controller.dart';
 import '../../attachments/presentation/photos_section.dart';
+import '../../attachments/presentation/staged_photos_field.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../clients/presentation/client_picker.dart';
 import '../../labels/data/qr_mapper.dart';
@@ -47,6 +49,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   String? _locationId;
   String? _typeId;
   Map<String, TypedFieldValue> _fieldValues = {};
+
+  /// Só na criação: fotos escolhidas antes de o item ter id; sobem no `_submit`.
+  List<StagedPhoto> _stagedPhotos = [];
   bool _seeded = false;
   bool _saving = false;
   bool _viewMode = true;
@@ -167,6 +172,23 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         await ref
             .read(itemFieldValueRepositoryProvider)
             .setValues(id, _fieldValues);
+      }
+      if (existing == null && _stagedPhotos.isNotEmpty) {
+        // Fotos escolhidas no cadastro sobem agora que o item tem id.
+        final attach = ref.read(attachmentControllerProvider);
+        for (final p in _stagedPhotos) {
+          try {
+            await attach.submitPhoto(
+              ownerKind: 'item',
+              ownerId: id,
+              bytes: p.bytes,
+              filename: p.name,
+              caption: p.caption.trim(),
+            );
+          } catch (_) {
+            // uma foto que falha não impede a criação do item
+          }
+        }
       }
       if (mounted) {
         if (existing == null) {
@@ -389,6 +411,22 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 initial: _fieldValues,
                 onChanged: (v) => setState(() => _fieldValues = v),
               ),
+              const SizedBox(height: 24),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Fotos',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (existing == null)
+                StagedPhotosField(
+                  photos: _stagedPhotos,
+                  onChanged: (p) => setState(() => _stagedPhotos = p),
+                )
+              else
+                PhotosSection(ownerKind: 'item', ownerId: existing.id),
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: (_saving || !canSave)
