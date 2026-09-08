@@ -50,6 +50,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   bool _seeded = false;
   bool _saving = false;
   bool _viewMode = true;
+  bool _isActive = true;
   String? _error;
 
   @override
@@ -76,6 +77,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     _clientId = it.clientId;
     _locationId = it.locationId;
     _typeId = it.itemTypeId;
+    _isActive = it.isActive;
     _name.text = it.name;
     _notes.text = it.notes;
   }
@@ -85,6 +87,57 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     itemTypeId: _typeId,
     locationId: (_locationId ?? '').isEmpty ? null : _locationId,
     notes: _notes.text.trim(),
+    isActive: _isActive,
+  );
+
+  /// Inativa/ativa o item (update só do `is_active`, mantendo o resto).
+  Future<void> _toggleActive(LocalItem it) async {
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(itemEditControllerProvider)
+          .update(
+            itemId: it.id,
+            baseVersion: it.version,
+            fields: ItemFields(
+              name: it.name,
+              itemTypeId: it.itemTypeId,
+              locationId: it.locationId,
+              notes: it.notes,
+              isActive: !it.isActive,
+            ),
+          );
+      if (mounted) {
+        setState(() {
+          _isActive = !it.isActive;
+          _seeded = false;
+        });
+      }
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'Não foi possível atualizar. Tente de novo.');
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  /// Botão "Inativar/Ativar item" (só num item já salvo). Item não tem
+  /// exclusão pela UI — pode estar vinculado a uma ordem.
+  Widget _activeToggle(LocalItem it) => SizedBox(
+    width: double.infinity,
+    child: OutlinedButton.icon(
+      onPressed: _saving ? null : () => _toggleActive(it),
+      icon: Icon(
+        it.isActive ? Icons.pause_circle_outline : Icons.play_circle_outline,
+      ),
+      label: Text(it.isActive ? 'Inativar item' : 'Ativar item'),
+    ),
   );
 
   Future<void> _submit(LocalItem? existing) async {
@@ -199,6 +252,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 .map((c) => c.name)
                 .join(),
           ),
+          DetailRow('Situação', it.isActive ? 'Ativo' : 'Inativo'),
           if (types[it.itemTypeId] != null)
             DetailRow('Tipo', types[it.itemTypeId]!),
           if (loc != null)
@@ -219,6 +273,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           RelatedServiceOrdersSection(itemId: it.id),
           const Divider(),
           QrLabelSection(target: QrTarget.item(it.id), entityLabel: it.name),
+          const Divider(height: 32),
+          _activeToggle(it),
         ],
       ),
     );
@@ -318,7 +374,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 onPressed: _saving ? null : () => _submit(existing),
                 child: Text(_saving ? 'Salvando…' : 'Salvar'),
               ),
-              if (existing != null)
+              if (existing != null) ...[
                 TextButton(
                   onPressed: _saving
                       ? null
@@ -328,6 +384,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                         }),
                   child: const Text('Cancelar'),
                 ),
+                const Divider(height: 32),
+                _activeToggle(existing),
+              ],
             ],
           ),
         ),

@@ -2356,6 +2356,21 @@ class $LocalItemsTable extends LocalItems
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2399,6 +2414,7 @@ class $LocalItemsTable extends LocalItems
     installedAt,
     cost,
     notes,
+    isActive,
     createdAt,
     updatedAt,
   ];
@@ -2556,6 +2572,12 @@ class $LocalItemsTable extends LocalItems
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -2653,6 +2675,10 @@ class $LocalItemsTable extends LocalItems
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -2690,6 +2716,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
   final String? installedAt;
   final String? cost;
   final String notes;
+  final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   const LocalItem({
@@ -2712,6 +2739,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     this.installedAt,
     this.cost,
     required this.notes,
+    required this.isActive,
     this.createdAt,
     this.updatedAt,
   });
@@ -2753,6 +2781,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
       map['cost'] = Variable<String>(cost);
     }
     map['notes'] = Variable<String>(notes);
+    map['is_active'] = Variable<bool>(isActive);
     if (!nullToAbsent || createdAt != null) {
       map['created_at'] = Variable<DateTime>(createdAt);
     }
@@ -2797,6 +2826,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
           : Value(installedAt),
       cost: cost == null && nullToAbsent ? const Value.absent() : Value(cost),
       notes: Value(notes),
+      isActive: Value(isActive),
       createdAt: createdAt == null && nullToAbsent
           ? const Value.absent()
           : Value(createdAt),
@@ -2831,6 +2861,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
       installedAt: serializer.fromJson<String?>(json['installedAt']),
       cost: serializer.fromJson<String?>(json['cost']),
       notes: serializer.fromJson<String>(json['notes']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
@@ -2858,6 +2889,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
       'installedAt': serializer.toJson<String?>(installedAt),
       'cost': serializer.toJson<String?>(cost),
       'notes': serializer.toJson<String>(notes),
+      'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
@@ -2883,6 +2915,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     Value<String?> installedAt = const Value.absent(),
     Value<String?> cost = const Value.absent(),
     String? notes,
+    bool? isActive,
     Value<DateTime?> createdAt = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
   }) => LocalItem(
@@ -2905,6 +2938,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     installedAt: installedAt.present ? installedAt.value : this.installedAt,
     cost: cost.present ? cost.value : this.cost,
     notes: notes ?? this.notes,
+    isActive: isActive ?? this.isActive,
     createdAt: createdAt.present ? createdAt.value : this.createdAt,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
@@ -2947,6 +2981,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
           : this.installedAt,
       cost: data.cost.present ? data.cost.value : this.cost,
       notes: data.notes.present ? data.notes.value : this.notes,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -2974,6 +3009,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
           ..write('installedAt: $installedAt, ')
           ..write('cost: $cost, ')
           ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -3001,6 +3037,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     installedAt,
     cost,
     notes,
+    isActive,
     createdAt,
     updatedAt,
   ]);
@@ -3027,6 +3064,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
           other.installedAt == this.installedAt &&
           other.cost == this.cost &&
           other.notes == this.notes &&
+          other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -3051,6 +3089,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
   final Value<String?> installedAt;
   final Value<String?> cost;
   final Value<String> notes;
+  final Value<bool> isActive;
   final Value<DateTime?> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<int> rowid;
@@ -3074,6 +3113,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     this.installedAt = const Value.absent(),
     this.cost = const Value.absent(),
     this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3098,6 +3138,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     this.installedAt = const Value.absent(),
     this.cost = const Value.absent(),
     this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3126,6 +3167,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     Expression<String>? installedAt,
     Expression<String>? cost,
     Expression<String>? notes,
+    Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -3150,6 +3192,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
       if (installedAt != null) 'installed_at': installedAt,
       if (cost != null) 'cost': cost,
       if (notes != null) 'notes': notes,
+      if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -3176,6 +3219,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     Value<String?>? installedAt,
     Value<String?>? cost,
     Value<String>? notes,
+    Value<bool>? isActive,
     Value<DateTime?>? createdAt,
     Value<DateTime?>? updatedAt,
     Value<int>? rowid,
@@ -3200,6 +3244,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
       installedAt: installedAt ?? this.installedAt,
       cost: cost ?? this.cost,
       notes: notes ?? this.notes,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -3266,6 +3311,9 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -3300,6 +3348,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
           ..write('installedAt: $installedAt, ')
           ..write('cost: $cost, ')
           ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -16856,6 +16905,7 @@ typedef $$LocalItemsTableCreateCompanionBuilder =
       Value<String?> installedAt,
       Value<String?> cost,
       Value<String> notes,
+      Value<bool> isActive,
       Value<DateTime?> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -16881,6 +16931,7 @@ typedef $$LocalItemsTableUpdateCompanionBuilder =
       Value<String?> installedAt,
       Value<String?> cost,
       Value<String> notes,
+      Value<bool> isActive,
       Value<DateTime?> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -16987,6 +17038,11 @@ class $$LocalItemsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -17105,6 +17161,11 @@ class $$LocalItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -17200,6 +17261,9 @@ class $$LocalItemsTableAnnotationComposer
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
 
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -17257,6 +17321,7 @@ class $$LocalItemsTableTableManager
                 Value<String?> installedAt = const Value.absent(),
                 Value<String?> cost = const Value.absent(),
                 Value<String> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -17280,6 +17345,7 @@ class $$LocalItemsTableTableManager
                 installedAt: installedAt,
                 cost: cost,
                 notes: notes,
+                isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -17305,6 +17371,7 @@ class $$LocalItemsTableTableManager
                 Value<String?> installedAt = const Value.absent(),
                 Value<String?> cost = const Value.absent(),
                 Value<String> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -17328,6 +17395,7 @@ class $$LocalItemsTableTableManager
                 installedAt: installedAt,
                 cost: cost,
                 notes: notes,
+                isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

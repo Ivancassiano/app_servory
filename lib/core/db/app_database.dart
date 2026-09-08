@@ -64,6 +64,8 @@ class LocalItems extends Table with _SyncColumns {
   TextColumn get installedAt => text().named('installed_at').nullable()();
   TextColumn get cost => text().nullable()();
   TextColumn get notes => text().withDefault(const Constant(''))();
+  BoolColumn get isActive =>
+      boolean().named('is_active').withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().named('created_at').nullable()();
   DateTimeColumn get updatedAt => dateTime().named('updated_at').nullable()();
 
@@ -477,7 +479,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -599,6 +601,10 @@ class AppDatabase extends _$AppDatabase {
         // Local ganhou is_active (inativar/ativar). Coluna nova NOT NULL com
         // default true — só um ALTER, sem bootstrap.
         await m.addColumn(localLocations, localLocations.isActive);
+      }
+      if (from < 16) {
+        // Item ganhou is_active (mesma coisa dos locais).
+        await m.addColumn(localItems, localItems.isActive);
       }
     },
   );

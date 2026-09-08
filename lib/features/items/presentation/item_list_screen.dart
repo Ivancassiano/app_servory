@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/active_status.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../../clients/application/clients_provider.dart';
@@ -11,14 +13,23 @@ import '../application/items_provider.dart';
 
 /// Lista de itens. Com `clientId` ou `locationId` fica presa àquele escopo e
 /// mostra o nome no cabeçalho.
-class ItemListScreen extends ConsumerWidget {
+class ItemListScreen extends ConsumerStatefulWidget {
   const ItemListScreen({super.key, this.clientId, this.locationId});
 
   final String? clientId;
   final String? locationId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ItemListScreen> createState() => _ItemListScreenState();
+}
+
+class _ItemListScreenState extends ConsumerState<ItemListScreen> {
+  ActiveFilter _status = ActiveFilter.ativos;
+
+  @override
+  Widget build(BuildContext context) {
+    final clientId = widget.clientId;
+    final locationId = widget.locationId;
     final async = ref.watch(itemListProvider);
     final clients = {
       for (final c in ref.watch(clientListProvider).value ?? const [])
@@ -57,9 +68,15 @@ class ItemListScreen extends ConsumerWidget {
         onRefresh: () => ref.read(itemRepositoryProvider).refresh(),
         hintText: 'Buscar por nome, cliente ou série',
         emptyMessage: 'Nenhum item cadastrado.',
-        extraFilter: clientId != null
-            ? (i) => i.clientId == clientId
-            : (locationId != null ? (i) => i.locationId == locationId : null),
+        filterBar: ActiveFilterBar(
+          value: _status,
+          onChanged: (f) => setState(() => _status = f),
+        ),
+        extraFilter: (i) {
+          if (clientId != null && i.clientId != clientId) return false;
+          if (locationId != null && i.locationId != locationId) return false;
+          return _status.accepts(i.isActive);
+        },
         searchText: (i) => [
           i.name,
           clients[i.clientId] ?? '',
@@ -76,9 +93,21 @@ class ItemListScreen extends ConsumerWidget {
               locations[i.locationId]!,
           ].join(' · ');
           return ListTile(
-            title: Text(i.name),
+            title: Text(
+              i.name,
+              style: i.isActive
+                  ? null
+                  : const TextStyle(color: BrandColor.textTertiary),
+            ),
             subtitle: subtitle.isEmpty ? null : Text(subtitle),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ActiveBadge(active: i.isActive),
+                const SizedBox(width: 4),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
             onTap: () => context.push('/items/${i.id}'),
           );
         },

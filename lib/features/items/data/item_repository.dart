@@ -24,12 +24,23 @@ class ItemFields {
     this.itemTypeId,
     this.locationId,
     this.notes = '',
+    this.isActive = true,
   });
 
   final String name;
   final String? itemTypeId;
   final String? locationId;
   final String notes;
+  final bool isActive;
+
+  /// Campos de um item existente (edita um e reenvia o resto).
+  factory ItemFields.of(LocalItem i) => ItemFields(
+    name: i.name,
+    itemTypeId: i.itemTypeId,
+    locationId: i.locationId,
+    notes: i.notes,
+    isActive: i.isActive,
+  );
 }
 
 /// Ver [ClientRepository] para o racional das duas implementações.
@@ -96,6 +107,7 @@ class LocalFirstItemRepository extends LocalFirstRepositoryBase
       locationId: fields.locationId,
       name: fields.name,
       notes: fields.notes,
+      isActive: fields.isActive,
     );
     if (online) {
       try {
@@ -125,6 +137,7 @@ class LocalFirstItemRepository extends LocalFirstRepositoryBase
               itemTypeId: Value(fields.itemTypeId),
               name: fields.name,
               notes: Value(fields.notes),
+              isActive: Value(fields.isActive),
               localUpdatedAt: DateTime.now(),
               syncStatus: const Value('pending'),
               lastSyncedAt: const Value(null),
@@ -152,6 +165,7 @@ class LocalFirstItemRepository extends LocalFirstRepositoryBase
       locationId: fields.locationId,
       name: fields.name,
       notes: fields.notes,
+      isActive: fields.isActive,
     );
     if (online) {
       try {
@@ -183,6 +197,7 @@ class LocalFirstItemRepository extends LocalFirstRepositoryBase
           itemTypeId: Value(fields.itemTypeId),
           name: Value(fields.name),
           notes: Value(fields.notes),
+          isActive: Value(fields.isActive),
           localUpdatedAt: Value(DateTime.now()),
           syncStatus: const Value('pending'),
         ),
@@ -240,6 +255,7 @@ class RemoteItemRepository implements ItemRepository, PagedListRepository {
         locationId: fields.locationId,
         name: fields.name,
         notes: fields.notes,
+        isActive: fields.isActive,
       ),
     );
     return it.id;
@@ -257,6 +273,7 @@ class RemoteItemRepository implements ItemRepository, PagedListRepository {
         locationId: fields.locationId,
         name: fields.name,
         notes: fields.notes,
+        isActive: fields.isActive,
       ),
       'version': ?baseVersion,
     });

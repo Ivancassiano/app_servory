@@ -23,6 +23,7 @@ LocalItem itemFromApiJson(
     installedAt: j['installed_at'] as String?,
     cost: maskable(j['cost']),
     notes: stringOr(j['notes']),
+    isActive: j['is_active'] as bool? ?? true,
     version: j['version'] as int?,
     createdAt: parseApiDate(j['created_at']),
     updatedAt: parseApiDate(j['updated_at']),
@@ -39,6 +40,7 @@ Map<String, dynamic> _itemFields({
   required String notes,
   String? itemTypeId,
   String? locationId,
+  bool? isActive,
 }) => {
   'name': name,
   'notes': notes,
@@ -47,6 +49,7 @@ Map<String, dynamic> _itemFields({
   'item_type_id': ?(itemTypeId != null && itemTypeId.isNotEmpty
       ? itemTypeId
       : null),
+  'is_active': ?isActive,
 };
 
 /// `POST /v1/items` — `client_id` e `name` obrigatórios.
@@ -56,6 +59,7 @@ Map<String, dynamic> itemCreateBody({
   String? locationId,
   required String name,
   String notes = '',
+  bool? isActive,
 }) => {
   'client_id': clientId,
   ..._itemFields(
@@ -63,6 +67,7 @@ Map<String, dynamic> itemCreateBody({
     notes: notes,
     itemTypeId: itemTypeId,
     locationId: locationId,
+    isActive: isActive,
   ),
 };
 
@@ -72,9 +77,11 @@ Map<String, dynamic> itemUpdateBody({
   String? locationId,
   required String name,
   String notes = '',
+  bool? isActive,
 }) => _itemFields(
   name: name,
   notes: notes,
   itemTypeId: itemTypeId,
   locationId: locationId,
+  isActive: isActive,
 );

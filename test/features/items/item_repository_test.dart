@@ -30,7 +30,18 @@ void main() {
     expect(it.itemTypeId, 't1');
     expect(it.serialNumber, 'SN-9');
     expect(it.cost, isNull);
+    expect(it.isActive, isTrue); // ausente = ativo
     expect(it.version, 3);
+  });
+
+  test('itemFromApiJson lê is_active', () {
+    final it = itemFromApiJson(const {
+      'id': 'i1',
+      'client_id': 'c1',
+      'name': 'X',
+      'is_active': false,
+    }, organizationId: 'org1');
+    expect(it.isActive, isFalse);
   });
 
   test('itemCreateBody manda client_id, name e location_id', () {
@@ -44,6 +55,14 @@ void main() {
     final body = itemUpdateBody(name: 'X');
     expect(body.containsKey('location_id'), isTrue);
     expect(body['location_id'], isNull);
+  });
+
+  test('itemUpdateBody manda is_active só quando passado', () {
+    expect(itemUpdateBody(name: 'X'), isNot(contains('is_active')));
+    expect(
+      itemUpdateBody(name: 'X', isActive: false),
+      containsPair('is_active', false),
+    );
   });
 
   group('LocalFirstItemRepository (app)', () {
