@@ -22,6 +22,7 @@ LocalLocation locationFromApiJson(
     city: stringOr(j['city']),
     state: stringOr(j['state']),
     notes: stringOr(j['notes']),
+    isActive: j['is_active'] as bool? ?? true,
     version: j['version'] as int?,
     createdAt: parseApiDate(j['created_at']),
     updatedAt: parseApiDate(j['updated_at']),
@@ -80,10 +81,12 @@ Map<String, dynamic> _locationFields({
   required String name,
   required String notes,
   required LocationAddressInput address,
+  bool? isActive,
 }) => {
   'name': name,
   'address': address.toJson(),
   'notes': notes,
+  'is_active': ?isActive,
 };
 
 /// `POST /v1/locations` — `client_id` obrigatório.
@@ -92,9 +95,15 @@ Map<String, dynamic> locationCreateBody({
   required String name,
   String notes = '',
   LocationAddressInput address = LocationAddressInput.empty,
+  bool? isActive,
 }) => {
   'client_id': clientId,
-  ..._locationFields(name: name, notes: notes, address: address),
+  ..._locationFields(
+    name: name,
+    notes: notes,
+    address: address,
+    isActive: isActive,
+  ),
 };
 
 /// `PATCH /v1/locations/{id}`.
@@ -102,7 +111,13 @@ Map<String, dynamic> locationUpdateBody({
   required String name,
   String notes = '',
   LocationAddressInput address = LocationAddressInput.empty,
-}) => _locationFields(name: name, notes: notes, address: address);
+  bool? isActive,
+}) => _locationFields(
+  name: name,
+  notes: notes,
+  address: address,
+  isActive: isActive,
+);
 
 /// Endereço do local numa linha só (exibição).
 String locationAddressLine(LocalLocation l) => [

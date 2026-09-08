@@ -87,6 +87,8 @@ class LocalLocations extends Table with _SyncColumns {
   TextColumn get city => text().withDefault(const Constant(''))();
   TextColumn get state => text().withDefault(const Constant(''))();
   TextColumn get notes => text().withDefault(const Constant(''))();
+  BoolColumn get isActive =>
+      boolean().named('is_active').withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().named('created_at').nullable()();
   DateTimeColumn get updatedAt => dateTime().named('updated_at').nullable()();
 
@@ -475,7 +477,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -592,6 +594,11 @@ class AppDatabase extends _$AppDatabase {
         // precisar de bootstrap. Só cria as duas tabelas.
         await m.createTable(localTasks);
         await m.createTable(localTaskTargets);
+      }
+      if (from < 15) {
+        // Local ganhou is_active (inativar/ativar). Coluna nova NOT NULL com
+        // default true — só um ALTER, sem bootstrap.
+        await m.addColumn(localLocations, localLocations.isActive);
       }
     },
   );

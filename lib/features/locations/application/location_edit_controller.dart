@@ -21,6 +21,10 @@ class LocationEditController {
   }) => _ref
       .read(locationRepositoryProvider)
       .update(id: locationId, baseVersion: baseVersion, fields: fields);
+
+  Future<void> delete({required String locationId, int? baseVersion}) => _ref
+      .read(locationRepositoryProvider)
+      .delete(id: locationId, baseVersion: baseVersion);
 }
 
 final locationEditControllerProvider = Provider<LocationEditController>(

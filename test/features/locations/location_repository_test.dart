@@ -22,12 +22,31 @@ void main() {
       'street': 'Av X',
       'city': 'SP',
       'state': 'SP',
+      'is_active': false,
       'version': 2,
     }, organizationId: 'org1');
     expect(l.name, 'Matriz');
     expect(l.street, 'Av X');
     expect(l.clientId, 'c1');
+    expect(l.isActive, false);
     expect(l.version, 2);
+  });
+
+  test('locationFromApiJson: is_active ausente = ativo', () {
+    final l = locationFromApiJson(const {
+      'id': 'l1',
+      'client_id': 'c1',
+      'name': 'Matriz',
+    }, organizationId: 'org1');
+    expect(l.isActive, true);
+  });
+
+  test('locationUpdateBody manda is_active só quando passado', () {
+    expect(locationUpdateBody(name: 'X'), isNot(contains('is_active')));
+    expect(
+      locationUpdateBody(name: 'X', isActive: false),
+      containsPair('is_active', false),
+    );
   });
 
   test('locationCreateBody aninha o endereço sob address', () {
@@ -75,6 +94,39 @@ void main() {
     final outbox = await db.select(db.syncOutbox).get();
     expect(outbox.single.entityType, 'location');
     expect(outbox.single.operationType, 'create');
+  });
+
+  test('offline: delete marca tombstone + outbox delete', () async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    final stub = StubDio(
+      (req) => (status: 200, body: {'locations': <dynamic>[]}),
+    );
+    final c = ProviderContainer(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        apiClientProvider.overrideWithValue(_FakeApiClient(stub.dio)),
+        isOnlineProvider.overrideWith((ref) => Stream.value(false)),
+        sessionControllerProvider.overrideWith(_FakeSession.new),
+      ],
+    );
+    addTearDown(c.dispose);
+    addTearDown(db.close);
+    c.listen(isOnlineProvider, (_, _) {});
+    await pumpEventQueue();
+
+    final repo = c.read(locationRepositoryProvider);
+    final id = await repo.create(
+      clientId: 'c1',
+      fields: const LocationFields(name: 'Matriz'),
+    );
+    await repo.delete(id: id, baseVersion: 1);
+
+    final row = await (db.select(
+      db.localLocations,
+    )..where((t) => t.id.equals(id))).getSingle();
+    expect(row.deleted, true);
+    final ops = await db.select(db.syncOutbox).get();
+    expect(ops.map((o) => o.operationType), containsAll(['create', 'delete']));
   });
 }
 

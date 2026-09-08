@@ -1215,6 +1215,21 @@ class $LocalLocationsTable extends LocalLocations
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1257,6 +1272,7 @@ class $LocalLocationsTable extends LocalLocations
     city,
     state,
     notes,
+    isActive,
     createdAt,
     updatedAt,
   ];
@@ -1394,6 +1410,12 @@ class $LocalLocationsTable extends LocalLocations
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1487,6 +1509,10 @@ class $LocalLocationsTable extends LocalLocations
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1523,6 +1549,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
   final String city;
   final String state;
   final String notes;
+  final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   const LocalLocation({
@@ -1544,6 +1571,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     required this.city,
     required this.state,
     required this.notes,
+    required this.isActive,
     this.createdAt,
     this.updatedAt,
   });
@@ -1574,6 +1602,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     map['city'] = Variable<String>(city);
     map['state'] = Variable<String>(state);
     map['notes'] = Variable<String>(notes);
+    map['is_active'] = Variable<bool>(isActive);
     if (!nullToAbsent || createdAt != null) {
       map['created_at'] = Variable<DateTime>(createdAt);
     }
@@ -1609,6 +1638,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       city: Value(city),
       state: Value(state),
       notes: Value(notes),
+      isActive: Value(isActive),
       createdAt: createdAt == null && nullToAbsent
           ? const Value.absent()
           : Value(createdAt),
@@ -1642,6 +1672,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       city: serializer.fromJson<String>(json['city']),
       state: serializer.fromJson<String>(json['state']),
       notes: serializer.fromJson<String>(json['notes']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
@@ -1668,6 +1699,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       'city': serializer.toJson<String>(city),
       'state': serializer.toJson<String>(state),
       'notes': serializer.toJson<String>(notes),
+      'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
@@ -1692,6 +1724,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     String? city,
     String? state,
     String? notes,
+    bool? isActive,
     Value<DateTime?> createdAt = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
   }) => LocalLocation(
@@ -1713,6 +1746,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     city: city ?? this.city,
     state: state ?? this.state,
     notes: notes ?? this.notes,
+    isActive: isActive ?? this.isActive,
     createdAt: createdAt.present ? createdAt.value : this.createdAt,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
@@ -1748,6 +1782,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       city: data.city.present ? data.city.value : this.city,
       state: data.state.present ? data.state.value : this.state,
       notes: data.notes.present ? data.notes.value : this.notes,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1774,6 +1809,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
           ..write('city: $city, ')
           ..write('state: $state, ')
           ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1781,7 +1817,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     organizationId,
     version,
     syncStatus,
@@ -1800,9 +1836,10 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     city,
     state,
     notes,
+    isActive,
     createdAt,
     updatedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1825,6 +1862,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
           other.city == this.city &&
           other.state == this.state &&
           other.notes == this.notes &&
+          other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1848,6 +1886,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
   final Value<String> city;
   final Value<String> state;
   final Value<String> notes;
+  final Value<bool> isActive;
   final Value<DateTime?> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<int> rowid;
@@ -1870,6 +1909,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     this.city = const Value.absent(),
     this.state = const Value.absent(),
     this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1893,6 +1933,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     this.city = const Value.absent(),
     this.state = const Value.absent(),
     this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1919,6 +1960,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     Expression<String>? city,
     Expression<String>? state,
     Expression<String>? notes,
+    Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -1942,6 +1984,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
       if (city != null) 'city': city,
       if (state != null) 'state': state,
       if (notes != null) 'notes': notes,
+      if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1967,6 +2010,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     Value<String>? city,
     Value<String>? state,
     Value<String>? notes,
+    Value<bool>? isActive,
     Value<DateTime?>? createdAt,
     Value<DateTime?>? updatedAt,
     Value<int>? rowid,
@@ -1990,6 +2034,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
       city: city ?? this.city,
       state: state ?? this.state,
       notes: notes ?? this.notes,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2053,6 +2098,9 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2086,6 +2134,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
           ..write('city: $city, ')
           ..write('state: $state, ')
           ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -16279,6 +16328,7 @@ typedef $$LocalLocationsTableCreateCompanionBuilder =
       Value<String> city,
       Value<String> state,
       Value<String> notes,
+      Value<bool> isActive,
       Value<DateTime?> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -16303,6 +16353,7 @@ typedef $$LocalLocationsTableUpdateCompanionBuilder =
       Value<String> city,
       Value<String> state,
       Value<String> notes,
+      Value<bool> isActive,
       Value<DateTime?> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -16404,6 +16455,11 @@ class $$LocalLocationsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -16517,6 +16573,11 @@ class $$LocalLocationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -16603,6 +16664,9 @@ class $$LocalLocationsTableAnnotationComposer
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
 
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -16661,6 +16725,7 @@ class $$LocalLocationsTableTableManager
                 Value<String> city = const Value.absent(),
                 Value<String> state = const Value.absent(),
                 Value<String> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -16683,6 +16748,7 @@ class $$LocalLocationsTableTableManager
                 city: city,
                 state: state,
                 notes: notes,
+                isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -16707,6 +16773,7 @@ class $$LocalLocationsTableTableManager
                 Value<String> city = const Value.absent(),
                 Value<String> state = const Value.absent(),
                 Value<String> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -16729,6 +16796,7 @@ class $$LocalLocationsTableTableManager
                 city: city,
                 state: state,
                 notes: notes,
+                isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

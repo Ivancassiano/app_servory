@@ -53,6 +53,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
   bool _viewMode = true;
   bool _saving = false;
   bool _showAddress = false;
+  bool _isActive = true;
   List<StagedPhoto> _stagedPhotos = [];
 
   /// Só na criação: ids de itens a vincular a este local depois que ele
@@ -93,6 +94,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
     _seeded = true;
     _clientId = l.clientId;
     _version = l.version;
+    _isActive = l.isActive;
     _name.text = l.name;
     _postalCode.text = l.postalCode;
     _street.text = l.street;
@@ -113,7 +115,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
     ].any((s) => s.isNotEmpty);
   }
 
-  LocationFields _collect() => LocationFields(
+  LocationFields _collect({bool? isActive}) => LocationFields(
     name: _name.text.trim(),
     notes: _notes.text.trim(),
     address: _showAddress
@@ -127,6 +129,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
             state: _state.text.trim().toUpperCase(),
           )
         : LocationAddressInput.empty,
+    isActive: isActive ?? _isActive,
   );
 
   Future<void> _submit(LocalLocation? existing) async {
@@ -288,7 +291,12 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
             style: Theme.of(context).textTheme.titleSmall,
           ),
         ),
-        if (items.isEmpty)
+        if (_clientId == null)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Text('Selecione um cliente para vincular itens.'),
+          )
+        else if (items.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8),
             child: Text('Nenhum item vinculado.'),
@@ -324,7 +332,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: _saving
+                onPressed: (_saving || _clientId == null)
                     ? null
                     : () => _linkItem(context, existing),
                 icon: const Icon(Icons.add_link),
@@ -345,6 +353,111 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  /// Inativa/ativa o local (update só do `is_active`, mantendo o resto).
+  Future<void> _toggleActive(LocalLocation l) async {
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(locationEditControllerProvider)
+          .update(
+            locationId: l.id,
+            baseVersion: l.version,
+            fields: LocationFields(
+              name: l.name,
+              notes: l.notes,
+              address: LocationAddressInput.of(l),
+              isActive: !l.isActive,
+            ),
+          );
+      if (mounted) {
+        setState(() {
+          _isActive = !l.isActive;
+          _seeded = false;
+        });
+      }
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e.friendlyMessage);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'Não foi possível atualizar. Tente de novo.');
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _confirmDelete(LocalLocation l) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Excluir local?'),
+        content: const Text(
+          'O local sai do cadastro. Os itens vinculados ficam sem local.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(locationEditControllerProvider)
+          .delete(locationId: l.id, baseVersion: l.version);
+      if (mounted) context.pop();
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e.friendlyMessage);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'Não foi possível excluir. Tente de novo.');
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  /// Botões "Inativar/Ativar" + "Excluir local" (só num local já salvo).
+  Widget _dangerZone(BuildContext context, LocalLocation l) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton.icon(
+          onPressed: _saving ? null : () => _toggleActive(l),
+          icon: Icon(
+            l.isActive
+                ? Icons.pause_circle_outline
+                : Icons.play_circle_outline,
+          ),
+          label: Text(l.isActive ? 'Inativar local' : 'Ativar local'),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: _saving ? null : () => _confirmDelete(l),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: theme.colorScheme.error,
+          ),
+          icon: const Icon(Icons.delete_outline),
+          label: const Text('Excluir local'),
         ),
       ],
     );
@@ -397,6 +510,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           DetailRow('Cliente', clientName),
+          DetailRow('Situação', l.isActive ? 'Ativo' : 'Inativo'),
           if (addr.isNotEmpty) DetailRow('Endereço', addr),
           if (l.notes.isNotEmpty) DetailRow('Observações', l.notes),
           const SizedBox(height: 16),
@@ -422,6 +536,8 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.push('/items/${it.id}'),
               ),
+          const Divider(height: 32),
+          _dangerZone(context, l),
         ],
       ),
     );
@@ -594,10 +710,8 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                 )
               else
                 PhotosSection(ownerKind: 'location', ownerId: existing.id),
-              if (_clientId != null) ...[
-                const Divider(height: 32),
-                _linkedItemsSection(context, existing),
-              ],
+              const Divider(height: 32),
+              _linkedItemsSection(context, existing),
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: (_saving || !_canSave)
@@ -605,7 +719,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                     : () => _submit(existing),
                 child: Text(_saving ? 'Salvando…' : 'Salvar'),
               ),
-              if (existing != null)
+              if (existing != null) ...[
                 TextButton(
                   onPressed: _saving
                       ? null
@@ -615,6 +729,9 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                         }),
                   child: const Text('Cancelar'),
                 ),
+                const Divider(height: 32),
+                _dangerZone(context, existing),
+              ],
             ],
           ),
         ),

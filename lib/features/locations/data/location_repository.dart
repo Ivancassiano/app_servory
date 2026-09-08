@@ -22,11 +22,21 @@ class LocationFields {
     required this.name,
     this.notes = '',
     this.address = LocationAddressInput.empty,
+    this.isActive = true,
   });
 
   final String name;
   final String notes;
   final LocationAddressInput address;
+  final bool isActive;
+
+  /// Campos de um local existente (para editar só uma coisa e reenviar o resto).
+  factory LocationFields.of(LocalLocation l) => LocationFields(
+    name: l.name,
+    notes: l.notes,
+    address: LocationAddressInput.of(l),
+    isActive: l.isActive,
+  );
 }
 
 /// Ver [ItemRepository] para o racional das duas implementações.
@@ -45,6 +55,9 @@ abstract interface class LocationRepository {
     required int? baseVersion,
     required LocationFields fields,
   });
+
+  /// Soft-delete (tombstone via sync).
+  Future<void> delete({required String id, required int? baseVersion});
 }
 
 final locationRepositoryProvider = Provider<LocationRepository>((ref) {
@@ -92,6 +105,7 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
       name: fields.name,
       notes: fields.notes,
       address: fields.address,
+      isActive: fields.isActive,
     );
     if (online) {
       try {
@@ -124,6 +138,7 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
               city: Value(fields.address.city),
               state: Value(fields.address.state),
               notes: Value(fields.notes),
+              isActive: Value(fields.isActive),
               localUpdatedAt: DateTime.now(),
               syncStatus: const Value('pending'),
               lastSyncedAt: const Value(null),
@@ -150,6 +165,7 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
       name: fields.name,
       notes: fields.notes,
       address: fields.address,
+      isActive: fields.isActive,
     );
     if (online) {
       try {
@@ -184,6 +200,7 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
           city: Value(fields.address.city),
           state: Value(fields.address.state),
           notes: Value(fields.notes),
+          isActive: Value(fields.isActive),
           localUpdatedAt: Value(DateTime.now()),
           syncStatus: const Value('pending'),
         ),
@@ -193,6 +210,37 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
         entityId: id,
         operationType: 'update',
         payload: body,
+        baseVersion: baseVersion,
+      );
+    });
+    unawaited(trySyncNow());
+  }
+
+  @override
+  Future<void> delete({required String id, required int? baseVersion}) async {
+    if (online) {
+      try {
+        await restCall(() => dio.delete('/v1/locations/$id'));
+        await (db.update(db.localLocations)..where((t) => t.id.equals(id)))
+            .write(const LocalLocationsCompanion(deleted: Value(true)));
+        return;
+      } on ApiException catch (e) {
+        if (!isOfflineError(e)) rethrow;
+      }
+    }
+    await db.transaction(() async {
+      await (db.update(db.localLocations)..where((t) => t.id.equals(id))).write(
+        LocalLocationsCompanion(
+          deleted: const Value(true),
+          localUpdatedAt: Value(DateTime.now()),
+          syncStatus: const Value('pending'),
+        ),
+      );
+      await enqueue(
+        entityType: 'location',
+        entityId: id,
+        operationType: 'delete',
+        payload: const {},
         baseVersion: baseVersion,
       );
     });
@@ -241,6 +289,7 @@ class RemoteLocationRepository
         name: fields.name,
         notes: fields.notes,
         address: fields.address,
+        isActive: fields.isActive,
       ),
     );
     return l.id;
@@ -257,8 +306,13 @@ class RemoteLocationRepository
         name: fields.name,
         notes: fields.notes,
         address: fields.address,
+        isActive: fields.isActive,
       ),
       'version': ?baseVersion,
     });
   }
+
+  @override
+  Future<void> delete({required String id, required int? baseVersion}) =>
+      _collection.remove(id);
 }
