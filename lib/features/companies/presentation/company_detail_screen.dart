@@ -470,6 +470,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
                                     TextCapitalization.characters,
                                 decoration: const InputDecoration(
                                   labelText: 'UF',
+                                  counterText: '',
                                 ),
                                 validator: (v) =>
                                     (v != null &&

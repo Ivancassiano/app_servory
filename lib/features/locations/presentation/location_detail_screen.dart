@@ -308,7 +308,10 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                 controller: _state,
                 maxLength: 2,
                 textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(labelText: 'UF'),
+                decoration: const InputDecoration(
+                  labelText: 'UF',
+                  counterText: '',
+                ),
                 validator: (v) =>
                     (v != null && v.isNotEmpty && v.trim().length != 2)
                     ? 'UF tem 2 letras'
