@@ -22,6 +22,10 @@ class StagedPhotosField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final gallery = [
+      for (final p in photos)
+        GalleryPhoto(image: MemoryImage(p.bytes), caption: p.caption),
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -34,7 +38,7 @@ class StagedPhotosField extends StatelessWidget {
               children: [
                 for (var i = 0; i < photos.length; i++)
                   PhotoThumb(
-                    image: MemoryImage(photos[i].bytes),
+                    image: gallery[i].image,
                     caption: photos[i].caption,
                     badge: InkWell(
                       onTap: () => onChanged([...photos]..removeAt(i)),
@@ -48,10 +52,10 @@ class StagedPhotosField extends StatelessWidget {
                         ),
                       ),
                     ),
-                    onTap: () => openPhotoFullscreen(
+                    onTap: () => openPhotoGallery(
                       context,
-                      image: MemoryImage(photos[i].bytes),
-                      caption: photos[i].caption,
+                      photos: gallery,
+                      initialIndex: i,
                     ),
                   ),
               ],

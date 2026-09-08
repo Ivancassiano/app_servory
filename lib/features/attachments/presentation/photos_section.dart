@@ -46,6 +46,15 @@ class PhotosSection extends ConsumerWidget {
       orElse: () => const <EntityPhoto>[],
     );
 
+    // Galeria única (arrasta pro lado): enviadas primeiro, depois pendentes.
+    final gallery = <GalleryPhoto>[
+      for (final p in uploaded)
+        GalleryPhoto(image: NetworkImage(p.downloadUrl), caption: p.caption ?? ''),
+      for (final item in pendingPhotos)
+        if (localFileImageProvider(item.filePath) case final img?)
+          GalleryPhoto(image: img, caption: item.caption ?? ''),
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -61,30 +70,31 @@ class PhotosSection extends ConsumerWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            for (final photo in uploaded)
+            for (var i = 0; i < uploaded.length; i++)
               PhotoThumb(
-                image: NetworkImage(photo.downloadUrl),
-                caption: photo.caption ?? '',
-                onTap: () => openPhotoFullscreen(
+                image: gallery[i].image,
+                caption: gallery[i].caption,
+                onTap: () => openPhotoGallery(
                   context,
-                  image: NetworkImage(photo.downloadUrl),
-                  caption: photo.caption ?? '',
+                  photos: gallery,
+                  initialIndex: i,
                 ),
               ),
-            for (final item in pendingPhotos)
-              if (localFileImageProvider(item.filePath) case final img?)
+            for (var j = 0; j < pendingPhotos.length; j++)
+              if (localFileImageProvider(pendingPhotos[j].filePath)
+                  case final img?)
                 PhotoThumb(
                   image: img,
-                  caption: item.caption ?? '',
+                  caption: pendingPhotos[j].caption ?? '',
                   badge: const Icon(
                     Icons.cloud_upload_outlined,
                     size: 18,
                     color: Colors.white,
                   ),
-                  onTap: () => openPhotoFullscreen(
+                  onTap: () => openPhotoGallery(
                     context,
-                    image: img,
-                    caption: item.caption ?? '',
+                    photos: gallery,
+                    initialIndex: uploaded.length + j,
                   ),
                 ),
           ],
