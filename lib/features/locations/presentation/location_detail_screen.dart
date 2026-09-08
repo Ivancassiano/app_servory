@@ -150,6 +150,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
               ownerId: id,
               bytes: p.bytes,
               filename: p.name,
+              caption: p.caption.trim(),
             );
           } catch (_) {
             // uma foto que falha não impede a criação do local
