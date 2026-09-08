@@ -12,8 +12,8 @@ import '../../locations/presentation/location_picker.dart';
 import '../data/task_mapper.dart';
 
 /// Frame "Alvos" da tarefa: locais e itens do cliente. Um item vinculado a um
-/// local aparece aninhado sob ele; o cabeçalho do local expande para mostrar
-/// endereço + contatos do cliente em texto plano (sem abrir o local).
+/// local aparece aninhado sob ele (sempre visível); endereço + contatos do
+/// cliente ficam atrás de um botão "Ver endereço e contato".
 class TaskTargetsField extends ConsumerWidget {
   const TaskTargetsField({
     super.key,
@@ -65,58 +65,6 @@ class TaskTargetsField extends ConsumerWidget {
       ]);
     }
 
-    Widget locationGroup(String locId) {
-      final loc = locById[locId];
-      final name = loc == null || loc.name.isEmpty
-          ? 'Local'
-          : loc.name;
-      final addr = loc == null ? '' : locationAddressLine(loc);
-      final childIds = byLocation[locId] ?? const [];
-      return Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border.all(color: theme.colorScheme.outline),
-        ),
-        child: Theme(
-          data: theme.copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-            childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            title: Text('Local: $name'),
-            subtitle: addr.isEmpty ? null : Text(addr),
-            trailing: readOnly
-                ? const Icon(Icons.expand_more)
-                : IconButton(
-                    icon: const Icon(Icons.close),
-                    tooltip: 'Remover local e seus itens',
-                    onPressed: () => remove((t) => t.locationId == locId),
-                  ),
-            children: [
-              if (loc != null)
-                _LocationInfo(clientId: clientId, location: loc),
-              for (final itemId in childIds)
-                ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.inventory_2_outlined, size: 20),
-                  title: Text(itemById[itemId]?.name ?? 'Item'),
-                  trailing: readOnly
-                      ? null
-                      : IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => remove(
-                            (t) =>
-                                t.locationId == locId && t.itemId == itemId,
-                          ),
-                        ),
-                ),
-            ],
-          ),
-        ),
-      );
-    }
-
     final locationsToShow = {...standaloneLocations, ...byLocation.keys};
 
     return Container(
@@ -138,7 +86,20 @@ class TaskTargetsField extends ConsumerWidget {
                 style: theme.textTheme.bodySmall,
               ),
             ),
-          for (final locId in locationsToShow) locationGroup(locId),
+          for (final locId in locationsToShow)
+            _LocationGroup(
+              location: locById[locId],
+              clientId: clientId,
+              readOnly: readOnly,
+              itemNames: [
+                for (final itemId in byLocation[locId] ?? const [])
+                  (id: itemId, name: itemById[itemId]?.name ?? 'Item'),
+              ],
+              onRemoveLocation: () => remove((t) => t.locationId == locId),
+              onRemoveItem: (itemId) => remove(
+                (t) => t.locationId == locId && t.itemId == itemId,
+              ),
+            ),
           for (final itemId in looseItems)
             Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -222,6 +183,105 @@ class TaskTargetsField extends ConsumerWidget {
       next.add(TaskTargetInput(itemId: picked));
     }
     onChanged(next);
+  }
+}
+
+/// Grupo de um local nos alvos: cabeçalho + itens vinculados (sempre visíveis)
+/// + botão "Ver endereço e contato" que revela o sub-frame.
+class _LocationGroup extends StatefulWidget {
+  const _LocationGroup({
+    required this.location,
+    required this.clientId,
+    required this.readOnly,
+    required this.itemNames,
+    required this.onRemoveLocation,
+    required this.onRemoveItem,
+  });
+
+  final LocalLocation? location;
+  final String? clientId;
+  final bool readOnly;
+  final List<({String id, String name})> itemNames;
+  final VoidCallback onRemoveLocation;
+  final ValueChanged<String> onRemoveItem;
+
+  @override
+  State<_LocationGroup> createState() => _LocationGroupState();
+}
+
+class _LocationGroupState extends State<_LocationGroup> {
+  bool _showInfo = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final loc = widget.location;
+    final name = loc == null || loc.name.isEmpty ? 'Local' : loc.name;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.fromLTRB(12, 4, 4, 12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border.all(color: theme.colorScheme.outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.place_outlined, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Text(
+                    'Local: $name',
+                    style: theme.textTheme.titleSmall,
+                  ),
+                ),
+              ),
+              if (!widget.readOnly)
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: 'Remover local e seus itens',
+                  onPressed: widget.onRemoveLocation,
+                ),
+            ],
+          ),
+          for (final it in widget.itemNames)
+            Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Row(
+                children: [
+                  const Icon(Icons.inventory_2_outlined, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(it.name)),
+                  if (!widget.readOnly)
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 20),
+                      onPressed: () => widget.onRemoveItem(it.id),
+                    ),
+                ],
+              ),
+            ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => setState(() => _showInfo = !_showInfo),
+              icon: Icon(
+                _showInfo ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                size: 18,
+              ),
+              label: Text(
+                _showInfo ? 'Ocultar endereço e contato' : 'Ver endereço e contato',
+              ),
+            ),
+          ),
+          if (_showInfo && loc != null)
+            _LocationInfo(clientId: widget.clientId, location: loc),
+        ],
+      ),
+    );
   }
 }
 

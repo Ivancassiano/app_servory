@@ -34,7 +34,6 @@ class _ClientPickerSheet extends ConsumerStatefulWidget {
 
 class _ClientPickerSheetState extends ConsumerState<_ClientPickerSheet> {
   String _q = '';
-  String? _selected;
 
   @override
   Widget build(BuildContext context) {
@@ -82,23 +81,13 @@ class _ClientPickerSheetState extends ConsumerState<_ClientPickerSheet> {
                     itemCount: clients.length,
                     itemBuilder: (_, i) {
                       final c = clients[i];
-                      final sel = c.id == _selected;
                       return ListTile(
                         dense: true,
-                        selected: sel,
                         title: Text(c.name),
-                        trailing: sel ? const Icon(Icons.check) : null,
-                        onTap: () => setState(() => _selected = c.id),
+                        onTap: () => Navigator.of(context).pop(c.id),
                       );
                     },
                   ),
-                ),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: _selected == null
-                      ? null
-                      : () => Navigator.of(context).pop(_selected),
-                  child: const Text('Selecionar cliente'),
                 ),
               ],
             ),
