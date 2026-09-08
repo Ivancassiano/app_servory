@@ -59,10 +59,34 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     super.initState();
     _clientId = widget.presetClientId;
     _viewMode = !widget.isNew;
+    _description.addListener(_onFieldChanged);
+    // Dados de referência REST-only: uma vez, melhor esforço (populam os
+    // seletores). NUNCA no build — ali dispararia a cada rebuild e estoura o
+    // rate limit ("muitas tentativas").
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final repo = ref.read(referenceDataRepositoryProvider);
+      for (final k in ReferenceKind.values) {
+        repo.refresh(k).ignore();
+      }
+    });
+  }
+
+  void _onFieldChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// Salvar habilita só com o mínimo pronto.
+  bool get _canSave {
+    if (_description.text.trim().isEmpty) return false;
+    if (_clientId == null) return false;
+    if (_showSchedule && _scheduledFor == null) return false;
+    return true;
   }
 
   @override
   void dispose() {
+    _description.removeListener(_onFieldChanged);
     _description.dispose();
     _notes.dispose();
     super.dispose();
@@ -399,15 +423,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         _seededDefaults = true;
       }
     }
-    // dados de referência: melhor esforço
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final repo = ref.read(referenceDataRepositoryProvider);
-      for (final k in ReferenceKind.values) {
-        repo.refresh(k).ignore();
-      }
-    });
-
     final clients = ref.watch(clientListProvider).value ?? const [];
     final clientName = clients
         .where((c) => c.id == _clientId)
@@ -441,7 +456,10 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 ),
               TextFormField(
                 controller: _description,
-                decoration: const InputDecoration(labelText: 'Descrição'),
+                decoration: const InputDecoration(
+                  labelText: 'Descrição *',
+                  helperText: 'Obrigatória',
+                ),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Obrigatória' : null,
               ),
@@ -513,7 +531,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               ),
               const SizedBox(height: 24),
               FilledButton(
-                onPressed: _saving ? null : () => _submit(existing),
+                onPressed: (_saving || !_canSave)
+                    ? null
+                    : () => _submit(existing),
                 child: Text(_saving ? 'Salvando…' : 'Salvar'),
               ),
               if (existing != null)
