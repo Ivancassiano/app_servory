@@ -61,6 +61,10 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
     _clientId = widget.presetClientId;
   }
 
+  /// Cliente e nome são obrigatórios para salvar.
+  bool get _canSave =>
+      _clientId != null && _name.text.trim().isNotEmpty;
+
   @override
   void dispose() {
     for (final c in [
@@ -308,10 +312,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                 controller: _state,
                 maxLength: 2,
                 textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(
-                  labelText: 'UF',
-                  counterText: '',
-                ),
+                decoration: const InputDecoration(labelText: 'UF'),
                 validator: (v) =>
                     (v != null && v.isNotEmpty && v.trim().length != 2)
                     ? 'UF tem 2 letras'
@@ -364,8 +365,12 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
               TextFormField(
                 controller: _name,
                 decoration: const InputDecoration(
-                  labelText: 'Nome (ex.: Matriz, Galpão 2)',
+                  labelText: 'Nome * (ex.: Matriz, Galpão 2)',
+                  helperText: 'Obrigatório',
                 ),
+                onChanged: (_) => setState(() {}),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
               ),
               const SizedBox(height: 16),
               Align(
@@ -410,7 +415,9 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
               ],
               const SizedBox(height: 24),
               FilledButton(
-                onPressed: _saving ? null : () => _submit(existing),
+                onPressed: (_saving || !_canSave)
+                    ? null
+                    : () => _submit(existing),
                 child: Text(_saving ? 'Salvando…' : 'Salvar'),
               ),
               if (existing != null)

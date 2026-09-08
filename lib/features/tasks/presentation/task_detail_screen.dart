@@ -59,7 +59,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     super.initState();
     _clientId = widget.presetClientId;
     _viewMode = !widget.isNew;
-    _description.addListener(_onFieldChanged);
     // Dados de referência REST-only: uma vez, melhor esforço (populam os
     // seletores). NUNCA no build — ali dispararia a cada rebuild e estoura o
     // rate limit ("muitas tentativas").
@@ -72,10 +71,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     });
   }
 
-  void _onFieldChanged() {
-    if (mounted) setState(() {});
-  }
-
   /// Salvar habilita só com o mínimo pronto.
   bool get _canSave {
     if (_description.text.trim().isEmpty) return false;
@@ -86,7 +81,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
   @override
   void dispose() {
-    _description.removeListener(_onFieldChanged);
     _description.dispose();
     _notes.dispose();
     super.dispose();
@@ -460,6 +454,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   labelText: 'Descrição *',
                   helperText: 'Obrigatória',
                 ),
+                onChanged: (_) => setState(() {}),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Obrigatória' : null,
               ),
