@@ -288,6 +288,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         .map((c) => c.name)
         .join();
 
+    // Salvar só quando os obrigatórios estão preenchidos: cliente, nome e os
+    // campos personalizados `required` do tipo escolhido.
+    final requiredCustom = ref
+        .watch(itemFieldDefsForTypeProvider(_typeId))
+        .where((d) => d.required);
+    final canSave =
+        _clientId != null &&
+        _name.text.trim().isNotEmpty &&
+        requiredCustom.every((d) {
+          final v = _fieldValues[d.id];
+          return v != null && !v.isEmpty;
+        });
+
     return Scaffold(
       appBar: brandAppBar(
         title: existing == null ? 'Novo item' : 'Editar item',
@@ -322,20 +335,21 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
+              ] else if (existing != null && clientName.isNotEmpty) ...[
+                DetailRow('Cliente', clientName),
+                const SizedBox(height: 8),
               ],
-              if (_clientId != null) ...[
-                LocationPickerField(
-                  locationLabel: _locationLabel(_locationId),
-                  onPick: () async {
-                    final id = await pickLocation(
-                      context,
-                      clientId: _clientId!,
-                    );
-                    if (id != null) setState(() => _locationId = id);
-                  },
+              TextFormField(
+                controller: _name,
+                decoration: const InputDecoration(
+                  labelText: 'Nome *',
+                  helperText: 'Obrigatório',
                 ),
-                const SizedBox(height: 16),
-              ],
+                onChanged: (_) => setState(() {}),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Informe o nome' : null,
+              ),
+              const SizedBox(height: 16),
               DropdownButtonFormField<String?>(
                 initialValue: _typeId,
                 decoration: const InputDecoration(labelText: 'Tipo (opcional)'),
@@ -350,13 +364,19 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 onChanged: (v) => setState(() => _typeId = v),
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _name,
-                decoration: const InputDecoration(labelText: 'Nome'),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Informe o nome' : null,
-              ),
-              const SizedBox(height: 16),
+              if (_clientId != null) ...[
+                LocationPickerField(
+                  locationLabel: _locationLabel(_locationId),
+                  onPick: () async {
+                    final id = await pickLocation(
+                      context,
+                      clientId: _clientId!,
+                    );
+                    if (id != null) setState(() => _locationId = id);
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
               TextFormField(
                 controller: _notes,
                 decoration: const InputDecoration(labelText: 'Observações'),
@@ -367,11 +387,13 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 key: ValueKey('fields:$_typeId'),
                 itemTypeId: _typeId,
                 initial: _fieldValues,
-                onChanged: (v) => _fieldValues = v,
+                onChanged: (v) => setState(() => _fieldValues = v),
               ),
               const SizedBox(height: 24),
               FilledButton(
-                onPressed: _saving ? null : () => _submit(existing),
+                onPressed: (_saving || !canSave)
+                    ? null
+                    : () => _submit(existing),
                 child: Text(_saving ? 'Salvando…' : 'Salvar'),
               ),
               if (existing != null) ...[
