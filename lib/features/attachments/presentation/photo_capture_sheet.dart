@@ -7,23 +7,45 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/widgets/form_sheet.dart';
 import '../application/attachment_controller.dart';
 
+/// Uma foto escolhida mas ainda não enviada (cadastro que ainda não foi
+/// salvo — não há `ownerId` pra fila de upload). `caption` é editável antes
+/// de salvar.
+class StagedPhoto {
+  const StagedPhoto({required this.name, required this.bytes, this.caption = ''});
+
+  final String name;
+  final Uint8List bytes;
+  final String caption;
+}
+
 /// Bottom sheet: escolhe câmera ou galeria, classifica a foto (só para
-/// ordem de serviço) e envia (GUIA-FLUTTER.md §7). No nativo salva local e
-/// enfileira (funciona offline); no web envia direto. Serve para ordem de
-/// serviço, item e local (`ownerKind`).
+/// ordem de serviço), põe legenda e envia (GUIA-FLUTTER.md §7). No nativo
+/// salva local e enfileira (funciona offline); no web envia direto. Serve
+/// para ordem de serviço, item e local (`ownerKind`).
+///
+/// Modo "staging" ([onStaged] != null): a entidade ainda não existe (form de
+/// cadastro), então em vez de enviar, devolve a foto + legenda pela callback
+/// — a tela junta na lista e envia depois de salvar.
 class PhotoCaptureSheet extends ConsumerStatefulWidget {
   const PhotoCaptureSheet({
     super.key,
-    required this.ownerKind,
-    required this.ownerId,
+    this.ownerKind,
+    this.ownerId,
     this.serviceOrderItemId,
-  });
+    this.onStaged,
+  }) : assert(
+         onStaged != null || (ownerKind != null && ownerId != null),
+         'sem onStaged é preciso ownerKind + ownerId',
+       );
 
-  final String ownerKind; // service_order | item | location
-  final String ownerId;
+  final String? ownerKind; // service_order | item | location
+  final String? ownerId;
 
   /// Só para ordem de serviço: vincula a foto a um item da visita.
   final String? serviceOrderItemId;
+
+  /// Modo staging: recebe a foto escolhida (com legenda) em vez de enviar.
+  final void Function(StagedPhoto)? onStaged;
 
   @override
   ConsumerState<PhotoCaptureSheet> createState() => _PhotoCaptureSheetState();
@@ -62,17 +84,29 @@ class _PhotoCaptureSheetState extends ConsumerState<PhotoCaptureSheet> {
     final picked = _picked;
     final bytes = _bytes;
     if (picked == null || bytes == null) return;
+    final caption = _captionController.text.trim();
+
+    if (widget.onStaged != null) {
+      widget.onStaged!(
+        StagedPhoto(name: picked.name, bytes: bytes, caption: caption),
+      );
+      Navigator.of(context).pop();
+      return;
+    }
+
     setState(() => _saving = true);
     try {
-      await ref.read(attachmentControllerProvider).submitPhoto(
-        ownerKind: widget.ownerKind,
-        ownerId: widget.ownerId,
-        bytes: bytes,
-        filename: picked.name,
-        photoKind: _kind,
-        caption: _captionController.text.trim(),
-        serviceOrderItemId: widget.serviceOrderItemId,
-      );
+      await ref
+          .read(attachmentControllerProvider)
+          .submitPhoto(
+            ownerKind: widget.ownerKind!,
+            ownerId: widget.ownerId!,
+            bytes: bytes,
+            filename: picked.name,
+            photoKind: _kind,
+            caption: caption,
+            serviceOrderItemId: widget.serviceOrderItemId,
+          );
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _saving = false);

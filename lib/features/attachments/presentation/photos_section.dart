@@ -6,6 +6,7 @@ import '../../../core/widgets/local_file_image.dart';
 import '../application/service_order_attachments_provider.dart';
 import '../application/upload_queue_provider.dart';
 import 'photo_capture_sheet.dart';
+import 'photo_thumb.dart';
 
 /// Galeria de fotos de um dono (`ownerKind` ∈ service_order | item | location):
 /// já enviadas (`entityPhotosProvider`) + as ainda na fila de upload local
@@ -61,36 +62,31 @@ class PhotosSection extends ConsumerWidget {
           runSpacing: 8,
           children: [
             for (final photo in uploaded)
-              _Thumb(
+              PhotoThumb(
+                image: NetworkImage(photo.downloadUrl),
                 caption: photo.caption ?? '',
-                onTap: () => _openViewer(
+                onTap: () => openPhotoFullscreen(
                   context,
-                  imageUrl: photo.downloadUrl,
+                  image: NetworkImage(photo.downloadUrl),
                   caption: photo.caption ?? '',
-                ),
-                child: Image.network(
-                  photo.downloadUrl,
-                  width: 96,
-                  height: 96,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => _brokenThumb(context),
                 ),
               ),
             for (final item in pendingPhotos)
-              _Thumb(
-                caption: item.caption ?? '',
-                badge: const Icon(
-                  Icons.cloud_upload_outlined,
-                  size: 18,
-                  color: Colors.white,
-                ),
-                onTap: () => _openViewer(
-                  context,
-                  localPath: item.filePath,
+              if (localFileImageProvider(item.filePath) case final img?)
+                PhotoThumb(
+                  image: img,
                   caption: item.caption ?? '',
+                  badge: const Icon(
+                    Icons.cloud_upload_outlined,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  onTap: () => openPhotoFullscreen(
+                    context,
+                    image: img,
+                    caption: item.caption ?? '',
+                  ),
                 ),
-                child: localFileImage(item.filePath, width: 96, height: 96),
-              ),
           ],
         ),
         const SizedBox(height: 8),
@@ -111,130 +107,6 @@ class PhotosSection extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _brokenThumb(BuildContext context) => Container(
-    width: 96,
-    height: 96,
-    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-    child: const Icon(Icons.broken_image_outlined),
-  );
-
-  void _openViewer(
-    BuildContext context, {
-    String? imageUrl,
-    String? localPath,
-    required String caption,
-  }) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        fullscreenDialog: true,
-        builder: (_) => _PhotoViewer(
-          imageUrl: imageUrl,
-          localPath: localPath,
-          caption: caption,
-        ),
-      ),
-    );
-  }
-}
-
-class _Thumb extends StatelessWidget {
-  const _Thumb({
-    required this.child,
-    required this.caption,
-    required this.onTap,
-    this.badge,
-  });
-
-  final Widget child;
-  final String caption;
-  final VoidCallback onTap;
-  final Widget? badge;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 96,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            onTap: onTap,
-            child: Stack(
-              children: [
-                ClipRRect(borderRadius: BorderRadius.circular(8), child: child),
-                if (badge != null) Positioned(right: 2, top: 2, child: badge!),
-              ],
-            ),
-          ),
-          if (caption.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(
-              caption,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _PhotoViewer extends StatelessWidget {
-  const _PhotoViewer({this.imageUrl, this.localPath, required this.caption});
-
-  final String? imageUrl;
-  final String? localPath;
-  final String caption;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: InteractiveViewer(
-              maxScale: 5,
-              child: Center(
-                child: imageUrl != null
-                    ? Image.network(
-                        imageUrl!,
-                        errorBuilder: (_, _, _) => const Icon(
-                          Icons.broken_image_outlined,
-                          color: Colors.white54,
-                          size: 64,
-                        ),
-                      )
-                    : localFileImage(localPath!, fit: BoxFit.contain),
-              ),
-            ),
-          ),
-          if (caption.isNotEmpty)
-            SafeArea(
-              top: false,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                color: Colors.black,
-                child: Text(
-                  caption,
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }
