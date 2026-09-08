@@ -425,7 +425,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -503,7 +503,6 @@ class AppDatabase extends _$AppDatabase {
       if (from < 12) {
         // Nova entidade Local; item achatado (some árvore + endereço + contato,
         // entra location_id); fila de upload generalizada (owner_kind/owner_id).
-        // Backend limpou/mudou o shape → drop + recria + bootstrap completo.
         for (final t in const [
           'local_items',
           'local_locations',
@@ -514,8 +513,28 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(localItems);
         await m.createTable(localLocations);
         await m.createTable(uploadQueue);
-        await m.database.customStatement('DELETE FROM local_sync_state');
-        await m.database.customStatement('DELETE FROM sync_outbox');
+      }
+      if (from < 13) {
+        // O backend TRUNCOU o outbox na migração dos Locais → um `pull` não
+        // traz nada de volta; a única forma de repovoar é um bootstrap
+        // completo, que só dispara se `local_clients` estiver vazio
+        // (bootstrapIfNeeded). Então limpa TODAS as tabelas que sincronizam.
+        for (final t in const [
+          'local_clients',
+          'local_locations',
+          'local_items',
+          'local_item_field_values',
+          'local_service_orders',
+          'local_service_order_items',
+          'local_service_order_parts',
+          'local_service_order_recommendations',
+          'local_qr_codes',
+          'local_qr_batches',
+          'local_sync_state',
+          'sync_outbox',
+        ]) {
+          await m.database.customStatement('DELETE FROM $t');
+        }
       }
     },
   );
