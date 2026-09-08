@@ -16,14 +16,16 @@ class _IoAttachmentController implements AttachmentController {
 
   @override
   Future<void> submitPhoto({
-    required String orderId,
+    required String ownerKind,
+    required String ownerId,
     required Uint8List bytes,
     required String filename,
-    required String photoKind,
+    String photoKind = 'other',
     String? caption,
     String? serviceOrderItemId,
   }) => _ref.read(uploadQueueControllerProvider).enqueuePhoto(
-    serviceOrderId: orderId,
+    ownerKind: ownerKind,
+    ownerId: ownerId,
     bytes: bytes,
     extension: p.extension(filename),
     photoKind: photoKind,

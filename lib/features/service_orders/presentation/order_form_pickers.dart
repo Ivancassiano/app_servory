@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/db/app_database.dart';
 import '../../../core/widgets/form_sheet.dart';
 import '../../clients/presentation/client_picker.dart';
 import '../../items/application/items_provider.dart';
@@ -13,9 +12,9 @@ export '../../clients/presentation/client_picker.dart'
 /// linha da ordem.
 typedef OrderTarget = ({String itemId});
 
-/// Bottom sheet: a árvore de itens do cliente, com checkbox em qualquer nível,
-/// busca e cadastro rápido (só nome). Retorna os itens marcados; `initial`
-/// pré-marca o que já estava selecionado.
+/// Bottom sheet: lista plana dos itens do cliente, com checkbox, busca e
+/// cadastro rápido (só nome). Retorna os itens marcados; `initial` pré-marca
+/// o que já estava selecionado.
 Future<List<OrderTarget>?> pickOrderTargets(
   BuildContext context, {
   required String clientId,
@@ -40,17 +39,13 @@ class _TargetsPickerSheetState extends ConsumerState<_TargetsPickerSheet> {
   String _q = '';
   late final Set<String> _sel = {for (final t in widget.initial) t.itemId};
 
-  bool _matches(String text) =>
-      _q.isEmpty || accentFold(text).contains(accentFold(_q));
-
-  Future<void> _newItem(String? parentId) async {
+  Future<void> _newItem() async {
     final name = await _promptName(context, 'Novo item');
     if (name == null || name.isEmpty) return;
     final id = await ref
         .read(itemRepositoryProvider)
         .create(
           clientId: widget.clientId,
-          parentItemId: parentId,
           fields: ItemFields(name: name),
         );
     if (mounted) setState(() => _sel.add(id));
@@ -58,13 +53,18 @@ class _TargetsPickerSheetState extends ConsumerState<_TargetsPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final items = ref.watch(itemsByClientProvider(widget.clientId)).toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-    final childrenOf = <String?, List<LocalItem>>{};
-    for (final i in items) {
-      childrenOf.putIfAbsent(i.parentItemId, () => []).add(i);
-    }
-    final roots = childrenOf[null] ?? const <LocalItem>[];
+    final items =
+        ref
+            .watch(itemsByClientProvider(widget.clientId))
+            .where(
+              (i) =>
+                  _q.isEmpty ||
+                  accentFold(i.name).contains(accentFold(_q)),
+            )
+            .toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
 
     return _SheetScaffold(
       title: 'Itens da visita',
@@ -86,20 +86,18 @@ class _TargetsPickerSheetState extends ConsumerState<_TargetsPickerSheet> {
             child: ListView(
               shrinkWrap: true,
               children: [
-                for (final r in roots)
-                  _ItemNode(
-                    item: r,
-                    childrenOf: childrenOf,
-                    depth: 0,
-                    query: _q,
-                    matches: _matches,
-                    checked: _sel.contains,
-                    onToggle: (id, v) =>
-                        setState(() => v ? _sel.add(id) : _sel.remove(id)),
-                    onNewChild: (id) => _newItem(id),
+                for (final i in items)
+                  CheckboxListTile(
+                    dense: true,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: _sel.contains(i.id),
+                    onChanged: (v) => setState(
+                      () => (v ?? false) ? _sel.add(i.id) : _sel.remove(i.id),
+                    ),
+                    title: Text(i.name),
                   ),
                 TextButton.icon(
-                  onPressed: () => _newItem(null),
+                  onPressed: _newItem,
                   icon: const Icon(Icons.add),
                   label: const Text('Novo item'),
                 ),
@@ -109,88 +107,6 @@ class _TargetsPickerSheetState extends ConsumerState<_TargetsPickerSheet> {
         ],
       ),
     );
-  }
-}
-
-class _ItemNode extends StatelessWidget {
-  const _ItemNode({
-    required this.item,
-    required this.childrenOf,
-    required this.depth,
-    required this.query,
-    required this.matches,
-    required this.checked,
-    required this.onToggle,
-    required this.onNewChild,
-  });
-
-  final LocalItem item;
-  final Map<String?, List<LocalItem>> childrenOf;
-  final int depth;
-  final String query;
-  final bool Function(String) matches;
-  final bool Function(String) checked;
-  final void Function(String id, bool v) onToggle;
-  final void Function(String parentId) onNewChild;
-
-  @override
-  Widget build(BuildContext context) {
-    final kids = childrenOf[item.id] ?? const <LocalItem>[];
-    final selfHit = matches(item.name);
-    final visibleKids = kids
-        .where((k) => query.isEmpty || selfHit || _subtreeHits(k))
-        .toList();
-    if (!selfHit && visibleKids.isEmpty && query.isNotEmpty) {
-      return const SizedBox.shrink();
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CheckboxListTile(
-          dense: true,
-          contentPadding: EdgeInsets.only(left: 16.0 * depth),
-          controlAffinity: ListTileControlAffinity.leading,
-          value: checked(item.id),
-          onChanged: (v) => onToggle(item.id, v ?? false),
-          title: Text(
-            item.name,
-            style: depth == 0
-                ? const TextStyle(fontWeight: FontWeight.w600)
-                : null,
-          ),
-        ),
-        for (final k in visibleKids)
-          _ItemNode(
-            item: k,
-            childrenOf: childrenOf,
-            depth: depth + 1,
-            query: query,
-            matches: matches,
-            checked: checked,
-            onToggle: onToggle,
-            onNewChild: onNewChild,
-          ),
-        Padding(
-          padding: EdgeInsets.only(left: 16.0 * (depth + 1)),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => onNewChild(item.id),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Novo subitem'),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  bool _subtreeHits(LocalItem node) {
-    if (matches(node.name)) return true;
-    for (final k in childrenOf[node.id] ?? const <LocalItem>[]) {
-      if (_subtreeHits(k)) return true;
-    }
-    return false;
   }
 }
 

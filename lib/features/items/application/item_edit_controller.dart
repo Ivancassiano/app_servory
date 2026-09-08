@@ -9,11 +9,10 @@ class ItemEditController {
 
   Future<String> create({
     required String clientId,
-    String? parentItemId,
     required ItemFields fields,
   }) => _ref
       .read(itemRepositoryProvider)
-      .create(clientId: clientId, parentItemId: parentItemId, fields: fields);
+      .create(clientId: clientId, fields: fields);
 
   Future<void> update({
     required String itemId,
@@ -22,18 +21,6 @@ class ItemEditController {
   }) => _ref
       .read(itemRepositoryProvider)
       .update(id: itemId, baseVersion: baseVersion, fields: fields);
-
-  Future<void> reparent({
-    required String itemId,
-    int? baseVersion,
-    String? parentItemId,
-  }) => _ref
-      .read(itemRepositoryProvider)
-      .reparent(
-        id: itemId,
-        baseVersion: baseVersion,
-        parentItemId: parentItemId,
-      );
 }
 
 final itemEditControllerProvider = Provider<ItemEditController>(

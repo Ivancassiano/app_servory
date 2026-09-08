@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../core/db/app_database.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../items/application/items_provider.dart';
+import '../../locations/application/locations_provider.dart';
 import '../../me/application/me_provider.dart';
 import '../../me/application/person_provider.dart';
 import '../../sync/application/sync_provider.dart';
@@ -38,6 +39,9 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
       : (ref.watch(itemTypeListProvider).value ?? const [])
           .where((t) => t.id == item!.itemTypeId)
           .firstOrNull;
+  final location = item?.locationId == null
+      ? null
+      : await ref.watch(locationByIdProvider(item!.locationId!).future);
 
   final allParts =
       await (db.select(db.localServiceOrderParts)
@@ -89,6 +93,7 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
     client: client,
     item: item,
     itemType: itemType,
+    location: location,
     parts: parts,
     items: split.items,
     photos: photos,

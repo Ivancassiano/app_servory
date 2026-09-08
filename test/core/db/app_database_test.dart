@@ -84,7 +84,9 @@ void main() {
           UploadQueueCompanion.insert(
             id: 'u1',
             organizationId: 'org1',
-            serviceOrderId: 'so1',
+            ownerKind: const Value('service_order'),
+            ownerId: 'so1',
+            serviceOrderId: const Value('so1'),
             kind: 'photo',
             filePath: '/tmp/foto.jpg',
             sha256: 'abc123',

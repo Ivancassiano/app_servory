@@ -47,6 +47,7 @@ class ServiceOrderReportData {
     required this.client,
     required this.item,
     required this.itemType,
+    this.location,
     required this.parts,
     required this.items,
     required this.photos,
@@ -62,6 +63,10 @@ class ServiceOrderReportData {
   final LocalClient? client;
   final LocalItem? item;
   final LocalItemType? itemType;
+
+  /// Local do item (endereço + rótulo), se houver.
+  final LocalLocation? location;
+
   /// Peças "gerais" da ordem (sem item). As de cada item ficam em [items].
   final List<LocalServiceOrderPart> parts;
 

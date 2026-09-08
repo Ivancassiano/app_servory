@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/db/app_database.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../items/application/items_provider.dart';
+import '../../locations/application/locations_provider.dart';
 import '../../me/application/me_provider.dart';
 import '../../me/application/person_provider.dart';
 import '../../attachments/application/service_order_attachments_provider.dart';
@@ -33,6 +34,9 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
       : (ref.watch(itemTypeListProvider).value ?? const [])
           .where((t) => t.id == item!.itemTypeId)
           .firstOrNull;
+  final location = item?.locationId == null
+      ? null
+      : await ref.watch(locationByIdProvider(item!.locationId!).future);
   final allParts = await ref.watch(servicePartsProvider(orderId).future);
   final itemRows = await ref.watch(serviceItemsProvider(orderId).future);
   final catalog = {
@@ -91,6 +95,7 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
     client: client,
     item: item,
     itemType: itemType,
+    location: location,
     parts: parts,
     items: split.items,
     photos: photos,

@@ -9,6 +9,7 @@ import '../../../core/db/app_database.dart';
 import '../../clients/data/client_mapper.dart';
 import '../../items/data/item_field_value_mapper.dart';
 import '../../items/data/item_mapper.dart';
+import '../../locations/data/location_mapper.dart';
 import '../../labels/data/qr_mapper.dart';
 import '../../service_orders/data/recommendation_mapper.dart';
 import '../../service_orders/data/service_order_item_mapper.dart';
@@ -20,6 +21,7 @@ import '../data/sync_api.dart';
 /// somente leitura; `qr_code` não usa `version` de verdade (§9.3).
 const _readEntityTypes = [
   'client',
+  'location',
   'item',
   'item_field_value',
   'service_order',
@@ -153,6 +155,17 @@ class SyncEngine {
             syncError: const Value(null),
           ),
         );
+      case 'location':
+        await (_db.update(
+          _db.localLocations,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalLocationsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
       case 'item':
         await (_db.update(
           _db.localItems,
@@ -248,6 +261,10 @@ class SyncEngine {
         await (_db.update(_db.localClients)
               ..where((t) => t.id.equals(entityId)))
             .write(LocalClientsCompanion(syncStatus: status, syncError: error));
+      case 'location':
+        await (_db.update(_db.localLocations)
+              ..where((t) => t.id.equals(entityId)))
+            .write(LocalLocationsCompanion(syncStatus: status, syncError: error));
       case 'item':
         await (_db.update(_db.localItems)..where((t) => t.id.equals(entityId)))
             .write(LocalItemsCompanion(syncStatus: status, syncError: error));
@@ -302,6 +319,12 @@ class SyncEngine {
             .into(_db.localClients)
             .insertOnConflictUpdate(
               clientFromApiJson(data, organizationId: org),
+            );
+      case 'location':
+        await _db
+            .into(_db.localLocations)
+            .insertOnConflictUpdate(
+              locationFromApiJson(data, organizationId: org),
             );
       case 'item':
         await _db
@@ -358,6 +381,10 @@ class SyncEngine {
         await (_db.update(_db.localClients)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalClientsCompanion(deleted: Value(true)));
+      case 'location':
+        await (_db.update(_db.localLocations)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalLocationsCompanion(deleted: Value(true)));
       case 'item':
         await (_db.update(_db.localItems)..where((t) => t.id.equals(entityId)))
             .write(const LocalItemsCompanion(deleted: Value(true)));

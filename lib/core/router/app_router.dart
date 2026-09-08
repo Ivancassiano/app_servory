@@ -19,6 +19,8 @@ import '../../features/labels/presentation/qr_label_print_screen.dart';
 import '../../features/items/presentation/item_detail_screen.dart';
 import '../../features/items/presentation/item_fields_screen.dart';
 import '../../features/items/presentation/item_list_screen.dart';
+import '../../features/locations/presentation/location_detail_screen.dart';
+import '../../features/locations/presentation/location_list_screen.dart';
 import '../../features/me/presentation/home_screen.dart';
 import '../../features/me/presentation/person_screen.dart';
 import '../../features/me/presentation/settings_screen.dart';
@@ -103,6 +105,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/items',
         builder: (_, state) => ItemListScreen(
           clientId: state.uri.queryParameters['clientId'],
+          locationId: state.uri.queryParameters['locationId'],
         ),
         routes: [
           GoRoute(
@@ -110,7 +113,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (_, state) => ItemDetailScreen(
               itemId: state.pathParameters['id']!,
               presetClientId: state.uri.queryParameters['clientId'],
-              presetParentId: state.uri.queryParameters['parentId'],
+              presetLocationId: state.uri.queryParameters['locationId'],
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/locations',
+        builder: (_, state) => LocationListScreen(
+          clientId: state.uri.queryParameters['clientId'],
+        ),
+        routes: [
+          GoRoute(
+            path: ':id',
+            builder: (_, state) => LocationDetailScreen(
+              locationId: state.pathParameters['id']!,
+              presetClientId: state.uri.queryParameters['clientId'],
             ),
           ),
         ],

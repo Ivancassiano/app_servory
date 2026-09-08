@@ -163,7 +163,7 @@ pw.Widget _footer(ServiceOrderReportData d, pw.Context context) {
 }
 
 pw.Widget _entitiesBlock(ServiceOrderReportData d) {
-  final address = _addressLine(d.item);
+  final address = _addressLine(d.location);
   return pw.Container(
     margin: const pw.EdgeInsets.only(top: 12),
     child: pw.Column(
@@ -184,16 +184,16 @@ pw.Widget _entitiesBlock(ServiceOrderReportData d) {
   );
 }
 
-String _addressLine(LocalItem? i) {
-  if (i == null) return '';
+String _addressLine(LocalLocation? l) {
+  if (l == null) return '';
   final parts = <String>[
-    if (i.street.isNotEmpty) i.street,
-    if (i.number.isNotEmpty) i.number,
-    if (i.complement.isNotEmpty) i.complement,
-    if (i.district.isNotEmpty) i.district,
-    if (i.city.isNotEmpty) i.city,
-    if (i.state.isNotEmpty) i.state,
-    if (i.postalCode.isNotEmpty) 'CEP ${i.postalCode}',
+    if (l.street.isNotEmpty) l.street,
+    if (l.number.isNotEmpty) l.number,
+    if (l.complement.isNotEmpty) l.complement,
+    if (l.district.isNotEmpty) l.district,
+    if (l.city.isNotEmpty) l.city,
+    if (l.state.isNotEmpty) l.state,
+    if (l.postalCode.isNotEmpty) 'CEP ${l.postalCode}',
   ];
   return parts.join(', ');
 }

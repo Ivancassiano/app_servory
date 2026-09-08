@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/child_list_section.dart';
+import '../../locations/application/locations_provider.dart';
 import '../application/items_provider.dart';
 
 /// Bloco "itens deste cliente" na tela do cliente — prévia + "Ver todos".
@@ -19,6 +20,10 @@ class ClientItemsSection extends ConsumerWidget {
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     final preview = items.take(_previewLimit).toList();
     final hasMore = items.length > _previewLimit;
+    final locNames = {
+      for (final l in ref.watch(locationListProvider).value ?? const [])
+        l.id: l.name.isNotEmpty ? l.name : l.city,
+    };
 
     return ChildListSection(
       title: 'Itens',
@@ -36,11 +41,9 @@ class ClientItemsSection extends ConsumerWidget {
             dense: true,
             contentPadding: EdgeInsets.zero,
             title: Text(it.name),
-            subtitle: it.parentItemId != null
-                ? const Text('subitem')
-                : (it.city.isNotEmpty
-                      ? Text('${it.city} - ${it.state}')
-                      : null),
+            subtitle: (locNames[it.locationId] ?? '').isNotEmpty
+                ? Text(locNames[it.locationId]!)
+                : null,
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/items/${it.id}'),
           ),

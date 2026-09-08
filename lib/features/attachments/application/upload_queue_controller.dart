@@ -32,15 +32,19 @@ class UploadQueueController {
     return session.organizationId;
   }
 
+  /// [ownerKind] ∈ {service_order, item, location}; [ownerId] é o id do dono
+  /// (para OS, == serviceOrderId).
   Future<void> enqueuePhoto({
-    required String serviceOrderId,
+    required String ownerKind,
+    required String ownerId,
     required Uint8List bytes,
     required String extension,
-    required String photoKind,
+    String photoKind = 'other',
     String? caption,
     String? serviceOrderItemId,
   }) => _enqueue(
-    serviceOrderId: serviceOrderId,
+    ownerKind: ownerKind,
+    ownerId: ownerId,
     bytes: bytes,
     extension: extension.isEmpty ? '.jpg' : extension,
     kind: 'photo',
@@ -53,14 +57,16 @@ class UploadQueueController {
     required String serviceOrderId,
     required Uint8List bytes,
   }) => _enqueue(
-    serviceOrderId: serviceOrderId,
+    ownerKind: 'service_order',
+    ownerId: serviceOrderId,
     bytes: bytes,
     extension: '.png',
     kind: 'signature',
   );
 
   Future<void> _enqueue({
-    required String serviceOrderId,
+    required String ownerKind,
+    required String ownerId,
     required Uint8List bytes,
     required String extension,
     required String kind,
@@ -79,7 +85,7 @@ class UploadQueueController {
       p.join(
         (await getApplicationDocumentsDirectory()).path,
         'attachments',
-        serviceOrderId,
+        ownerId,
         kind == 'signature' ? 'signature' : 'photos',
       ),
     );
@@ -93,7 +99,11 @@ class UploadQueueController {
           UploadQueueCompanion.insert(
             id: id,
             organizationId: organizationId,
-            serviceOrderId: serviceOrderId,
+            ownerKind: Value(ownerKind),
+            ownerId: ownerId,
+            serviceOrderId: Value(
+              ownerKind == 'service_order' ? ownerId : null,
+            ),
             kind: kind,
             filePath: savedPath,
             sha256: hash,

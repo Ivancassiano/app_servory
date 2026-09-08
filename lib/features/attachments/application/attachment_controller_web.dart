@@ -17,22 +17,24 @@ class _WebAttachmentController implements AttachmentController {
 
   @override
   Future<void> submitPhoto({
-    required String orderId,
+    required String ownerKind,
+    required String ownerId,
     required Uint8List bytes,
     required String filename,
-    required String photoKind,
+    String photoKind = 'other',
     String? caption,
     String? serviceOrderItemId,
   }) async {
     await _ref.read(attachmentsApiProvider).addPhoto(
-      serviceOrderId: orderId,
+      ownerKind: ownerKind,
+      ownerId: ownerId,
       bytes: bytes,
       filename: filename,
       kind: photoKind,
       caption: caption,
       serviceOrderItemId: serviceOrderItemId,
     );
-    _ref.invalidate(orderPhotosProvider(orderId));
+    _ref.invalidate(entityPhotosProvider((ownerKind, ownerId)));
   }
 
   @override

@@ -21,6 +21,17 @@ final uploadQueueForOrderProvider =
       return query.watch();
     });
 
+/// Pendências de upload de um dono qualquer (chave `(ownerKind, ownerId)`).
+final uploadQueueForOwnerProvider =
+    StreamProvider.family<List<UploadQueueData>, (String, String)>((ref, key) {
+      final db = ref.watch(appDatabaseProvider);
+      final query = db.select(db.uploadQueue)
+        ..where((t) => t.ownerKind.equals(key.$1))
+        ..where((t) => t.ownerId.equals(key.$2))
+        ..orderBy([(t) => OrderingTerm(expression: t.createdAt)]);
+      return query.watch();
+    });
+
 /// Drena a fila de upload (GUIA-FLUTTER.md §7.3): tenta enviar cada item
 /// pendente; sucesso remove a linha (mantém o arquivo — a fatia de PDF
 /// local vai precisar dele); falha incrementa `attempts`/grava
@@ -58,7 +69,8 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
           final bytes = await File(item.filePath).readAsBytes();
           if (item.kind == 'photo') {
             await api.addPhoto(
-              serviceOrderId: item.serviceOrderId,
+              ownerKind: item.ownerKind,
+              ownerId: item.ownerId,
               bytes: bytes,
               filename: p.basename(item.filePath),
               kind: item.photoKind,
@@ -67,7 +79,7 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
             );
           } else {
             await api.putSignature(
-              serviceOrderId: item.serviceOrderId,
+              serviceOrderId: item.ownerId,
               bytes: bytes,
               filename: p.basename(item.filePath),
             );
@@ -79,9 +91,11 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
           // antes do envio até a tela recarregar por outro motivo — achado
           // ao testar o envio da assinatura ao vivo.
           if (item.kind == 'photo') {
-            ref.invalidate(orderPhotosProvider(item.serviceOrderId));
+            ref.invalidate(
+              entityPhotosProvider((item.ownerKind, item.ownerId)),
+            );
           } else {
-            ref.invalidate(orderSignatureProvider(item.serviceOrderId));
+            ref.invalidate(orderSignatureProvider(item.ownerId));
           }
         } catch (e) {
           await (db.update(

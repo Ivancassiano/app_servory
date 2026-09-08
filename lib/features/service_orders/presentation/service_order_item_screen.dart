@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../../items/application/items_provider.dart';
+import '../../locations/application/locations_provider.dart';
 import '../application/service_orders_provider.dart';
 import 'parts_section.dart';
 import 'photos_section.dart';
@@ -155,13 +156,16 @@ class _ServiceOrderItemScreenState
         .where((i) => i.id == item.itemId)
         .firstOrNull;
     final itemName = catItem?.name ?? 'Item';
+    final loc = catItem?.locationId == null
+        ? null
+        : (ref.watch(locationListProvider).value ?? const [])
+              .where((l) => l.id == catItem!.locationId)
+              .firstOrNull;
 
     return Scaffold(
       appBar: brandAppBar(
         title: itemName,
-        subtitle: catItem?.city.isNotEmpty == true
-            ? '${catItem!.city} - ${catItem.state}'
-            : null,
+        subtitle: loc != null && loc.name.isNotEmpty ? loc.name : null,
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),

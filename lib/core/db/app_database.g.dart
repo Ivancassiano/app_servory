@@ -1010,6 +1010,1090 @@ class LocalClientsCompanion extends UpdateCompanion<LocalClient> {
   }
 }
 
+class $LocalLocationsTable extends LocalLocations
+    with TableInfo<$LocalLocationsTable, LocalLocation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalLocationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('synced'),
+  );
+  static const VerificationMeta _localUpdatedAtMeta = const VerificationMeta(
+    'localUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> localUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'local_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _postalCodeMeta = const VerificationMeta(
+    'postalCode',
+  );
+  @override
+  late final GeneratedColumn<String> postalCode = GeneratedColumn<String>(
+    'postal_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _streetMeta = const VerificationMeta('street');
+  @override
+  late final GeneratedColumn<String> street = GeneratedColumn<String>(
+    'street',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _numberMeta = const VerificationMeta('number');
+  @override
+  late final GeneratedColumn<String> number = GeneratedColumn<String>(
+    'number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _complementMeta = const VerificationMeta(
+    'complement',
+  );
+  @override
+  late final GeneratedColumn<String> complement = GeneratedColumn<String>(
+    'complement',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _districtMeta = const VerificationMeta(
+    'district',
+  );
+  @override
+  late final GeneratedColumn<String> district = GeneratedColumn<String>(
+    'district',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _cityMeta = const VerificationMeta('city');
+  @override
+  late final GeneratedColumn<String> city = GeneratedColumn<String>(
+    'city',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _stateMeta = const VerificationMeta('state');
+  @override
+  late final GeneratedColumn<String> state = GeneratedColumn<String>(
+    'state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    clientId,
+    name,
+    postalCode,
+    street,
+    number,
+    complement,
+    district,
+    city,
+    state,
+    notes,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_locations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalLocation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('local_updated_at')) {
+      context.handle(
+        _localUpdatedAtMeta,
+        localUpdatedAt.isAcceptableOrUnknown(
+          data['local_updated_at']!,
+          _localUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_localUpdatedAtMeta);
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    }
+    if (data.containsKey('postal_code')) {
+      context.handle(
+        _postalCodeMeta,
+        postalCode.isAcceptableOrUnknown(data['postal_code']!, _postalCodeMeta),
+      );
+    }
+    if (data.containsKey('street')) {
+      context.handle(
+        _streetMeta,
+        street.isAcceptableOrUnknown(data['street']!, _streetMeta),
+      );
+    }
+    if (data.containsKey('number')) {
+      context.handle(
+        _numberMeta,
+        number.isAcceptableOrUnknown(data['number']!, _numberMeta),
+      );
+    }
+    if (data.containsKey('complement')) {
+      context.handle(
+        _complementMeta,
+        complement.isAcceptableOrUnknown(data['complement']!, _complementMeta),
+      );
+    }
+    if (data.containsKey('district')) {
+      context.handle(
+        _districtMeta,
+        district.isAcceptableOrUnknown(data['district']!, _districtMeta),
+      );
+    }
+    if (data.containsKey('city')) {
+      context.handle(
+        _cityMeta,
+        city.isAcceptableOrUnknown(data['city']!, _cityMeta),
+      );
+    }
+    if (data.containsKey('state')) {
+      context.handle(
+        _stateMeta,
+        state.isAcceptableOrUnknown(data['state']!, _stateMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalLocation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalLocation(
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      localUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}local_updated_at'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      ),
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      postalCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}postal_code'],
+      )!,
+      street: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}street'],
+      )!,
+      number: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}number'],
+      )!,
+      complement: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}complement'],
+      )!,
+      district: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}district'],
+      )!,
+      city: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}city'],
+      )!,
+      state: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}state'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $LocalLocationsTable createAlias(String alias) {
+    return $LocalLocationsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalLocation extends DataClass implements Insertable<LocalLocation> {
+  final String organizationId;
+  final int? version;
+  final String syncStatus;
+  final DateTime localUpdatedAt;
+  final DateTime? lastSyncedAt;
+  final String? syncError;
+  final bool deleted;
+  final String id;
+  final String clientId;
+  final String name;
+  final String postalCode;
+  final String street;
+  final String number;
+  final String complement;
+  final String district;
+  final String city;
+  final String state;
+  final String notes;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  const LocalLocation({
+    required this.organizationId,
+    this.version,
+    required this.syncStatus,
+    required this.localUpdatedAt,
+    this.lastSyncedAt,
+    this.syncError,
+    required this.deleted,
+    required this.id,
+    required this.clientId,
+    required this.name,
+    required this.postalCode,
+    required this.street,
+    required this.number,
+    required this.complement,
+    required this.district,
+    required this.city,
+    required this.state,
+    required this.notes,
+    this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['organization_id'] = Variable<String>(organizationId);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['local_updated_at'] = Variable<DateTime>(localUpdatedAt);
+    if (!nullToAbsent || lastSyncedAt != null) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    }
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['deleted'] = Variable<bool>(deleted);
+    map['id'] = Variable<String>(id);
+    map['client_id'] = Variable<String>(clientId);
+    map['name'] = Variable<String>(name);
+    map['postal_code'] = Variable<String>(postalCode);
+    map['street'] = Variable<String>(street);
+    map['number'] = Variable<String>(number);
+    map['complement'] = Variable<String>(complement);
+    map['district'] = Variable<String>(district);
+    map['city'] = Variable<String>(city);
+    map['state'] = Variable<String>(state);
+    map['notes'] = Variable<String>(notes);
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  LocalLocationsCompanion toCompanion(bool nullToAbsent) {
+    return LocalLocationsCompanion(
+      organizationId: Value(organizationId),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      syncStatus: Value(syncStatus),
+      localUpdatedAt: Value(localUpdatedAt),
+      lastSyncedAt: lastSyncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncedAt),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      deleted: Value(deleted),
+      id: Value(id),
+      clientId: Value(clientId),
+      name: Value(name),
+      postalCode: Value(postalCode),
+      street: Value(street),
+      number: Value(number),
+      complement: Value(complement),
+      district: Value(district),
+      city: Value(city),
+      state: Value(state),
+      notes: Value(notes),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory LocalLocation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalLocation(
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      version: serializer.fromJson<int?>(json['version']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      localUpdatedAt: serializer.fromJson<DateTime>(json['localUpdatedAt']),
+      lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      id: serializer.fromJson<String>(json['id']),
+      clientId: serializer.fromJson<String>(json['clientId']),
+      name: serializer.fromJson<String>(json['name']),
+      postalCode: serializer.fromJson<String>(json['postalCode']),
+      street: serializer.fromJson<String>(json['street']),
+      number: serializer.fromJson<String>(json['number']),
+      complement: serializer.fromJson<String>(json['complement']),
+      district: serializer.fromJson<String>(json['district']),
+      city: serializer.fromJson<String>(json['city']),
+      state: serializer.fromJson<String>(json['state']),
+      notes: serializer.fromJson<String>(json['notes']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'organizationId': serializer.toJson<String>(organizationId),
+      'version': serializer.toJson<int?>(version),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'localUpdatedAt': serializer.toJson<DateTime>(localUpdatedAt),
+      'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'syncError': serializer.toJson<String?>(syncError),
+      'deleted': serializer.toJson<bool>(deleted),
+      'id': serializer.toJson<String>(id),
+      'clientId': serializer.toJson<String>(clientId),
+      'name': serializer.toJson<String>(name),
+      'postalCode': serializer.toJson<String>(postalCode),
+      'street': serializer.toJson<String>(street),
+      'number': serializer.toJson<String>(number),
+      'complement': serializer.toJson<String>(complement),
+      'district': serializer.toJson<String>(district),
+      'city': serializer.toJson<String>(city),
+      'state': serializer.toJson<String>(state),
+      'notes': serializer.toJson<String>(notes),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  LocalLocation copyWith({
+    String? organizationId,
+    Value<int?> version = const Value.absent(),
+    String? syncStatus,
+    DateTime? localUpdatedAt,
+    Value<DateTime?> lastSyncedAt = const Value.absent(),
+    Value<String?> syncError = const Value.absent(),
+    bool? deleted,
+    String? id,
+    String? clientId,
+    String? name,
+    String? postalCode,
+    String? street,
+    String? number,
+    String? complement,
+    String? district,
+    String? city,
+    String? state,
+    String? notes,
+    Value<DateTime?> createdAt = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+  }) => LocalLocation(
+    organizationId: organizationId ?? this.organizationId,
+    version: version.present ? version.value : this.version,
+    syncStatus: syncStatus ?? this.syncStatus,
+    localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+    lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    deleted: deleted ?? this.deleted,
+    id: id ?? this.id,
+    clientId: clientId ?? this.clientId,
+    name: name ?? this.name,
+    postalCode: postalCode ?? this.postalCode,
+    street: street ?? this.street,
+    number: number ?? this.number,
+    complement: complement ?? this.complement,
+    district: district ?? this.district,
+    city: city ?? this.city,
+    state: state ?? this.state,
+    notes: notes ?? this.notes,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  LocalLocation copyWithCompanion(LocalLocationsCompanion data) {
+    return LocalLocation(
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      version: data.version.present ? data.version.value : this.version,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      localUpdatedAt: data.localUpdatedAt.present
+          ? data.localUpdatedAt.value
+          : this.localUpdatedAt,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      id: data.id.present ? data.id.value : this.id,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      name: data.name.present ? data.name.value : this.name,
+      postalCode: data.postalCode.present
+          ? data.postalCode.value
+          : this.postalCode,
+      street: data.street.present ? data.street.value : this.street,
+      number: data.number.present ? data.number.value : this.number,
+      complement: data.complement.present
+          ? data.complement.value
+          : this.complement,
+      district: data.district.present ? data.district.value : this.district,
+      city: data.city.present ? data.city.value : this.city,
+      state: data.state.present ? data.state.value : this.state,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalLocation(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('clientId: $clientId, ')
+          ..write('name: $name, ')
+          ..write('postalCode: $postalCode, ')
+          ..write('street: $street, ')
+          ..write('number: $number, ')
+          ..write('complement: $complement, ')
+          ..write('district: $district, ')
+          ..write('city: $city, ')
+          ..write('state: $state, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    clientId,
+    name,
+    postalCode,
+    street,
+    number,
+    complement,
+    district,
+    city,
+    state,
+    notes,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalLocation &&
+          other.organizationId == this.organizationId &&
+          other.version == this.version &&
+          other.syncStatus == this.syncStatus &&
+          other.localUpdatedAt == this.localUpdatedAt &&
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.syncError == this.syncError &&
+          other.deleted == this.deleted &&
+          other.id == this.id &&
+          other.clientId == this.clientId &&
+          other.name == this.name &&
+          other.postalCode == this.postalCode &&
+          other.street == this.street &&
+          other.number == this.number &&
+          other.complement == this.complement &&
+          other.district == this.district &&
+          other.city == this.city &&
+          other.state == this.state &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
+  final Value<String> organizationId;
+  final Value<int?> version;
+  final Value<String> syncStatus;
+  final Value<DateTime> localUpdatedAt;
+  final Value<DateTime?> lastSyncedAt;
+  final Value<String?> syncError;
+  final Value<bool> deleted;
+  final Value<String> id;
+  final Value<String> clientId;
+  final Value<String> name;
+  final Value<String> postalCode;
+  final Value<String> street;
+  final Value<String> number;
+  final Value<String> complement;
+  final Value<String> district;
+  final Value<String> city;
+  final Value<String> state;
+  final Value<String> notes;
+  final Value<DateTime?> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int> rowid;
+  const LocalLocationsCompanion({
+    this.organizationId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.id = const Value.absent(),
+    this.clientId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.postalCode = const Value.absent(),
+    this.street = const Value.absent(),
+    this.number = const Value.absent(),
+    this.complement = const Value.absent(),
+    this.district = const Value.absent(),
+    this.city = const Value.absent(),
+    this.state = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalLocationsCompanion.insert({
+    required String organizationId,
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required DateTime localUpdatedAt,
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String id,
+    required String clientId,
+    this.name = const Value.absent(),
+    this.postalCode = const Value.absent(),
+    this.street = const Value.absent(),
+    this.number = const Value.absent(),
+    this.complement = const Value.absent(),
+    this.district = const Value.absent(),
+    this.city = const Value.absent(),
+    this.state = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : organizationId = Value(organizationId),
+       localUpdatedAt = Value(localUpdatedAt),
+       id = Value(id),
+       clientId = Value(clientId);
+  static Insertable<LocalLocation> custom({
+    Expression<String>? organizationId,
+    Expression<int>? version,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? localUpdatedAt,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<String>? syncError,
+    Expression<bool>? deleted,
+    Expression<String>? id,
+    Expression<String>? clientId,
+    Expression<String>? name,
+    Expression<String>? postalCode,
+    Expression<String>? street,
+    Expression<String>? number,
+    Expression<String>? complement,
+    Expression<String>? district,
+    Expression<String>? city,
+    Expression<String>? state,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (organizationId != null) 'organization_id': organizationId,
+      if (version != null) 'version': version,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (localUpdatedAt != null) 'local_updated_at': localUpdatedAt,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (syncError != null) 'sync_error': syncError,
+      if (deleted != null) 'deleted': deleted,
+      if (id != null) 'id': id,
+      if (clientId != null) 'client_id': clientId,
+      if (name != null) 'name': name,
+      if (postalCode != null) 'postal_code': postalCode,
+      if (street != null) 'street': street,
+      if (number != null) 'number': number,
+      if (complement != null) 'complement': complement,
+      if (district != null) 'district': district,
+      if (city != null) 'city': city,
+      if (state != null) 'state': state,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalLocationsCompanion copyWith({
+    Value<String>? organizationId,
+    Value<int?>? version,
+    Value<String>? syncStatus,
+    Value<DateTime>? localUpdatedAt,
+    Value<DateTime?>? lastSyncedAt,
+    Value<String?>? syncError,
+    Value<bool>? deleted,
+    Value<String>? id,
+    Value<String>? clientId,
+    Value<String>? name,
+    Value<String>? postalCode,
+    Value<String>? street,
+    Value<String>? number,
+    Value<String>? complement,
+    Value<String>? district,
+    Value<String>? city,
+    Value<String>? state,
+    Value<String>? notes,
+    Value<DateTime?>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalLocationsCompanion(
+      organizationId: organizationId ?? this.organizationId,
+      version: version ?? this.version,
+      syncStatus: syncStatus ?? this.syncStatus,
+      localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      syncError: syncError ?? this.syncError,
+      deleted: deleted ?? this.deleted,
+      id: id ?? this.id,
+      clientId: clientId ?? this.clientId,
+      name: name ?? this.name,
+      postalCode: postalCode ?? this.postalCode,
+      street: street ?? this.street,
+      number: number ?? this.number,
+      complement: complement ?? this.complement,
+      district: district ?? this.district,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (localUpdatedAt.present) {
+      map['local_updated_at'] = Variable<DateTime>(localUpdatedAt.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (postalCode.present) {
+      map['postal_code'] = Variable<String>(postalCode.value);
+    }
+    if (street.present) {
+      map['street'] = Variable<String>(street.value);
+    }
+    if (number.present) {
+      map['number'] = Variable<String>(number.value);
+    }
+    if (complement.present) {
+      map['complement'] = Variable<String>(complement.value);
+    }
+    if (district.present) {
+      map['district'] = Variable<String>(district.value);
+    }
+    if (city.present) {
+      map['city'] = Variable<String>(city.value);
+    }
+    if (state.present) {
+      map['state'] = Variable<String>(state.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalLocationsCompanion(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('clientId: $clientId, ')
+          ..write('name: $name, ')
+          ..write('postalCode: $postalCode, ')
+          ..write('street: $street, ')
+          ..write('number: $number, ')
+          ..write('complement: $complement, ')
+          ..write('district: $district, ')
+          ..write('city: $city, ')
+          ..write('state: $state, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $LocalItemsTable extends LocalItems
     with TableInfo<$LocalItemsTable, LocalItem> {
   @override
@@ -1119,12 +2203,12 @@ class $LocalItemsTable extends LocalItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _parentItemIdMeta = const VerificationMeta(
-    'parentItemId',
+  static const VerificationMeta _locationIdMeta = const VerificationMeta(
+    'locationId',
   );
   @override
-  late final GeneratedColumn<String> parentItemId = GeneratedColumn<String>(
-    'parent_item_id',
+  late final GeneratedColumn<String> locationId = GeneratedColumn<String>(
+    'location_id',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -1150,116 +2234,6 @@ class $LocalItemsTable extends LocalItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _postalCodeMeta = const VerificationMeta(
-    'postalCode',
-  );
-  @override
-  late final GeneratedColumn<String> postalCode = GeneratedColumn<String>(
-    'postal_code',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _streetMeta = const VerificationMeta('street');
-  @override
-  late final GeneratedColumn<String> street = GeneratedColumn<String>(
-    'street',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _numberMeta = const VerificationMeta('number');
-  @override
-  late final GeneratedColumn<String> number = GeneratedColumn<String>(
-    'number',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _complementMeta = const VerificationMeta(
-    'complement',
-  );
-  @override
-  late final GeneratedColumn<String> complement = GeneratedColumn<String>(
-    'complement',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _districtMeta = const VerificationMeta(
-    'district',
-  );
-  @override
-  late final GeneratedColumn<String> district = GeneratedColumn<String>(
-    'district',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _cityMeta = const VerificationMeta('city');
-  @override
-  late final GeneratedColumn<String> city = GeneratedColumn<String>(
-    'city',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _stateMeta = const VerificationMeta('state');
-  @override
-  late final GeneratedColumn<String> state = GeneratedColumn<String>(
-    'state',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _contactPersonMeta = const VerificationMeta(
-    'contactPerson',
-  );
-  @override
-  late final GeneratedColumn<String> contactPerson = GeneratedColumn<String>(
-    'contact_person',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
-  @override
-  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
-    'phone',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _accessInstructionsMeta =
-      const VerificationMeta('accessInstructions');
-  @override
-  late final GeneratedColumn<String> accessInstructions =
-      GeneratedColumn<String>(
-        'access_instructions',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-        defaultValue: const Constant(''),
-      );
   static const VerificationMeta _brandMeta = const VerificationMeta('brand');
   @override
   late final GeneratedColumn<String> brand = GeneratedColumn<String>(
@@ -1366,19 +2340,9 @@ class $LocalItemsTable extends LocalItems
     deleted,
     id,
     clientId,
-    parentItemId,
+    locationId,
     itemTypeId,
     name,
-    postalCode,
-    street,
-    number,
-    complement,
-    district,
-    city,
-    state,
-    contactPerson,
-    phone,
-    accessInstructions,
     brand,
     model,
     serialNumber,
@@ -1469,13 +2433,10 @@ class $LocalItemsTable extends LocalItems
     } else if (isInserting) {
       context.missing(_clientIdMeta);
     }
-    if (data.containsKey('parent_item_id')) {
+    if (data.containsKey('location_id')) {
       context.handle(
-        _parentItemIdMeta,
-        parentItemId.isAcceptableOrUnknown(
-          data['parent_item_id']!,
-          _parentItemIdMeta,
-        ),
+        _locationIdMeta,
+        locationId.isAcceptableOrUnknown(data['location_id']!, _locationIdMeta),
       );
     }
     if (data.containsKey('item_type_id')) {
@@ -1494,72 +2455,6 @@ class $LocalItemsTable extends LocalItems
       );
     } else if (isInserting) {
       context.missing(_nameMeta);
-    }
-    if (data.containsKey('postal_code')) {
-      context.handle(
-        _postalCodeMeta,
-        postalCode.isAcceptableOrUnknown(data['postal_code']!, _postalCodeMeta),
-      );
-    }
-    if (data.containsKey('street')) {
-      context.handle(
-        _streetMeta,
-        street.isAcceptableOrUnknown(data['street']!, _streetMeta),
-      );
-    }
-    if (data.containsKey('number')) {
-      context.handle(
-        _numberMeta,
-        number.isAcceptableOrUnknown(data['number']!, _numberMeta),
-      );
-    }
-    if (data.containsKey('complement')) {
-      context.handle(
-        _complementMeta,
-        complement.isAcceptableOrUnknown(data['complement']!, _complementMeta),
-      );
-    }
-    if (data.containsKey('district')) {
-      context.handle(
-        _districtMeta,
-        district.isAcceptableOrUnknown(data['district']!, _districtMeta),
-      );
-    }
-    if (data.containsKey('city')) {
-      context.handle(
-        _cityMeta,
-        city.isAcceptableOrUnknown(data['city']!, _cityMeta),
-      );
-    }
-    if (data.containsKey('state')) {
-      context.handle(
-        _stateMeta,
-        state.isAcceptableOrUnknown(data['state']!, _stateMeta),
-      );
-    }
-    if (data.containsKey('contact_person')) {
-      context.handle(
-        _contactPersonMeta,
-        contactPerson.isAcceptableOrUnknown(
-          data['contact_person']!,
-          _contactPersonMeta,
-        ),
-      );
-    }
-    if (data.containsKey('phone')) {
-      context.handle(
-        _phoneMeta,
-        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
-      );
-    }
-    if (data.containsKey('access_instructions')) {
-      context.handle(
-        _accessInstructionsMeta,
-        accessInstructions.isAcceptableOrUnknown(
-          data['access_instructions']!,
-          _accessInstructionsMeta,
-        ),
-      );
     }
     if (data.containsKey('brand')) {
       context.handle(
@@ -1669,9 +2564,9 @@ class $LocalItemsTable extends LocalItems
         DriftSqlType.string,
         data['${effectivePrefix}client_id'],
       )!,
-      parentItemId: attachedDatabase.typeMapping.read(
+      locationId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}parent_item_id'],
+        data['${effectivePrefix}location_id'],
       ),
       itemTypeId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -1680,46 +2575,6 @@ class $LocalItemsTable extends LocalItems
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
-      )!,
-      postalCode: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}postal_code'],
-      )!,
-      street: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}street'],
-      )!,
-      number: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}number'],
-      )!,
-      complement: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}complement'],
-      )!,
-      district: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}district'],
-      )!,
-      city: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}city'],
-      )!,
-      state: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}state'],
-      )!,
-      contactPerson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}contact_person'],
-      )!,
-      phone: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}phone'],
-      )!,
-      accessInstructions: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}access_instructions'],
       )!,
       brand: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -1776,19 +2631,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
   final bool deleted;
   final String id;
   final String clientId;
-  final String? parentItemId;
+  final String? locationId;
   final String? itemTypeId;
   final String name;
-  final String postalCode;
-  final String street;
-  final String number;
-  final String complement;
-  final String district;
-  final String city;
-  final String state;
-  final String contactPerson;
-  final String phone;
-  final String accessInstructions;
   final String brand;
   final String model;
   final String? serialNumber;
@@ -1808,19 +2653,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     required this.deleted,
     required this.id,
     required this.clientId,
-    this.parentItemId,
+    this.locationId,
     this.itemTypeId,
     required this.name,
-    required this.postalCode,
-    required this.street,
-    required this.number,
-    required this.complement,
-    required this.district,
-    required this.city,
-    required this.state,
-    required this.contactPerson,
-    required this.phone,
-    required this.accessInstructions,
     required this.brand,
     required this.model,
     this.serialNumber,
@@ -1849,23 +2684,13 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     map['deleted'] = Variable<bool>(deleted);
     map['id'] = Variable<String>(id);
     map['client_id'] = Variable<String>(clientId);
-    if (!nullToAbsent || parentItemId != null) {
-      map['parent_item_id'] = Variable<String>(parentItemId);
+    if (!nullToAbsent || locationId != null) {
+      map['location_id'] = Variable<String>(locationId);
     }
     if (!nullToAbsent || itemTypeId != null) {
       map['item_type_id'] = Variable<String>(itemTypeId);
     }
     map['name'] = Variable<String>(name);
-    map['postal_code'] = Variable<String>(postalCode);
-    map['street'] = Variable<String>(street);
-    map['number'] = Variable<String>(number);
-    map['complement'] = Variable<String>(complement);
-    map['district'] = Variable<String>(district);
-    map['city'] = Variable<String>(city);
-    map['state'] = Variable<String>(state);
-    map['contact_person'] = Variable<String>(contactPerson);
-    map['phone'] = Variable<String>(phone);
-    map['access_instructions'] = Variable<String>(accessInstructions);
     map['brand'] = Variable<String>(brand);
     map['model'] = Variable<String>(model);
     if (!nullToAbsent || serialNumber != null) {
@@ -1905,23 +2730,13 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
       deleted: Value(deleted),
       id: Value(id),
       clientId: Value(clientId),
-      parentItemId: parentItemId == null && nullToAbsent
+      locationId: locationId == null && nullToAbsent
           ? const Value.absent()
-          : Value(parentItemId),
+          : Value(locationId),
       itemTypeId: itemTypeId == null && nullToAbsent
           ? const Value.absent()
           : Value(itemTypeId),
       name: Value(name),
-      postalCode: Value(postalCode),
-      street: Value(street),
-      number: Value(number),
-      complement: Value(complement),
-      district: Value(district),
-      city: Value(city),
-      state: Value(state),
-      contactPerson: Value(contactPerson),
-      phone: Value(phone),
-      accessInstructions: Value(accessInstructions),
       brand: Value(brand),
       model: Value(model),
       serialNumber: serialNumber == null && nullToAbsent
@@ -1957,21 +2772,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
       deleted: serializer.fromJson<bool>(json['deleted']),
       id: serializer.fromJson<String>(json['id']),
       clientId: serializer.fromJson<String>(json['clientId']),
-      parentItemId: serializer.fromJson<String?>(json['parentItemId']),
+      locationId: serializer.fromJson<String?>(json['locationId']),
       itemTypeId: serializer.fromJson<String?>(json['itemTypeId']),
       name: serializer.fromJson<String>(json['name']),
-      postalCode: serializer.fromJson<String>(json['postalCode']),
-      street: serializer.fromJson<String>(json['street']),
-      number: serializer.fromJson<String>(json['number']),
-      complement: serializer.fromJson<String>(json['complement']),
-      district: serializer.fromJson<String>(json['district']),
-      city: serializer.fromJson<String>(json['city']),
-      state: serializer.fromJson<String>(json['state']),
-      contactPerson: serializer.fromJson<String>(json['contactPerson']),
-      phone: serializer.fromJson<String>(json['phone']),
-      accessInstructions: serializer.fromJson<String>(
-        json['accessInstructions'],
-      ),
       brand: serializer.fromJson<String>(json['brand']),
       model: serializer.fromJson<String>(json['model']),
       serialNumber: serializer.fromJson<String?>(json['serialNumber']),
@@ -1996,19 +2799,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
       'deleted': serializer.toJson<bool>(deleted),
       'id': serializer.toJson<String>(id),
       'clientId': serializer.toJson<String>(clientId),
-      'parentItemId': serializer.toJson<String?>(parentItemId),
+      'locationId': serializer.toJson<String?>(locationId),
       'itemTypeId': serializer.toJson<String?>(itemTypeId),
       'name': serializer.toJson<String>(name),
-      'postalCode': serializer.toJson<String>(postalCode),
-      'street': serializer.toJson<String>(street),
-      'number': serializer.toJson<String>(number),
-      'complement': serializer.toJson<String>(complement),
-      'district': serializer.toJson<String>(district),
-      'city': serializer.toJson<String>(city),
-      'state': serializer.toJson<String>(state),
-      'contactPerson': serializer.toJson<String>(contactPerson),
-      'phone': serializer.toJson<String>(phone),
-      'accessInstructions': serializer.toJson<String>(accessInstructions),
       'brand': serializer.toJson<String>(brand),
       'model': serializer.toJson<String>(model),
       'serialNumber': serializer.toJson<String?>(serialNumber),
@@ -2031,19 +2824,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     bool? deleted,
     String? id,
     String? clientId,
-    Value<String?> parentItemId = const Value.absent(),
+    Value<String?> locationId = const Value.absent(),
     Value<String?> itemTypeId = const Value.absent(),
     String? name,
-    String? postalCode,
-    String? street,
-    String? number,
-    String? complement,
-    String? district,
-    String? city,
-    String? state,
-    String? contactPerson,
-    String? phone,
-    String? accessInstructions,
     String? brand,
     String? model,
     Value<String?> serialNumber = const Value.absent(),
@@ -2063,19 +2846,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     deleted: deleted ?? this.deleted,
     id: id ?? this.id,
     clientId: clientId ?? this.clientId,
-    parentItemId: parentItemId.present ? parentItemId.value : this.parentItemId,
+    locationId: locationId.present ? locationId.value : this.locationId,
     itemTypeId: itemTypeId.present ? itemTypeId.value : this.itemTypeId,
     name: name ?? this.name,
-    postalCode: postalCode ?? this.postalCode,
-    street: street ?? this.street,
-    number: number ?? this.number,
-    complement: complement ?? this.complement,
-    district: district ?? this.district,
-    city: city ?? this.city,
-    state: state ?? this.state,
-    contactPerson: contactPerson ?? this.contactPerson,
-    phone: phone ?? this.phone,
-    accessInstructions: accessInstructions ?? this.accessInstructions,
     brand: brand ?? this.brand,
     model: model ?? this.model,
     serialNumber: serialNumber.present ? serialNumber.value : this.serialNumber,
@@ -2105,31 +2878,13 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
       id: data.id.present ? data.id.value : this.id,
       clientId: data.clientId.present ? data.clientId.value : this.clientId,
-      parentItemId: data.parentItemId.present
-          ? data.parentItemId.value
-          : this.parentItemId,
+      locationId: data.locationId.present
+          ? data.locationId.value
+          : this.locationId,
       itemTypeId: data.itemTypeId.present
           ? data.itemTypeId.value
           : this.itemTypeId,
       name: data.name.present ? data.name.value : this.name,
-      postalCode: data.postalCode.present
-          ? data.postalCode.value
-          : this.postalCode,
-      street: data.street.present ? data.street.value : this.street,
-      number: data.number.present ? data.number.value : this.number,
-      complement: data.complement.present
-          ? data.complement.value
-          : this.complement,
-      district: data.district.present ? data.district.value : this.district,
-      city: data.city.present ? data.city.value : this.city,
-      state: data.state.present ? data.state.value : this.state,
-      contactPerson: data.contactPerson.present
-          ? data.contactPerson.value
-          : this.contactPerson,
-      phone: data.phone.present ? data.phone.value : this.phone,
-      accessInstructions: data.accessInstructions.present
-          ? data.accessInstructions.value
-          : this.accessInstructions,
       brand: data.brand.present ? data.brand.value : this.brand,
       model: data.model.present ? data.model.value : this.model,
       serialNumber: data.serialNumber.present
@@ -2160,19 +2915,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
           ..write('clientId: $clientId, ')
-          ..write('parentItemId: $parentItemId, ')
+          ..write('locationId: $locationId, ')
           ..write('itemTypeId: $itemTypeId, ')
           ..write('name: $name, ')
-          ..write('postalCode: $postalCode, ')
-          ..write('street: $street, ')
-          ..write('number: $number, ')
-          ..write('complement: $complement, ')
-          ..write('district: $district, ')
-          ..write('city: $city, ')
-          ..write('state: $state, ')
-          ..write('contactPerson: $contactPerson, ')
-          ..write('phone: $phone, ')
-          ..write('accessInstructions: $accessInstructions, ')
           ..write('brand: $brand, ')
           ..write('model: $model, ')
           ..write('serialNumber: $serialNumber, ')
@@ -2197,19 +2942,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     deleted,
     id,
     clientId,
-    parentItemId,
+    locationId,
     itemTypeId,
     name,
-    postalCode,
-    street,
-    number,
-    complement,
-    district,
-    city,
-    state,
-    contactPerson,
-    phone,
-    accessInstructions,
     brand,
     model,
     serialNumber,
@@ -2233,19 +2968,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
           other.deleted == this.deleted &&
           other.id == this.id &&
           other.clientId == this.clientId &&
-          other.parentItemId == this.parentItemId &&
+          other.locationId == this.locationId &&
           other.itemTypeId == this.itemTypeId &&
           other.name == this.name &&
-          other.postalCode == this.postalCode &&
-          other.street == this.street &&
-          other.number == this.number &&
-          other.complement == this.complement &&
-          other.district == this.district &&
-          other.city == this.city &&
-          other.state == this.state &&
-          other.contactPerson == this.contactPerson &&
-          other.phone == this.phone &&
-          other.accessInstructions == this.accessInstructions &&
           other.brand == this.brand &&
           other.model == this.model &&
           other.serialNumber == this.serialNumber &&
@@ -2267,19 +2992,9 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
   final Value<bool> deleted;
   final Value<String> id;
   final Value<String> clientId;
-  final Value<String?> parentItemId;
+  final Value<String?> locationId;
   final Value<String?> itemTypeId;
   final Value<String> name;
-  final Value<String> postalCode;
-  final Value<String> street;
-  final Value<String> number;
-  final Value<String> complement;
-  final Value<String> district;
-  final Value<String> city;
-  final Value<String> state;
-  final Value<String> contactPerson;
-  final Value<String> phone;
-  final Value<String> accessInstructions;
   final Value<String> brand;
   final Value<String> model;
   final Value<String?> serialNumber;
@@ -2300,19 +3015,9 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     this.deleted = const Value.absent(),
     this.id = const Value.absent(),
     this.clientId = const Value.absent(),
-    this.parentItemId = const Value.absent(),
+    this.locationId = const Value.absent(),
     this.itemTypeId = const Value.absent(),
     this.name = const Value.absent(),
-    this.postalCode = const Value.absent(),
-    this.street = const Value.absent(),
-    this.number = const Value.absent(),
-    this.complement = const Value.absent(),
-    this.district = const Value.absent(),
-    this.city = const Value.absent(),
-    this.state = const Value.absent(),
-    this.contactPerson = const Value.absent(),
-    this.phone = const Value.absent(),
-    this.accessInstructions = const Value.absent(),
     this.brand = const Value.absent(),
     this.model = const Value.absent(),
     this.serialNumber = const Value.absent(),
@@ -2334,19 +3039,9 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     this.deleted = const Value.absent(),
     required String id,
     required String clientId,
-    this.parentItemId = const Value.absent(),
+    this.locationId = const Value.absent(),
     this.itemTypeId = const Value.absent(),
     required String name,
-    this.postalCode = const Value.absent(),
-    this.street = const Value.absent(),
-    this.number = const Value.absent(),
-    this.complement = const Value.absent(),
-    this.district = const Value.absent(),
-    this.city = const Value.absent(),
-    this.state = const Value.absent(),
-    this.contactPerson = const Value.absent(),
-    this.phone = const Value.absent(),
-    this.accessInstructions = const Value.absent(),
     this.brand = const Value.absent(),
     this.model = const Value.absent(),
     this.serialNumber = const Value.absent(),
@@ -2372,19 +3067,9 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     Expression<bool>? deleted,
     Expression<String>? id,
     Expression<String>? clientId,
-    Expression<String>? parentItemId,
+    Expression<String>? locationId,
     Expression<String>? itemTypeId,
     Expression<String>? name,
-    Expression<String>? postalCode,
-    Expression<String>? street,
-    Expression<String>? number,
-    Expression<String>? complement,
-    Expression<String>? district,
-    Expression<String>? city,
-    Expression<String>? state,
-    Expression<String>? contactPerson,
-    Expression<String>? phone,
-    Expression<String>? accessInstructions,
     Expression<String>? brand,
     Expression<String>? model,
     Expression<String>? serialNumber,
@@ -2406,19 +3091,9 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
       if (deleted != null) 'deleted': deleted,
       if (id != null) 'id': id,
       if (clientId != null) 'client_id': clientId,
-      if (parentItemId != null) 'parent_item_id': parentItemId,
+      if (locationId != null) 'location_id': locationId,
       if (itemTypeId != null) 'item_type_id': itemTypeId,
       if (name != null) 'name': name,
-      if (postalCode != null) 'postal_code': postalCode,
-      if (street != null) 'street': street,
-      if (number != null) 'number': number,
-      if (complement != null) 'complement': complement,
-      if (district != null) 'district': district,
-      if (city != null) 'city': city,
-      if (state != null) 'state': state,
-      if (contactPerson != null) 'contact_person': contactPerson,
-      if (phone != null) 'phone': phone,
-      if (accessInstructions != null) 'access_instructions': accessInstructions,
       if (brand != null) 'brand': brand,
       if (model != null) 'model': model,
       if (serialNumber != null) 'serial_number': serialNumber,
@@ -2442,19 +3117,9 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     Value<bool>? deleted,
     Value<String>? id,
     Value<String>? clientId,
-    Value<String?>? parentItemId,
+    Value<String?>? locationId,
     Value<String?>? itemTypeId,
     Value<String>? name,
-    Value<String>? postalCode,
-    Value<String>? street,
-    Value<String>? number,
-    Value<String>? complement,
-    Value<String>? district,
-    Value<String>? city,
-    Value<String>? state,
-    Value<String>? contactPerson,
-    Value<String>? phone,
-    Value<String>? accessInstructions,
     Value<String>? brand,
     Value<String>? model,
     Value<String?>? serialNumber,
@@ -2476,19 +3141,9 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
       deleted: deleted ?? this.deleted,
       id: id ?? this.id,
       clientId: clientId ?? this.clientId,
-      parentItemId: parentItemId ?? this.parentItemId,
+      locationId: locationId ?? this.locationId,
       itemTypeId: itemTypeId ?? this.itemTypeId,
       name: name ?? this.name,
-      postalCode: postalCode ?? this.postalCode,
-      street: street ?? this.street,
-      number: number ?? this.number,
-      complement: complement ?? this.complement,
-      district: district ?? this.district,
-      city: city ?? this.city,
-      state: state ?? this.state,
-      contactPerson: contactPerson ?? this.contactPerson,
-      phone: phone ?? this.phone,
-      accessInstructions: accessInstructions ?? this.accessInstructions,
       brand: brand ?? this.brand,
       model: model ?? this.model,
       serialNumber: serialNumber ?? this.serialNumber,
@@ -2532,44 +3187,14 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     if (clientId.present) {
       map['client_id'] = Variable<String>(clientId.value);
     }
-    if (parentItemId.present) {
-      map['parent_item_id'] = Variable<String>(parentItemId.value);
+    if (locationId.present) {
+      map['location_id'] = Variable<String>(locationId.value);
     }
     if (itemTypeId.present) {
       map['item_type_id'] = Variable<String>(itemTypeId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
-    }
-    if (postalCode.present) {
-      map['postal_code'] = Variable<String>(postalCode.value);
-    }
-    if (street.present) {
-      map['street'] = Variable<String>(street.value);
-    }
-    if (number.present) {
-      map['number'] = Variable<String>(number.value);
-    }
-    if (complement.present) {
-      map['complement'] = Variable<String>(complement.value);
-    }
-    if (district.present) {
-      map['district'] = Variable<String>(district.value);
-    }
-    if (city.present) {
-      map['city'] = Variable<String>(city.value);
-    }
-    if (state.present) {
-      map['state'] = Variable<String>(state.value);
-    }
-    if (contactPerson.present) {
-      map['contact_person'] = Variable<String>(contactPerson.value);
-    }
-    if (phone.present) {
-      map['phone'] = Variable<String>(phone.value);
-    }
-    if (accessInstructions.present) {
-      map['access_instructions'] = Variable<String>(accessInstructions.value);
     }
     if (brand.present) {
       map['brand'] = Variable<String>(brand.value);
@@ -2616,19 +3241,9 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
           ..write('clientId: $clientId, ')
-          ..write('parentItemId: $parentItemId, ')
+          ..write('locationId: $locationId, ')
           ..write('itemTypeId: $itemTypeId, ')
           ..write('name: $name, ')
-          ..write('postalCode: $postalCode, ')
-          ..write('street: $street, ')
-          ..write('number: $number, ')
-          ..write('complement: $complement, ')
-          ..write('district: $district, ')
-          ..write('city: $city, ')
-          ..write('state: $state, ')
-          ..write('contactPerson: $contactPerson, ')
-          ..write('phone: $phone, ')
-          ..write('accessInstructions: $accessInstructions, ')
           ..write('brand: $brand, ')
           ..write('model: $model, ')
           ..write('serialNumber: $serialNumber, ')
@@ -12666,6 +13281,29 @@ class $UploadQueueTable extends UploadQueue
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _ownerKindMeta = const VerificationMeta(
+    'ownerKind',
+  );
+  @override
+  late final GeneratedColumn<String> ownerKind = GeneratedColumn<String>(
+    'owner_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('service_order'),
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _serviceOrderIdMeta = const VerificationMeta(
     'serviceOrderId',
   );
@@ -12673,9 +13311,9 @@ class $UploadQueueTable extends UploadQueue
   late final GeneratedColumn<String> serviceOrderId = GeneratedColumn<String>(
     'service_order_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _serviceOrderItemIdMeta =
       const VerificationMeta('serviceOrderItemId');
@@ -12777,6 +13415,8 @@ class $UploadQueueTable extends UploadQueue
   List<GeneratedColumn> get $columns => [
     id,
     organizationId,
+    ownerKind,
+    ownerId,
     serviceOrderId,
     serviceOrderItemId,
     kind,
@@ -12816,6 +13456,20 @@ class $UploadQueueTable extends UploadQueue
     } else if (isInserting) {
       context.missing(_organizationIdMeta);
     }
+    if (data.containsKey('owner_kind')) {
+      context.handle(
+        _ownerKindMeta,
+        ownerKind.isAcceptableOrUnknown(data['owner_kind']!, _ownerKindMeta),
+      );
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
     if (data.containsKey('service_order_id')) {
       context.handle(
         _serviceOrderIdMeta,
@@ -12824,8 +13478,6 @@ class $UploadQueueTable extends UploadQueue
           _serviceOrderIdMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_serviceOrderIdMeta);
     }
     if (data.containsKey('service_order_item_id')) {
       context.handle(
@@ -12909,10 +13561,18 @@ class $UploadQueueTable extends UploadQueue
         DriftSqlType.string,
         data['${effectivePrefix}organization_id'],
       )!,
+      ownerKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_kind'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
       serviceOrderId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}service_order_id'],
-      )!,
+      ),
       serviceOrderItemId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}service_order_item_id'],
@@ -12961,7 +13621,9 @@ class $UploadQueueTable extends UploadQueue
 class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   final String id;
   final String organizationId;
-  final String serviceOrderId;
+  final String ownerKind;
+  final String ownerId;
+  final String? serviceOrderId;
   final String? serviceOrderItemId;
   final String kind;
   final String filePath;
@@ -12974,7 +13636,9 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   const UploadQueueData({
     required this.id,
     required this.organizationId,
-    required this.serviceOrderId,
+    required this.ownerKind,
+    required this.ownerId,
+    this.serviceOrderId,
     this.serviceOrderItemId,
     required this.kind,
     required this.filePath,
@@ -12990,7 +13654,11 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['organization_id'] = Variable<String>(organizationId);
-    map['service_order_id'] = Variable<String>(serviceOrderId);
+    map['owner_kind'] = Variable<String>(ownerKind);
+    map['owner_id'] = Variable<String>(ownerId);
+    if (!nullToAbsent || serviceOrderId != null) {
+      map['service_order_id'] = Variable<String>(serviceOrderId);
+    }
     if (!nullToAbsent || serviceOrderItemId != null) {
       map['service_order_item_id'] = Variable<String>(serviceOrderItemId);
     }
@@ -13015,7 +13683,11 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     return UploadQueueCompanion(
       id: Value(id),
       organizationId: Value(organizationId),
-      serviceOrderId: Value(serviceOrderId),
+      ownerKind: Value(ownerKind),
+      ownerId: Value(ownerId),
+      serviceOrderId: serviceOrderId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serviceOrderId),
       serviceOrderItemId: serviceOrderItemId == null && nullToAbsent
           ? const Value.absent()
           : Value(serviceOrderItemId),
@@ -13044,7 +13716,9 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     return UploadQueueData(
       id: serializer.fromJson<String>(json['id']),
       organizationId: serializer.fromJson<String>(json['organizationId']),
-      serviceOrderId: serializer.fromJson<String>(json['serviceOrderId']),
+      ownerKind: serializer.fromJson<String>(json['ownerKind']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      serviceOrderId: serializer.fromJson<String?>(json['serviceOrderId']),
       serviceOrderItemId: serializer.fromJson<String?>(
         json['serviceOrderItemId'],
       ),
@@ -13064,7 +13738,9 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'organizationId': serializer.toJson<String>(organizationId),
-      'serviceOrderId': serializer.toJson<String>(serviceOrderId),
+      'ownerKind': serializer.toJson<String>(ownerKind),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'serviceOrderId': serializer.toJson<String?>(serviceOrderId),
       'serviceOrderItemId': serializer.toJson<String?>(serviceOrderItemId),
       'kind': serializer.toJson<String>(kind),
       'filePath': serializer.toJson<String>(filePath),
@@ -13080,7 +13756,9 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   UploadQueueData copyWith({
     String? id,
     String? organizationId,
-    String? serviceOrderId,
+    String? ownerKind,
+    String? ownerId,
+    Value<String?> serviceOrderId = const Value.absent(),
     Value<String?> serviceOrderItemId = const Value.absent(),
     String? kind,
     String? filePath,
@@ -13093,7 +13771,11 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   }) => UploadQueueData(
     id: id ?? this.id,
     organizationId: organizationId ?? this.organizationId,
-    serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+    ownerKind: ownerKind ?? this.ownerKind,
+    ownerId: ownerId ?? this.ownerId,
+    serviceOrderId: serviceOrderId.present
+        ? serviceOrderId.value
+        : this.serviceOrderId,
     serviceOrderItemId: serviceOrderItemId.present
         ? serviceOrderItemId.value
         : this.serviceOrderItemId,
@@ -13112,6 +13794,8 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
       organizationId: data.organizationId.present
           ? data.organizationId.value
           : this.organizationId,
+      ownerKind: data.ownerKind.present ? data.ownerKind.value : this.ownerKind,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
       serviceOrderId: data.serviceOrderId.present
           ? data.serviceOrderId.value
           : this.serviceOrderId,
@@ -13134,6 +13818,8 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     return (StringBuffer('UploadQueueData(')
           ..write('id: $id, ')
           ..write('organizationId: $organizationId, ')
+          ..write('ownerKind: $ownerKind, ')
+          ..write('ownerId: $ownerId, ')
           ..write('serviceOrderId: $serviceOrderId, ')
           ..write('serviceOrderItemId: $serviceOrderItemId, ')
           ..write('kind: $kind, ')
@@ -13152,6 +13838,8 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   int get hashCode => Object.hash(
     id,
     organizationId,
+    ownerKind,
+    ownerId,
     serviceOrderId,
     serviceOrderItemId,
     kind,
@@ -13169,6 +13857,8 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
       (other is UploadQueueData &&
           other.id == this.id &&
           other.organizationId == this.organizationId &&
+          other.ownerKind == this.ownerKind &&
+          other.ownerId == this.ownerId &&
           other.serviceOrderId == this.serviceOrderId &&
           other.serviceOrderItemId == this.serviceOrderItemId &&
           other.kind == this.kind &&
@@ -13184,7 +13874,9 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
 class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   final Value<String> id;
   final Value<String> organizationId;
-  final Value<String> serviceOrderId;
+  final Value<String> ownerKind;
+  final Value<String> ownerId;
+  final Value<String?> serviceOrderId;
   final Value<String?> serviceOrderItemId;
   final Value<String> kind;
   final Value<String> filePath;
@@ -13198,6 +13890,8 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   const UploadQueueCompanion({
     this.id = const Value.absent(),
     this.organizationId = const Value.absent(),
+    this.ownerKind = const Value.absent(),
+    this.ownerId = const Value.absent(),
     this.serviceOrderId = const Value.absent(),
     this.serviceOrderItemId = const Value.absent(),
     this.kind = const Value.absent(),
@@ -13213,7 +13907,9 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   UploadQueueCompanion.insert({
     required String id,
     required String organizationId,
-    required String serviceOrderId,
+    this.ownerKind = const Value.absent(),
+    required String ownerId,
+    this.serviceOrderId = const Value.absent(),
     this.serviceOrderItemId = const Value.absent(),
     required String kind,
     required String filePath,
@@ -13226,7 +13922,7 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        organizationId = Value(organizationId),
-       serviceOrderId = Value(serviceOrderId),
+       ownerId = Value(ownerId),
        kind = Value(kind),
        filePath = Value(filePath),
        sha256 = Value(sha256),
@@ -13234,6 +13930,8 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   static Insertable<UploadQueueData> custom({
     Expression<String>? id,
     Expression<String>? organizationId,
+    Expression<String>? ownerKind,
+    Expression<String>? ownerId,
     Expression<String>? serviceOrderId,
     Expression<String>? serviceOrderItemId,
     Expression<String>? kind,
@@ -13249,6 +13947,8 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (organizationId != null) 'organization_id': organizationId,
+      if (ownerKind != null) 'owner_kind': ownerKind,
+      if (ownerId != null) 'owner_id': ownerId,
       if (serviceOrderId != null) 'service_order_id': serviceOrderId,
       if (serviceOrderItemId != null)
         'service_order_item_id': serviceOrderItemId,
@@ -13267,7 +13967,9 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   UploadQueueCompanion copyWith({
     Value<String>? id,
     Value<String>? organizationId,
-    Value<String>? serviceOrderId,
+    Value<String>? ownerKind,
+    Value<String>? ownerId,
+    Value<String?>? serviceOrderId,
     Value<String?>? serviceOrderItemId,
     Value<String>? kind,
     Value<String>? filePath,
@@ -13282,6 +13984,8 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     return UploadQueueCompanion(
       id: id ?? this.id,
       organizationId: organizationId ?? this.organizationId,
+      ownerKind: ownerKind ?? this.ownerKind,
+      ownerId: ownerId ?? this.ownerId,
       serviceOrderId: serviceOrderId ?? this.serviceOrderId,
       serviceOrderItemId: serviceOrderItemId ?? this.serviceOrderItemId,
       kind: kind ?? this.kind,
@@ -13304,6 +14008,12 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     }
     if (organizationId.present) {
       map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (ownerKind.present) {
+      map['owner_kind'] = Variable<String>(ownerKind.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
     }
     if (serviceOrderId.present) {
       map['service_order_id'] = Variable<String>(serviceOrderId.value);
@@ -13346,6 +14056,8 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     return (StringBuffer('UploadQueueCompanion(')
           ..write('id: $id, ')
           ..write('organizationId: $organizationId, ')
+          ..write('ownerKind: $ownerKind, ')
+          ..write('ownerId: $ownerId, ')
           ..write('serviceOrderId: $serviceOrderId, ')
           ..write('serviceOrderItemId: $serviceOrderItemId, ')
           ..write('kind: $kind, ')
@@ -13366,6 +14078,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $LocalClientsTable localClients = $LocalClientsTable(this);
+  late final $LocalLocationsTable localLocations = $LocalLocationsTable(this);
   late final $LocalItemsTable localItems = $LocalItemsTable(this);
   late final $LocalItemTypesTable localItemTypes = $LocalItemTypesTable(this);
   late final $LocalItemFieldDefsTable localItemFieldDefs =
@@ -13397,6 +14110,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     localClients,
+    localLocations,
     localItems,
     localItemTypes,
     localItemFieldDefs,
@@ -13883,6 +14597,514 @@ typedef $$LocalClientsTableProcessedTableManager =
       LocalClient,
       PrefetchHooks Function()
     >;
+typedef $$LocalLocationsTableCreateCompanionBuilder =
+    LocalLocationsCompanion Function({
+      required String organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      required DateTime localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      required String id,
+      required String clientId,
+      Value<String> name,
+      Value<String> postalCode,
+      Value<String> street,
+      Value<String> number,
+      Value<String> complement,
+      Value<String> district,
+      Value<String> city,
+      Value<String> state,
+      Value<String> notes,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalLocationsTableUpdateCompanionBuilder =
+    LocalLocationsCompanion Function({
+      Value<String> organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      Value<DateTime> localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      Value<String> id,
+      Value<String> clientId,
+      Value<String> name,
+      Value<String> postalCode,
+      Value<String> street,
+      Value<String> number,
+      Value<String> complement,
+      Value<String> district,
+      Value<String> city,
+      Value<String> state,
+      Value<String> notes,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalLocationsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalLocationsTable> {
+  $$LocalLocationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get postalCode => $composableBuilder(
+    column: $table.postalCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get street => $composableBuilder(
+    column: $table.street,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get number => $composableBuilder(
+    column: $table.number,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get complement => $composableBuilder(
+    column: $table.complement,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get district => $composableBuilder(
+    column: $table.district,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get city => $composableBuilder(
+    column: $table.city,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalLocationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalLocationsTable> {
+  $$LocalLocationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get postalCode => $composableBuilder(
+    column: $table.postalCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get street => $composableBuilder(
+    column: $table.street,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get number => $composableBuilder(
+    column: $table.number,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get complement => $composableBuilder(
+    column: $table.complement,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get district => $composableBuilder(
+    column: $table.district,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get city => $composableBuilder(
+    column: $table.city,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalLocationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalLocationsTable> {
+  $$LocalLocationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get postalCode => $composableBuilder(
+    column: $table.postalCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get street =>
+      $composableBuilder(column: $table.street, builder: (column) => column);
+
+  GeneratedColumn<String> get number =>
+      $composableBuilder(column: $table.number, builder: (column) => column);
+
+  GeneratedColumn<String> get complement => $composableBuilder(
+    column: $table.complement,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get district =>
+      $composableBuilder(column: $table.district, builder: (column) => column);
+
+  GeneratedColumn<String> get city =>
+      $composableBuilder(column: $table.city, builder: (column) => column);
+
+  GeneratedColumn<String> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalLocationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalLocationsTable,
+          LocalLocation,
+          $$LocalLocationsTableFilterComposer,
+          $$LocalLocationsTableOrderingComposer,
+          $$LocalLocationsTableAnnotationComposer,
+          $$LocalLocationsTableCreateCompanionBuilder,
+          $$LocalLocationsTableUpdateCompanionBuilder,
+          (
+            LocalLocation,
+            BaseReferences<_$AppDatabase, $LocalLocationsTable, LocalLocation>,
+          ),
+          LocalLocation,
+          PrefetchHooks Function()
+        > {
+  $$LocalLocationsTableTableManager(
+    _$AppDatabase db,
+    $LocalLocationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalLocationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalLocationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalLocationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> organizationId = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<DateTime> localUpdatedAt = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> clientId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> postalCode = const Value.absent(),
+                Value<String> street = const Value.absent(),
+                Value<String> number = const Value.absent(),
+                Value<String> complement = const Value.absent(),
+                Value<String> district = const Value.absent(),
+                Value<String> city = const Value.absent(),
+                Value<String> state = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalLocationsCompanion(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                clientId: clientId,
+                name: name,
+                postalCode: postalCode,
+                street: street,
+                number: number,
+                complement: complement,
+                district: district,
+                city: city,
+                state: state,
+                notes: notes,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String organizationId,
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required DateTime localUpdatedAt,
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String id,
+                required String clientId,
+                Value<String> name = const Value.absent(),
+                Value<String> postalCode = const Value.absent(),
+                Value<String> street = const Value.absent(),
+                Value<String> number = const Value.absent(),
+                Value<String> complement = const Value.absent(),
+                Value<String> district = const Value.absent(),
+                Value<String> city = const Value.absent(),
+                Value<String> state = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalLocationsCompanion.insert(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                clientId: clientId,
+                name: name,
+                postalCode: postalCode,
+                street: street,
+                number: number,
+                complement: complement,
+                district: district,
+                city: city,
+                state: state,
+                notes: notes,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalLocationsTable, LocalLocation>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalLocationsTable,
+                    LocalLocation
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalLocationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalLocationsTable,
+      LocalLocation,
+      $$LocalLocationsTableFilterComposer,
+      $$LocalLocationsTableOrderingComposer,
+      $$LocalLocationsTableAnnotationComposer,
+      $$LocalLocationsTableCreateCompanionBuilder,
+      $$LocalLocationsTableUpdateCompanionBuilder,
+      (
+        LocalLocation,
+        BaseReferences<_$AppDatabase, $LocalLocationsTable, LocalLocation>,
+      ),
+      LocalLocation,
+      PrefetchHooks Function()
+    >;
 typedef $$LocalItemsTableCreateCompanionBuilder =
     LocalItemsCompanion Function({
       required String organizationId,
@@ -13894,19 +15116,9 @@ typedef $$LocalItemsTableCreateCompanionBuilder =
       Value<bool> deleted,
       required String id,
       required String clientId,
-      Value<String?> parentItemId,
+      Value<String?> locationId,
       Value<String?> itemTypeId,
       required String name,
-      Value<String> postalCode,
-      Value<String> street,
-      Value<String> number,
-      Value<String> complement,
-      Value<String> district,
-      Value<String> city,
-      Value<String> state,
-      Value<String> contactPerson,
-      Value<String> phone,
-      Value<String> accessInstructions,
       Value<String> brand,
       Value<String> model,
       Value<String?> serialNumber,
@@ -13929,19 +15141,9 @@ typedef $$LocalItemsTableUpdateCompanionBuilder =
       Value<bool> deleted,
       Value<String> id,
       Value<String> clientId,
-      Value<String?> parentItemId,
+      Value<String?> locationId,
       Value<String?> itemTypeId,
       Value<String> name,
-      Value<String> postalCode,
-      Value<String> street,
-      Value<String> number,
-      Value<String> complement,
-      Value<String> district,
-      Value<String> city,
-      Value<String> state,
-      Value<String> contactPerson,
-      Value<String> phone,
-      Value<String> accessInstructions,
       Value<String> brand,
       Value<String> model,
       Value<String?> serialNumber,
@@ -14008,8 +15210,8 @@ class $$LocalItemsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get parentItemId => $composableBuilder(
-    column: $table.parentItemId,
+  ColumnFilters<String> get locationId => $composableBuilder(
+    column: $table.locationId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14020,56 +15222,6 @@ class $$LocalItemsTableFilterComposer
 
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get postalCode => $composableBuilder(
-    column: $table.postalCode,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get street => $composableBuilder(
-    column: $table.street,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get number => $composableBuilder(
-    column: $table.number,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get complement => $composableBuilder(
-    column: $table.complement,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get district => $composableBuilder(
-    column: $table.district,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get city => $composableBuilder(
-    column: $table.city,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get state => $composableBuilder(
-    column: $table.state,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get contactPerson => $composableBuilder(
-    column: $table.contactPerson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get phone => $composableBuilder(
-    column: $table.phone,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get accessInstructions => $composableBuilder(
-    column: $table.accessInstructions,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14173,8 +15325,8 @@ class $$LocalItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get parentItemId => $composableBuilder(
-    column: $table.parentItemId,
+  ColumnOrderings<String> get locationId => $composableBuilder(
+    column: $table.locationId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -14185,56 +15337,6 @@ class $$LocalItemsTableOrderingComposer
 
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get postalCode => $composableBuilder(
-    column: $table.postalCode,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get street => $composableBuilder(
-    column: $table.street,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get number => $composableBuilder(
-    column: $table.number,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get complement => $composableBuilder(
-    column: $table.complement,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get district => $composableBuilder(
-    column: $table.district,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get city => $composableBuilder(
-    column: $table.city,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get state => $composableBuilder(
-    column: $table.state,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get contactPerson => $composableBuilder(
-    column: $table.contactPerson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get phone => $composableBuilder(
-    column: $table.phone,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get accessInstructions => $composableBuilder(
-    column: $table.accessInstructions,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -14328,8 +15430,8 @@ class $$LocalItemsTableAnnotationComposer
   GeneratedColumn<String> get clientId =>
       $composableBuilder(column: $table.clientId, builder: (column) => column);
 
-  GeneratedColumn<String> get parentItemId => $composableBuilder(
-    column: $table.parentItemId,
+  GeneratedColumn<String> get locationId => $composableBuilder(
+    column: $table.locationId,
     builder: (column) => column,
   );
 
@@ -14340,44 +15442,6 @@ class $$LocalItemsTableAnnotationComposer
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<String> get postalCode => $composableBuilder(
-    column: $table.postalCode,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get street =>
-      $composableBuilder(column: $table.street, builder: (column) => column);
-
-  GeneratedColumn<String> get number =>
-      $composableBuilder(column: $table.number, builder: (column) => column);
-
-  GeneratedColumn<String> get complement => $composableBuilder(
-    column: $table.complement,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get district =>
-      $composableBuilder(column: $table.district, builder: (column) => column);
-
-  GeneratedColumn<String> get city =>
-      $composableBuilder(column: $table.city, builder: (column) => column);
-
-  GeneratedColumn<String> get state =>
-      $composableBuilder(column: $table.state, builder: (column) => column);
-
-  GeneratedColumn<String> get contactPerson => $composableBuilder(
-    column: $table.contactPerson,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get phone =>
-      $composableBuilder(column: $table.phone, builder: (column) => column);
-
-  GeneratedColumn<String> get accessInstructions => $composableBuilder(
-    column: $table.accessInstructions,
-    builder: (column) => column,
-  );
 
   GeneratedColumn<String> get brand =>
       $composableBuilder(column: $table.brand, builder: (column) => column);
@@ -14453,19 +15517,9 @@ class $$LocalItemsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> clientId = const Value.absent(),
-                Value<String?> parentItemId = const Value.absent(),
+                Value<String?> locationId = const Value.absent(),
                 Value<String?> itemTypeId = const Value.absent(),
                 Value<String> name = const Value.absent(),
-                Value<String> postalCode = const Value.absent(),
-                Value<String> street = const Value.absent(),
-                Value<String> number = const Value.absent(),
-                Value<String> complement = const Value.absent(),
-                Value<String> district = const Value.absent(),
-                Value<String> city = const Value.absent(),
-                Value<String> state = const Value.absent(),
-                Value<String> contactPerson = const Value.absent(),
-                Value<String> phone = const Value.absent(),
-                Value<String> accessInstructions = const Value.absent(),
                 Value<String> brand = const Value.absent(),
                 Value<String> model = const Value.absent(),
                 Value<String?> serialNumber = const Value.absent(),
@@ -14486,19 +15540,9 @@ class $$LocalItemsTableTableManager
                 deleted: deleted,
                 id: id,
                 clientId: clientId,
-                parentItemId: parentItemId,
+                locationId: locationId,
                 itemTypeId: itemTypeId,
                 name: name,
-                postalCode: postalCode,
-                street: street,
-                number: number,
-                complement: complement,
-                district: district,
-                city: city,
-                state: state,
-                contactPerson: contactPerson,
-                phone: phone,
-                accessInstructions: accessInstructions,
                 brand: brand,
                 model: model,
                 serialNumber: serialNumber,
@@ -14521,19 +15565,9 @@ class $$LocalItemsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 required String id,
                 required String clientId,
-                Value<String?> parentItemId = const Value.absent(),
+                Value<String?> locationId = const Value.absent(),
                 Value<String?> itemTypeId = const Value.absent(),
                 required String name,
-                Value<String> postalCode = const Value.absent(),
-                Value<String> street = const Value.absent(),
-                Value<String> number = const Value.absent(),
-                Value<String> complement = const Value.absent(),
-                Value<String> district = const Value.absent(),
-                Value<String> city = const Value.absent(),
-                Value<String> state = const Value.absent(),
-                Value<String> contactPerson = const Value.absent(),
-                Value<String> phone = const Value.absent(),
-                Value<String> accessInstructions = const Value.absent(),
                 Value<String> brand = const Value.absent(),
                 Value<String> model = const Value.absent(),
                 Value<String?> serialNumber = const Value.absent(),
@@ -14554,19 +15588,9 @@ class $$LocalItemsTableTableManager
                 deleted: deleted,
                 id: id,
                 clientId: clientId,
-                parentItemId: parentItemId,
+                locationId: locationId,
                 itemTypeId: itemTypeId,
                 name: name,
-                postalCode: postalCode,
-                street: street,
-                number: number,
-                complement: complement,
-                district: district,
-                city: city,
-                state: state,
-                contactPerson: contactPerson,
-                phone: phone,
-                accessInstructions: accessInstructions,
                 brand: brand,
                 model: model,
                 serialNumber: serialNumber,
@@ -19569,7 +20593,9 @@ typedef $$UploadQueueTableCreateCompanionBuilder =
     UploadQueueCompanion Function({
       required String id,
       required String organizationId,
-      required String serviceOrderId,
+      Value<String> ownerKind,
+      required String ownerId,
+      Value<String?> serviceOrderId,
       Value<String?> serviceOrderItemId,
       required String kind,
       required String filePath,
@@ -19585,7 +20611,9 @@ typedef $$UploadQueueTableUpdateCompanionBuilder =
     UploadQueueCompanion Function({
       Value<String> id,
       Value<String> organizationId,
-      Value<String> serviceOrderId,
+      Value<String> ownerKind,
+      Value<String> ownerId,
+      Value<String?> serviceOrderId,
       Value<String?> serviceOrderItemId,
       Value<String> kind,
       Value<String> filePath,
@@ -19614,6 +20642,16 @@ class $$UploadQueueTableFilterComposer
 
   ColumnFilters<String> get organizationId => $composableBuilder(
     column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerKind => $composableBuilder(
+    column: $table.ownerKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -19687,6 +20725,16 @@ class $$UploadQueueTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get ownerKind => $composableBuilder(
+    column: $table.ownerKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get serviceOrderId => $composableBuilder(
     column: $table.serviceOrderId,
     builder: (column) => ColumnOrderings(column),
@@ -19754,6 +20802,12 @@ class $$UploadQueueTableAnnotationComposer
     column: $table.organizationId,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get ownerKind =>
+      $composableBuilder(column: $table.ownerKind, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
 
   GeneratedColumn<String> get serviceOrderId => $composableBuilder(
     column: $table.serviceOrderId,
@@ -19823,7 +20877,9 @@ class $$UploadQueueTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> organizationId = const Value.absent(),
-                Value<String> serviceOrderId = const Value.absent(),
+                Value<String> ownerKind = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<String?> serviceOrderId = const Value.absent(),
                 Value<String?> serviceOrderItemId = const Value.absent(),
                 Value<String> kind = const Value.absent(),
                 Value<String> filePath = const Value.absent(),
@@ -19837,6 +20893,8 @@ class $$UploadQueueTableTableManager
               }) => UploadQueueCompanion(
                 id: id,
                 organizationId: organizationId,
+                ownerKind: ownerKind,
+                ownerId: ownerId,
                 serviceOrderId: serviceOrderId,
                 serviceOrderItemId: serviceOrderItemId,
                 kind: kind,
@@ -19853,7 +20911,9 @@ class $$UploadQueueTableTableManager
               ({
                 required String id,
                 required String organizationId,
-                required String serviceOrderId,
+                Value<String> ownerKind = const Value.absent(),
+                required String ownerId,
+                Value<String?> serviceOrderId = const Value.absent(),
                 Value<String?> serviceOrderItemId = const Value.absent(),
                 required String kind,
                 required String filePath,
@@ -19867,6 +20927,8 @@ class $$UploadQueueTableTableManager
               }) => UploadQueueCompanion.insert(
                 id: id,
                 organizationId: organizationId,
+                ownerKind: ownerKind,
+                ownerId: ownerId,
                 serviceOrderId: serviceOrderId,
                 serviceOrderItemId: serviceOrderItemId,
                 kind: kind,
@@ -19919,6 +20981,8 @@ class $AppDatabaseManager {
   $AppDatabaseManager(this._db);
   $$LocalClientsTableTableManager get localClients =>
       $$LocalClientsTableTableManager(_db, _db.localClients);
+  $$LocalLocationsTableTableManager get localLocations =>
+      $$LocalLocationsTableTableManager(_db, _db.localLocations);
   $$LocalItemsTableTableManager get localItems =>
       $$LocalItemsTableTableManager(_db, _db.localItems);
   $$LocalItemTypesTableTableManager get localItemTypes =>

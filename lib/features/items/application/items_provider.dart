@@ -45,14 +45,14 @@ final itemsByClientProvider = Provider.family<List<LocalItem>, String>((
   ];
 });
 
-/// Filhos diretos de um item.
-final itemsByParentProvider = Provider.family<List<LocalItem>, String>((
+/// Itens vinculados a um local (derivado da lista completa).
+final itemsByLocationProvider = Provider.family<List<LocalItem>, String>((
   ref,
-  parentId,
+  locationId,
 ) {
   final all = ref.watch(itemListProvider).value ?? const [];
   return [
     for (final i in all)
-      if (i.parentItemId == parentId) i,
+      if (i.locationId == locationId) i,
   ];
 });

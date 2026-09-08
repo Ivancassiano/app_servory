@@ -53,9 +53,31 @@ class LocalClients extends Table with _SyncColumns {
 class LocalItems extends Table with _SyncColumns {
   TextColumn get id => text()();
   TextColumn get clientId => text().named('client_id')();
-  TextColumn get parentItemId => text().named('parent_item_id').nullable()();
+  TextColumn get locationId => text().named('location_id').nullable()();
   TextColumn get itemTypeId => text().named('item_type_id').nullable()();
   TextColumn get name => text()();
+  TextColumn get brand => text().withDefault(const Constant(''))();
+  TextColumn get model => text().withDefault(const Constant(''))();
+  TextColumn get serialNumber => text().named('serial_number').nullable()();
+  TextColumn get internalLocation =>
+      text().named('internal_location').withDefault(const Constant(''))();
+  TextColumn get installedAt => text().named('installed_at').nullable()();
+  TextColumn get cost => text().nullable()();
+  TextColumn get notes => text().withDefault(const Constant(''))();
+  DateTimeColumn get createdAt => dateTime().named('created_at').nullable()();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Espelha `Location` do OpenAPI — endereço estruturado + rótulo curto de um
+/// cliente. Um item aponta para no máximo um local (`LocalItems.locationId`).
+/// Sincroniza.
+class LocalLocations extends Table with _SyncColumns {
+  TextColumn get id => text()();
+  TextColumn get clientId => text().named('client_id')();
+  TextColumn get name => text().withDefault(const Constant(''))();
   TextColumn get postalCode =>
       text().named('postal_code').withDefault(const Constant(''))();
   TextColumn get street => text().withDefault(const Constant(''))();
@@ -64,18 +86,6 @@ class LocalItems extends Table with _SyncColumns {
   TextColumn get district => text().withDefault(const Constant(''))();
   TextColumn get city => text().withDefault(const Constant(''))();
   TextColumn get state => text().withDefault(const Constant(''))();
-  TextColumn get contactPerson =>
-      text().named('contact_person').withDefault(const Constant(''))();
-  TextColumn get phone => text().withDefault(const Constant(''))();
-  TextColumn get accessInstructions =>
-      text().named('access_instructions').withDefault(const Constant(''))();
-  TextColumn get brand => text().withDefault(const Constant(''))();
-  TextColumn get model => text().withDefault(const Constant(''))();
-  TextColumn get serialNumber => text().named('serial_number').nullable()();
-  TextColumn get internalLocation =>
-      text().named('internal_location').withDefault(const Constant(''))();
-  TextColumn get installedAt => text().named('installed_at').nullable()();
-  TextColumn get cost => text().nullable()();
   TextColumn get notes => text().withDefault(const Constant(''))();
   DateTimeColumn get createdAt => dateTime().named('created_at').nullable()();
   DateTimeColumn get updatedAt => dateTime().named('updated_at').nullable()();
@@ -358,7 +368,14 @@ class LocalSyncState extends Table {
 class UploadQueue extends Table {
   TextColumn get id => text()();
   TextColumn get organizationId => text().named('organization_id')();
-  TextColumn get serviceOrderId => text().named('service_order_id')();
+  // Dono do anexo: 'service_order' | 'item' | 'location'. Para OS,
+  // ownerId == serviceOrderId.
+  TextColumn get ownerKind => text()
+      .named('owner_kind')
+      .withDefault(const Constant('service_order'))();
+  TextColumn get ownerId => text().named('owner_id')();
+  TextColumn get serviceOrderId =>
+      text().named('service_order_id').nullable()();
   TextColumn get serviceOrderItemId =>
       text().named('service_order_item_id').nullable()();
   TextColumn get kind => text()(); // 'photo' | 'signature'
@@ -377,6 +394,7 @@ class UploadQueue extends Table {
 @DriftDatabase(
   tables: [
     LocalClients,
+    LocalLocations,
     LocalItems,
     LocalItemTypes,
     LocalItemFieldDefs,
@@ -407,7 +425,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -481,6 +499,23 @@ class AppDatabase extends _$AppDatabase {
         // Fotos passam a poder ser vinculadas a um item da visita. A fila de
         // upload é local (não sincroniza) — só um ALTER, sem bootstrap.
         await m.addColumn(uploadQueue, uploadQueue.serviceOrderItemId);
+      }
+      if (from < 12) {
+        // Nova entidade Local; item achatado (some árvore + endereço + contato,
+        // entra location_id); fila de upload generalizada (owner_kind/owner_id).
+        // Backend limpou/mudou o shape → drop + recria + bootstrap completo.
+        for (final t in const [
+          'local_items',
+          'local_locations',
+          'upload_queue',
+        ]) {
+          await m.database.customStatement('DROP TABLE IF EXISTS $t');
+        }
+        await m.createTable(localItems);
+        await m.createTable(localLocations);
+        await m.createTable(uploadQueue);
+        await m.database.customStatement('DELETE FROM local_sync_state');
+        await m.database.customStatement('DELETE FROM sync_outbox');
       }
     },
   );
