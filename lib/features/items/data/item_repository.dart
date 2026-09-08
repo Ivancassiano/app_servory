@@ -104,7 +104,9 @@ class LocalFirstItemRepository extends LocalFirstRepositoryBase
           r.data as Map<String, dynamic>,
           organizationId: orgId,
         );
-        await db.into(db.localItems).insertOnConflictUpdate(it);
+        await db
+            .into(db.localItems)
+            .insertOnConflictUpdate(it.toCompanion(false));
         return it.id;
       } on ApiException catch (e) {
         if (!isOfflineError(e)) rethrow;
@@ -159,13 +161,15 @@ class LocalFirstItemRepository extends LocalFirstRepositoryBase
             data: {...body, 'version': ?baseVersion},
           ),
         );
+        // `.toCompanion(false)` p/ o `insertOnConflictUpdate` conseguir limpar
+        // `location_id` (desvincular item de um local).
         await db
             .into(db.localItems)
             .insertOnConflictUpdate(
               itemFromApiJson(
                 r.data as Map<String, dynamic>,
                 organizationId: orgId,
-              ),
+              ).toCompanion(false),
             );
         return;
       } on ApiException catch (e) {

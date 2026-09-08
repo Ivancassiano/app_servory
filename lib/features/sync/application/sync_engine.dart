@@ -344,9 +344,13 @@ class SyncEngine {
               locationFromApiJson(data, organizationId: org),
             );
       case 'item':
+        // `.toCompanion(false)` inclui `Value(null)` p/ colunas nulas — sem
+        // isso o `insertOnConflictUpdate` não limpa `location_id` (desvínculo).
         await _db
             .into(_db.localItems)
-            .insertOnConflictUpdate(itemFromApiJson(data, organizationId: org));
+            .insertOnConflictUpdate(
+              itemFromApiJson(data, organizationId: org).toCompanion(false),
+            );
       case 'item_field_value':
         await _db
             .into(_db.localItemFieldValues)

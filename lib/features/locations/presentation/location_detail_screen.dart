@@ -9,6 +9,7 @@ import '../../../core/widgets/detail_view.dart';
 import '../../attachments/application/attachment_controller.dart';
 import '../../attachments/presentation/photos_section.dart';
 import '../../attachments/presentation/staged_photos_field.dart';
+import '../../../core/widgets/form_sheet.dart';
 import '../../clients/application/clients_provider.dart';
 import '../../clients/presentation/client_picker.dart';
 import '../../items/application/items_provider.dart';
@@ -53,6 +54,10 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
   bool _saving = false;
   bool _showAddress = false;
   List<StagedPhoto> _stagedPhotos = [];
+
+  /// Só na criação: ids de itens a vincular a este local depois que ele
+  /// ganhar um id (no `_submit`). Na edição o vínculo é imediato.
+  List<String> _stagedItemIds = [];
   String? _error;
 
   @override
@@ -156,6 +161,8 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
             // uma foto que falha não impede a criação do local
           }
         }
+        // Itens escolhidos no cadastro são vinculados agora (locationId).
+        await _linkStagedItems(id);
         if (mounted) context.pushReplacement('/locations/$id');
       } else {
         await ctrl.update(
@@ -174,6 +181,173 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  /// Re-vincula/desvincula um item a este local mexendo no `locationId` do
+  /// próprio item (não faz parte do "Salvar" do local — é ação imediata).
+  Future<void> _setItemLocation(LocalItem it, String? locationId) async {
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(itemRepositoryProvider)
+          .update(
+            id: it.id,
+            baseVersion: it.version,
+            fields: ItemFields(
+              name: it.name,
+              itemTypeId: it.itemTypeId,
+              locationId: locationId,
+              notes: it.notes,
+            ),
+          );
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _error = e.friendlyMessage);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'Não foi possível atualizar o item.');
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  /// Vincula ao local recém-criado os itens escolhidos durante o cadastro.
+  Future<void> _linkStagedItems(String locationId) async {
+    if (_stagedItemIds.isEmpty) return;
+    final repo = ref.read(itemRepositoryProvider);
+    final all = ref.read(itemListProvider).value ?? const <LocalItem>[];
+    for (final itemId in _stagedItemIds) {
+      final matches = all.where((i) => i.id == itemId);
+      if (matches.isEmpty) continue;
+      final it = matches.first;
+      try {
+        await repo.update(
+          id: it.id,
+          baseVersion: it.version,
+          fields: ItemFields(
+            name: it.name,
+            itemTypeId: it.itemTypeId,
+            locationId: locationId,
+            notes: it.notes,
+          ),
+        );
+      } catch (_) {
+        // um item que falha não impede a criação do local
+      }
+    }
+  }
+
+  Future<void> _linkItem(
+    BuildContext context,
+    LocalLocation? existing,
+  ) async {
+    final clientId = _clientId;
+    if (clientId == null) return;
+    final picked = await showModalBottomSheet<LocalItem>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _LinkItemSheet(
+        clientId: clientId,
+        excludeLocationId: existing?.id,
+        excludeItemIds: existing == null ? _stagedItemIds : const [],
+      ),
+    );
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (picked == null) return;
+    if (existing != null) {
+      await _setItemLocation(picked, existing.id);
+    } else {
+      setState(() => _stagedItemIds = [..._stagedItemIds, picked.id]);
+    }
+  }
+
+  /// Seção "Itens neste local": lista os itens vinculados (com "desvincular")
+  /// e permite vincular um existente ou criar um novo. Na criação o vínculo
+  /// fica pendente até o "Salvar"; na edição é imediato.
+  Widget _linkedItemsSection(BuildContext context, LocalLocation? existing) {
+    final List<LocalItem> items;
+    if (existing != null) {
+      items = ref.watch(itemsByLocationProvider(existing.id));
+    } else {
+      final all = ref.watch(itemListProvider).value ?? const <LocalItem>[];
+      items = [
+        for (final id in _stagedItemIds)
+          ...all.where((i) => i.id == id),
+      ];
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Itens neste local',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ),
+        if (items.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Text('Nenhum item vinculado.'),
+          )
+        else
+          for (final it in items)
+            ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.inventory_2_outlined, size: 20),
+              title: Text(it.name),
+              trailing: IconButton(
+                icon: const Icon(Icons.link_off),
+                tooltip: 'Desvincular deste local',
+                onPressed: _saving
+                    ? null
+                    : () {
+                        if (existing != null) {
+                          _setItemLocation(it, null);
+                        } else {
+                          setState(
+                            () => _stagedItemIds = [
+                              for (final id in _stagedItemIds)
+                                if (id != it.id) id,
+                            ],
+                          );
+                        }
+                      },
+              ),
+            ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _saving
+                    ? null
+                    : () => _linkItem(context, existing),
+                icon: const Icon(Icons.add_link),
+                label: const Text('Vincular item'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _clientId == null
+                    ? null
+                    : () => context.push(
+                        '/items/new?clientId=${_clientId!}'
+                        '${existing != null ? '&locationId=${existing.id}' : ''}',
+                      ),
+                icon: const Icon(Icons.add),
+                label: const Text('Novo item'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
@@ -363,6 +537,11 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
+              // Na edição o cliente é imutável — mostra só para referência.
+              if (existing != null && clientName.isNotEmpty) ...[
+                DetailRow('Cliente', clientName),
+                const SizedBox(height: 8),
+              ],
               TextFormField(
                 controller: _name,
                 decoration: const InputDecoration(
@@ -399,20 +578,25 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                 decoration: const InputDecoration(labelText: 'Observações'),
                 maxLines: 3,
               ),
-              if (existing == null) ...[
-                const SizedBox(height: 24),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Fotos',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
+              const SizedBox(height: 24),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Fotos',
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
-                const SizedBox(height: 8),
+              ),
+              const SizedBox(height: 8),
+              if (existing == null)
                 StagedPhotosField(
                   photos: _stagedPhotos,
                   onChanged: (p) => setState(() => _stagedPhotos = p),
-                ),
+                )
+              else
+                PhotosSection(ownerKind: 'location', ownerId: existing.id),
+              if (_clientId != null) ...[
+                const Divider(height: 32),
+                _linkedItemsSection(context, existing),
               ],
               const SizedBox(height: 24),
               FilledButton(
@@ -435,6 +619,83 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Bottom sheet para vincular um item existente do cliente a este local.
+/// Oculta os itens que já estão neste local.
+class _LinkItemSheet extends ConsumerStatefulWidget {
+  const _LinkItemSheet({
+    required this.clientId,
+    this.excludeLocationId,
+    this.excludeItemIds = const [],
+  });
+
+  final String clientId;
+
+  /// Esconde os itens já vinculados a este local (edição).
+  final String? excludeLocationId;
+
+  /// Esconde itens já escolhidos (criação, ainda sem local).
+  final List<String> excludeItemIds;
+
+  @override
+  ConsumerState<_LinkItemSheet> createState() => _LinkItemSheetState();
+}
+
+class _LinkItemSheetState extends ConsumerState<_LinkItemSheet> {
+  String _q = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final items =
+        ref
+            .watch(itemsByClientProvider(widget.clientId))
+            .where(
+              (i) =>
+                  widget.excludeLocationId == null ||
+                  i.locationId != widget.excludeLocationId,
+            )
+            .where((i) => !widget.excludeItemIds.contains(i.id))
+            .where(
+              (i) => _q.isEmpty || accentFold(i.name).contains(accentFold(_q)),
+            )
+            .toList()
+          ..sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
+    final locNames = <String, String>{
+      for (final l in ref.watch(locationListProvider).value ?? const [])
+        l.id: l.name,
+    };
+    return FormSheet(
+      title: 'Vincular item',
+      children: [
+        TextField(
+          decoration: const InputDecoration(
+            hintText: 'Pesquise um item',
+            prefixIcon: Icon(Icons.search),
+          ),
+          onChanged: (v) => setState(() => _q = v),
+        ),
+        const SizedBox(height: 8),
+        ...items.map(
+          (i) => ListTile(
+            dense: true,
+            title: Text(i.name),
+            subtitle: (locNames[i.locationId] ?? '').isNotEmpty
+                ? Text('Hoje em: ${locNames[i.locationId]}')
+                : null,
+            onTap: () => Navigator.of(context).pop(i),
+          ),
+        ),
+        if (items.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text('Nenhum item disponível para este cliente.'),
+          ),
+      ],
     );
   }
 }
