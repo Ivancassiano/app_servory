@@ -33,8 +33,15 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
   final _taxRegime = TextEditingController();
   final _phone = TextEditingController();
   final _email = TextEditingController();
-  final _address = TextEditingController();
+  final _postalCode = TextEditingController();
+  final _street = TextEditingController();
+  final _number = TextEditingController();
+  final _complement = TextEditingController();
+  final _district = TextEditingController();
+  final _city = TextEditingController();
+  final _state = TextEditingController();
   final _notes = TextEditingController();
+  bool _showAddress = false;
   String _kind = 'legal';
   String? _personUserId;
   int? _version;
@@ -59,7 +66,13 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       _taxRegime,
       _phone,
       _email,
-      _address,
+      _postalCode,
+      _street,
+      _number,
+      _complement,
+      _district,
+      _city,
+      _state,
       _notes,
     ]) {
       c.dispose();
@@ -75,7 +88,14 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
     _taxRegime.text = c.taxRegime;
     _phone.text = c.phone;
     _email.text = c.email;
-    _address.text = c.address;
+    _postalCode.text = c.postalCode;
+    _street.text = c.street;
+    _number.text = c.number;
+    _complement.text = c.complement;
+    _district.text = c.district;
+    _city.text = c.city;
+    _state.text = c.state;
+    _showAddress = c.hasAddress;
     _notes.text = c.notes;
     _kind = c.kind;
     _personUserId = c.personUserId;
@@ -100,6 +120,16 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
     });
   }
 
+  CompanyAddress _addr() => CompanyAddress(
+    postalCode: _postalCode.text.trim(),
+    street: _street.text.trim(),
+    number: _number.text.trim(),
+    complement: _complement.text.trim(),
+    district: _district.text.trim(),
+    city: _city.text.trim(),
+    state: _state.text.trim().toUpperCase(),
+  );
+
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (widget.isNew && _kind == 'individual' && _personUserId == null) {
@@ -122,7 +152,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
           taxRegime: _taxRegime.text.trim(),
           phone: _phone.text.trim(),
           email: _email.text.trim(),
-          address: _address.text.trim(),
+          address: _addr(),
           notes: _notes.text.trim(),
         );
       } else {
@@ -137,7 +167,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
           taxRegime: _taxRegime.text.trim(),
           phone: _phone.text.trim(),
           email: _email.text.trim(),
-          address: _address.text.trim(),
+          address: _addr(),
           notes: _notes.text.trim(),
         );
       }
@@ -207,7 +237,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       if (company.taxId.isNotEmpty) DetailRow('CNPJ / CPF', company.taxId),
       if (company.taxRegime.isNotEmpty) DetailRow('Regime', company.taxRegime),
       if (company.email.isNotEmpty) DetailRow('E-mail', company.email),
-      if (company.address.isNotEmpty) DetailRow('Endereço', company.address),
+      if (company.hasAddress) DetailRow('Endereço', company.addressLine),
       if (company.notes.isNotEmpty) DetailRow('Observações', company.notes),
     ];
 
@@ -347,12 +377,91 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
                   decoration: const InputDecoration(labelText: 'E-mail'),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _address,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'Endereço'),
-                ),
-                const SizedBox(height: 16),
+                if (_showAddress) ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Endereço',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _postalCode,
+                    decoration: const InputDecoration(labelText: 'CEP'),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _street,
+                    decoration: const InputDecoration(labelText: 'Logradouro'),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _number,
+                          decoration: const InputDecoration(labelText: 'Número'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: TextFormField(
+                          controller: _complement,
+                          decoration: const InputDecoration(
+                            labelText: 'Complemento',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _district,
+                    decoration: const InputDecoration(labelText: 'Bairro'),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: TextFormField(
+                          controller: _city,
+                          decoration: const InputDecoration(labelText: 'Cidade'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _state,
+                          maxLength: 2,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: const InputDecoration(labelText: 'UF'),
+                          validator: (v) =>
+                              (v != null &&
+                                  v.isNotEmpty &&
+                                  v.trim().length != 2)
+                              ? 'UF tem 2 letras'
+                              : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ] else ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      onPressed: () => setState(() => _showAddress = true),
+                      icon: const Icon(Icons.add_location_alt_outlined),
+                      label: const Text('Adicionar endereço'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 TextFormField(
                   controller: _notes,
                   maxLines: 3,

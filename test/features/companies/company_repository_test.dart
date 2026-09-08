@@ -83,12 +83,14 @@ void main() {
       taxRegime: '',
       phone: '',
       email: '',
-      address: '',
+      address: const CompanyAddress(street: 'Rua A', number: '10', state: 'SP'),
       notes: '',
     );
     final patch = stub.requests.firstWhere((r) => r.method == 'PATCH');
     expect(patch.path, '/v1/companies/co1');
     expect((patch.data as Map)['version'], 1);
+    expect(((patch.data as Map)['address'] as Map)['street'], 'Rua A');
+    expect(((patch.data as Map)['address'] as Map)['state'], 'SP');
 
     await repo.delete('co1');
     expect(

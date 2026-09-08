@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
+import '../../../core/widgets/form_sheet.dart';
 import '../application/service_order_part_controller.dart';
 import '../application/service_orders_provider.dart';
 
@@ -186,26 +187,9 @@ class _PartFormSheetState extends ConsumerState<_PartFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom:
-            16 +
-            MediaQuery.of(context).viewInsets.bottom +
-            MediaQuery.of(context).viewPadding.bottom,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              widget.part == null ? 'Adicionar peça' : 'Editar peça',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
+    return FormSheet(
+      title: widget.part == null ? 'Adicionar peça' : 'Editar peça',
+      children: [
             TextField(
               controller: _descriptionController,
               decoration: const InputDecoration(labelText: 'Descrição'),
@@ -281,9 +265,7 @@ class _PartFormSheetState extends ConsumerState<_PartFormSheet> {
                     )
                   : const Text('Salvar'),
             ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 }

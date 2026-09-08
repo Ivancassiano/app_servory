@@ -3,96 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/widgets/form_sheet.dart';
-import '../../clients/application/clients_provider.dart';
+import '../../clients/presentation/client_picker.dart';
 import '../../items/application/items_provider.dart';
+
+export '../../clients/presentation/client_picker.dart'
+    show pickClient, ClientPickerField, accentFold;
 
 /// Um alvo escolhido no seletor: um item do cadastro. Cada alvo vira uma
 /// linha da ordem.
 typedef OrderTarget = ({String itemId});
-
-/// minúsculas + sem acento (mesma lógica de SearchableListView).
-String accentFold(String s) {
-  const from = 'áàâãäéèêëíìîïóòôõöúùûüçñ';
-  const to = 'aaaaaeeeeiiiiooooouuuucn';
-  final b = StringBuffer();
-  for (final ch in s.toLowerCase().split('')) {
-    final i = from.indexOf(ch);
-    b.write(i == -1 ? ch : to[i]);
-  }
-  return b.toString();
-}
-
-/// Bottom sheet de busca + seleção de cliente. Retorna o id escolhido.
-Future<String?> pickClient(BuildContext context) =>
-    showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => const _ClientPickerSheet(),
-    );
-
-class _ClientPickerSheet extends ConsumerStatefulWidget {
-  const _ClientPickerSheet();
-
-  @override
-  ConsumerState<_ClientPickerSheet> createState() => _ClientPickerSheetState();
-}
-
-class _ClientPickerSheetState extends ConsumerState<_ClientPickerSheet> {
-  String _q = '';
-  String? _selected;
-
-  @override
-  Widget build(BuildContext context) {
-    final clients =
-        (ref.watch(clientListProvider).value ?? const <LocalClient>[])
-            .where(
-              (c) => _q.isEmpty || accentFold(c.name).contains(accentFold(_q)),
-            )
-            .toList()
-          ..sort(
-            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-          );
-
-    return _SheetScaffold(
-      title: 'Cliente',
-      onConfirm: _selected == null
-          ? null
-          : () => Navigator.of(context).pop(_selected),
-      confirmLabel: 'Selecionar cliente',
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Pesquise o cliente',
-              prefixIcon: Icon(Icons.search),
-            ),
-            onChanged: (v) => setState(() => _q = v),
-          ),
-          const SizedBox(height: 8),
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: clients.length,
-              itemBuilder: (_, i) {
-                final c = clients[i];
-                final sel = c.id == _selected;
-                return ListTile(
-                  dense: true,
-                  selected: sel,
-                  title: Text(c.name),
-                  trailing: sel ? const Icon(Icons.check) : null,
-                  onTap: () => setState(() => _selected = c.id),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /// Bottom sheet: a árvore de itens do cliente, com checkbox em qualquer nível,
 /// busca e cadastro rápido (só nome). Retorna os itens marcados; `initial`
@@ -297,42 +216,6 @@ Future<String?> _promptName(BuildContext context, String title) {
       ],
     ),
   );
-}
-
-/// Campo "Cliente" do form de criação: mostra o nome escolhido + botão.
-class ClientPickerField extends StatelessWidget {
-  const ClientPickerField({
-    super.key,
-    required this.clientName,
-    required this.onPick,
-  });
-
-  final String? clientName;
-  final VoidCallback onPick;
-
-  @override
-  Widget build(BuildContext context) {
-    final chosen = clientName != null && clientName!.isNotEmpty;
-    return InputDecorator(
-      decoration: const InputDecoration(labelText: 'Cliente'),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              chosen ? clientName! : 'Nenhum cliente',
-              style: chosen
-                  ? null
-                  : TextStyle(color: Theme.of(context).hintColor),
-            ),
-          ),
-          TextButton(
-            onPressed: onPick,
-            child: Text(chosen ? 'Trocar' : 'Selecionar cliente'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 /// Campo "Itens" do form de criação: lista os alvos escolhidos + botão.

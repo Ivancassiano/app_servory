@@ -13,25 +13,26 @@ class FormSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // O recuo do teclado fica FORA do SafeArea (o teclado já cobre a barra de
+    // navegação). Quando o teclado fecha, `viewInsets.bottom` volta a zero e o
+    // SafeArea assume o recuo da barra — sem sobra dupla nem "buraco" entre o
+    // último campo e o botão Salvar.
     return Padding(
       padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom:
-            16 +
-            MediaQuery.viewInsetsOf(context).bottom +
-            MediaQuery.viewPaddingOf(context).bottom,
+        bottom: MediaQuery.viewInsetsOf(context).bottom,
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 16),
-            ...children,
-          ],
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 16),
+              ...children,
+            ],
+          ),
         ),
       ),
     );

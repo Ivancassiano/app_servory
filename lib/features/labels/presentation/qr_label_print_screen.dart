@@ -65,7 +65,7 @@ class _QrLabelPrintScreenState extends ConsumerState<QrLabelPrintScreen> {
         if (c.id != id) continue;
         return [
           c.legalName.isNotEmpty ? c.legalName : c.name,
-          c.address,
+          c.addressLine,
           c.phone,
         ].where((l) => l.trim().isNotEmpty).join('\n');
       }

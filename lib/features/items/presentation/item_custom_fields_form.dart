@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/db/app_database.dart';
 import '../application/items_provider.dart';
 
+String _pad2(int n) => n.toString().padLeft(2, '0');
+
 /// Renderiza os campos personalizados aplicáveis a um item (globais + do tipo
 /// escolhido) e devolve os valores digitados via [onChanged]. Sem estado de
 /// submit próprio — a tela do item chama `repo.setValues` no salvar.
@@ -102,21 +104,48 @@ class _ItemCustomFieldsFormState extends ConsumerState<ItemCustomFieldsForm> {
               ? 'Obrigatório'
               : null,
         );
+      case 'date':
       case 'datetime':
-        final text = cur?.datetime == null
+        final withTime = d.dataType == 'datetime';
+        final dt = cur?.datetime?.toLocal();
+        final text = dt == null
             ? ''
-            : '${cur!.datetime!.toLocal()}'.split('.').first;
+            : withTime
+            ? '${_pad2(dt.day)}/${_pad2(dt.month)}/${dt.year} ${_pad2(dt.hour)}:${_pad2(dt.minute)}'
+            : '${_pad2(dt.day)}/${_pad2(dt.month)}/${dt.year}';
         return InkWell(
           onTap: () async {
             final now = DateTime.now();
-            final picked = await showDatePicker(
+            final base = cur?.datetime?.toLocal() ?? now;
+            final day = await showDatePicker(
               context: context,
-              initialDate: cur?.datetime ?? now,
+              initialDate: base,
               firstDate: DateTime(now.year - 30),
               lastDate: DateTime(now.year + 30),
             );
-            if (picked == null) return;
-            _set(d.id, TypedFieldValue(datetime: picked));
+            if (day == null) return;
+            if (!withTime) {
+              _set(d.id, TypedFieldValue(datetime: DateTime(day.year, day.month, day.day)));
+              return;
+            }
+            if (!mounted) return;
+            final time = await showTimePicker(
+              context: context,
+              initialTime: TimeOfDay.fromDateTime(base),
+            );
+            final t = time ?? TimeOfDay.fromDateTime(base);
+            _set(
+              d.id,
+              TypedFieldValue(
+                datetime: DateTime(
+                  day.year,
+                  day.month,
+                  day.day,
+                  t.hour,
+                  t.minute,
+                ),
+              ),
+            );
           },
           child: InputDecorator(
             decoration: InputDecoration(labelText: label),

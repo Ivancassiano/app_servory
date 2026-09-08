@@ -110,7 +110,24 @@ class LabelBatchRepository {
     return qrBatchFromApiJson(batchJson, organizationId: _orgId);
   }
 
-  Future<void> reserve(String id) => _action(id, 'reserve');
+  /// Reserva o lote para o técnico + o aparelho atual (precede o trabalho
+  /// offline). O endpoint exige corpo JSON — mandar vazio dava 400 (era o
+  /// bug de "Reservar para este aparelho não funciona").
+  Future<void> reserve(String id) async {
+    final session = _ref.read(sessionControllerProvider);
+    final userId = session is SessionAuthenticated ? session.userId : null;
+    final deviceId = await _ref
+        .read(secureStoreProvider)
+        .getOrCreateDeviceId();
+    final r = await restCall(
+      () => _dio.post(
+        '/v1/qr-batches/$id/reserve',
+        data: {'user_id': ?userId, 'device_id': deviceId},
+      ),
+    );
+    await _warm(r.data as Map<String, dynamic>);
+  }
+
   Future<void> markLost(String id) => _action(id, 'mark-lost');
 
   /// `export` devolve `{batch, codes}` (reexportável, §9.3).

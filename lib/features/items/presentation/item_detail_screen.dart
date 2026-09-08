@@ -7,6 +7,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/detail_view.dart';
 import '../../clients/application/clients_provider.dart';
+import '../../clients/presentation/client_picker.dart';
 import '../../contacts/data/contact_repository.dart';
 import '../../contacts/presentation/contact_section.dart';
 import '../../labels/data/qr_mapper.dart';
@@ -59,6 +60,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   Map<String, TypedFieldValue> _fieldValues = {};
   bool _seeded = false;
   bool _saving = false;
+  bool _showContact = false;
+  bool _showAddress = false;
   String? _error;
 
   @override
@@ -118,6 +121,15 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     _serial.text = it.serialNumber ?? '';
     _cost.text = it.cost ?? '';
     _notes.text = it.notes;
+    _showContact = it.contactPerson.isNotEmpty || it.phone.isNotEmpty;
+    _showAddress = [
+      it.postalCode,
+      it.street,
+      it.number,
+      it.district,
+      it.city,
+      it.state,
+    ].any((s) => s.isNotEmpty);
   }
 
   ItemFields _collect() => ItemFields(
@@ -307,11 +319,17 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               .where((i) => i.id != existing?.id)
               .toList();
 
+    final clientName = clients
+        .where((c) => c.id == _clientId)
+        .map((c) => c.name)
+        .join();
+
     return Scaffold(
       appBar: brandAppBar(
         title: existing == null ? 'Novo item' : 'Editar item',
       ),
-      body: Form(
+      body: SafeArea(
+        child: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -325,18 +343,17 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 ),
               ),
             if (widget.presetClientId == null && existing == null) ...[
-              DropdownButtonFormField<String>(
-                initialValue: _clientId,
-                decoration: const InputDecoration(labelText: 'Cliente'),
-                items: [
-                  for (final c in clients)
-                    DropdownMenuItem(value: c.id, child: Text(c.name)),
-                ],
-                onChanged: (v) => setState(() {
-                  _clientId = v;
-                  _parentId = null;
-                }),
-                validator: (v) => v == null ? 'Selecione o cliente' : null,
+              ClientPickerField(
+                clientName: clientName,
+                onPick: () async {
+                  final id = await pickClient(context);
+                  if (id != null) {
+                    setState(() {
+                      _clientId = id;
+                      _parentId = null;
+                    });
+                  }
+                },
               ),
               const SizedBox(height: 16),
             ],
@@ -375,84 +392,85 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   (v == null || v.trim().isEmpty) ? 'Informe o nome' : null,
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _contactPerson,
-              decoration: const InputDecoration(labelText: 'Contato'),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _phone,
-              decoration: const InputDecoration(labelText: 'Telefone'),
-            ),
-            const SizedBox(height: 8),
-            DetailExpander(
-              title: 'Endereço',
-              children: [
-                TextFormField(
-                  controller: _postalCode,
-                  decoration: const InputDecoration(labelText: 'CEP'),
+            if (_showContact) ...[
+              TextFormField(
+                controller: _contactPerson,
+                decoration: const InputDecoration(labelText: 'Contato'),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _phone,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: 'Telefone'),
+              ),
+              const SizedBox(height: 16),
+            ] else ...[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: () => setState(() => _showContact = true),
+                  icon: const Icon(Icons.person_add_alt_1_outlined),
+                  label: const Text('Adicionar contato'),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _street,
-                  decoration: const InputDecoration(labelText: 'Logradouro'),
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (_showAddress) ...[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Endereço',
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _number,
-                  decoration: const InputDecoration(labelText: 'Número'),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _postalCode,
+                decoration: const InputDecoration(labelText: 'CEP'),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _street,
+                decoration: const InputDecoration(labelText: 'Logradouro'),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _number,
+                decoration: const InputDecoration(labelText: 'Número'),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _district,
+                decoration: const InputDecoration(labelText: 'Bairro'),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _city,
+                decoration: const InputDecoration(labelText: 'Cidade'),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _state,
+                maxLength: 2,
+                textCapitalization: TextCapitalization.characters,
+                decoration: const InputDecoration(labelText: 'UF'),
+                validator: (v) =>
+                    (v != null && v.isNotEmpty && v.trim().length != 2)
+                    ? 'UF tem 2 letras'
+                    : null,
+              ),
+              const SizedBox(height: 16),
+            ] else ...[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: () => setState(() => _showAddress = true),
+                  icon: const Icon(Icons.add_location_alt_outlined),
+                  label: const Text('Adicionar endereço'),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _district,
-                  decoration: const InputDecoration(labelText: 'Bairro'),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _city,
-                  decoration: const InputDecoration(labelText: 'Cidade'),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _state,
-                  maxLength: 2,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(labelText: 'UF'),
-                  validator: (v) =>
-                      (v != null && v.isNotEmpty && v.trim().length != 2)
-                      ? 'UF tem 2 letras'
-                      : null,
-                ),
-              ],
-            ),
-            DetailExpander(
-              title: 'Ficha técnica',
-              children: [
-                TextFormField(
-                  controller: _brand,
-                  decoration: const InputDecoration(labelText: 'Marca'),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _model,
-                  decoration: const InputDecoration(labelText: 'Modelo'),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _serial,
-                  decoration: const InputDecoration(labelText: 'Nº de série'),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _cost,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: const InputDecoration(labelText: 'Custo'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
+              ),
+              const SizedBox(height: 16),
+            ],
             TextFormField(
               controller: _notes,
               decoration: const InputDecoration(labelText: 'Observações'),
@@ -472,6 +490,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -489,6 +508,13 @@ class _FieldValuesView extends ConsumerWidget {
       for (final d in ref.watch(itemFieldDefListProvider).value ?? const [])
         d.id: d,
     };
+    String fmtDate(DateTime d, {required bool withTime}) {
+      final l = d.toLocal();
+      String p(int n) => n.toString().padLeft(2, '0');
+      final date = '${p(l.day)}/${p(l.month)}/${l.year}';
+      return withTime ? '$date ${p(l.hour)}:${p(l.minute)}' : date;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -497,9 +523,15 @@ class _FieldValuesView extends ConsumerWidget {
             defs[v.fieldDefId]?.label ?? 'Campo',
             v.valueText ??
                 v.valueNumber?.toString() ??
-                (v.valueBoolean == null
-                    ? (v.valueDatetime?.toLocal().toString() ?? '')
-                    : (v.valueBoolean! ? 'Sim' : 'Não')),
+                (v.valueBoolean != null
+                    ? (v.valueBoolean! ? 'Sim' : 'Não')
+                    : (v.valueDatetime == null
+                          ? ''
+                          : fmtDate(
+                              v.valueDatetime!,
+                              withTime:
+                                  defs[v.fieldDefId]?.dataType == 'datetime',
+                            ))),
           ),
       ],
     );

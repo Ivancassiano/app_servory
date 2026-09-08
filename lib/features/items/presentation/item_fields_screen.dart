@@ -9,6 +9,7 @@ import '../application/items_provider.dart';
 const _dataTypeLabels = {
   'text': 'Texto',
   'number': 'Número',
+  'date': 'Somente data',
   'datetime': 'Data/hora',
   'boolean': 'Sim/Não',
   'select': 'Lista de opções',

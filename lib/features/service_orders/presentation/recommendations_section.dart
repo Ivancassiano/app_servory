@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/form_sheet.dart';
 import '../data/recommendation_repository.dart';
 
 const _priorityLabels = {'low': 'Baixa', 'medium': 'Média', 'high': 'Alta'};
@@ -194,26 +195,9 @@ class _RecommendationFormSheetState
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom:
-            16 +
-            MediaQuery.of(context).viewInsets.bottom +
-            MediaQuery.of(context).viewPadding.bottom,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              widget.rec == null ? 'Nova recomendação' : 'Editar recomendação',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
+    return FormSheet(
+      title: widget.rec == null ? 'Nova recomendação' : 'Editar recomendação',
+      children: [
             TextField(
               controller: _descController,
               decoration: const InputDecoration(labelText: 'Descrição'),
@@ -263,9 +247,7 @@ class _RecommendationFormSheetState
                     )
                   : const Text('Salvar'),
             ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 }

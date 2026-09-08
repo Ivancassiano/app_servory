@@ -24,7 +24,13 @@ class Company {
     required this.taxRegime,
     required this.phone,
     required this.email,
-    required this.address,
+    required this.postalCode,
+    required this.street,
+    required this.number,
+    required this.complement,
+    required this.district,
+    required this.city,
+    required this.state,
     required this.notes,
     this.logo,
     this.version,
@@ -39,12 +45,40 @@ class Company {
   final String taxRegime;
   final String phone;
   final String email;
-  final String address;
+  // Endereço estruturado (00043) — a resposta traz plano.
+  final String postalCode;
+  final String street;
+  final String number;
+  final String complement;
+  final String district;
+  final String city;
+  final String state;
   final String notes;
   final CompanyLogo? logo;
   final int? version;
 
   bool get hasLogo => logo != null;
+
+  bool get hasAddress => [
+    postalCode,
+    street,
+    number,
+    complement,
+    district,
+    city,
+    state,
+  ].any((s) => s.isNotEmpty);
+
+  /// Endereço numa linha só (exibição em leitura).
+  String get addressLine => [
+    street,
+    number,
+    complement,
+    district,
+    city,
+    state,
+    postalCode,
+  ].where((s) => s.isNotEmpty).join(', ');
 
   factory Company.fromApiJson(Map<String, dynamic> j) => Company(
     id: j['id'] as String,
@@ -56,7 +90,13 @@ class Company {
     taxRegime: stringOr(j['tax_regime']),
     phone: stringOr(j['phone']),
     email: stringOr(j['email']),
-    address: stringOr(j['address']),
+    postalCode: stringOr(j['postal_code']),
+    street: stringOr(j['street']),
+    number: stringOr(j['number']),
+    complement: stringOr(j['complement']),
+    district: stringOr(j['district']),
+    city: stringOr(j['city']),
+    state: stringOr(j['state']),
     notes: stringOr(j['notes']),
     logo: j['logo'] is Map<String, dynamic>
         ? CompanyLogo.fromApiJson(j['logo'] as Map<String, dynamic>)
@@ -107,6 +147,48 @@ class CompanyMember {
   );
 }
 
+/// Endereço estruturado da empresa. No corpo de POST/PATCH vai aninhado sob
+/// `address`; a resposta devolve plano (ver [Company.fromApiJson]).
+class CompanyAddress {
+  const CompanyAddress({
+    this.postalCode = '',
+    this.street = '',
+    this.number = '',
+    this.complement = '',
+    this.district = '',
+    this.city = '',
+    this.state = '',
+  });
+
+  final String postalCode;
+  final String street;
+  final String number;
+  final String complement;
+  final String district;
+  final String city;
+  final String state;
+
+  factory CompanyAddress.of(Company c) => CompanyAddress(
+    postalCode: c.postalCode,
+    street: c.street,
+    number: c.number,
+    complement: c.complement,
+    district: c.district,
+    city: c.city,
+    state: c.state,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'postal_code': postalCode,
+    'street': street,
+    'number': number,
+    'complement': complement,
+    'district': district,
+    'city': city,
+    'state': state,
+  };
+}
+
 Map<String, dynamic> _companyBody({
   required String kind,
   String? personUserId,
@@ -116,7 +198,7 @@ Map<String, dynamic> _companyBody({
   required String taxRegime,
   required String phone,
   required String email,
-  required String address,
+  required CompanyAddress address,
   required String notes,
 }) => {
   'kind': kind,
@@ -127,7 +209,7 @@ Map<String, dynamic> _companyBody({
   'tax_regime': taxRegime,
   'phone': phone,
   'email': email,
-  'address': address,
+  'address': address.toJson(),
   'notes': notes,
 };
 
@@ -185,7 +267,7 @@ class CompanyRepository implements PagedListRepository {
     String taxRegime = '',
     String phone = '',
     String email = '',
-    String address = '',
+    CompanyAddress address = const CompanyAddress(),
     String notes = '',
   }) => _companies.create(
     _companyBody(
@@ -213,7 +295,7 @@ class CompanyRepository implements PagedListRepository {
     required String taxRegime,
     required String phone,
     required String email,
-    required String address,
+    required CompanyAddress address,
     required String notes,
   }) => _companies.update(id, {
     ..._companyBody(

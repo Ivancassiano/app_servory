@@ -96,10 +96,10 @@ class _LabelBatchDetailScreenState
                 children: [
                   ListTile(
                     title: const Text('Situação'),
-                    trailing: Chip(
-                      label: Text(
-                        _statusLabel[batch.status] ?? batch.status,
-                      ),
+                    trailing: Text(
+                      _statusLabel[batch.status] ??
+                          (batch.status.isEmpty ? '—' : batch.status),
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
                   ListTile(
