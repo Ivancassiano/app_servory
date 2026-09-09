@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../application/session_controller.dart';
+import '../domain/password_policy.dart';
+import 'password_requirements.dart';
 
 /// Auto-cadastro: cria a organização e a conta admin. Ao enviar, vai para a
 /// tela de confirmação de e-mail — o login só é liberado depois disso.
@@ -146,10 +148,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 setState(() => _obscure = !_obscure),
                           ),
                         ),
-                        validator: (v) => (v == null || v.length < 8)
-                            ? 'A senha precisa ter pelo menos 8 caracteres.'
-                            : null,
+                        validator: (v) => PasswordPolicy.isValid(v ?? '')
+                            ? null
+                            : PasswordPolicy.requirementMessage,
                       ),
+                      PasswordRequirements(controller: _passwordController),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _confirmController,

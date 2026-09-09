@@ -56,6 +56,9 @@ void main() {
   ) async {
     await tester.pumpWidget(buildApp());
 
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Criar conta'),
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Criar conta'));
     await tester.pump();
 
@@ -79,6 +82,9 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(2), 'a@b.com');
     await tester.enterText(find.byType(TextFormField).at(3), 'senha1234');
     await tester.enterText(find.byType(TextFormField).at(4), 'outra5678');
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Criar conta'),
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Criar conta'));
     await tester.pump();
 
@@ -104,6 +110,9 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(2), 'novo@b.com');
     await tester.enterText(find.byType(TextFormField).at(3), 'senha1234');
     await tester.enterText(find.byType(TextFormField).at(4), 'senha1234');
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Criar conta'),
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Criar conta'));
     await tester.pumpAndSettle();
 
@@ -141,6 +150,9 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(2), 'dup@b.com');
     await tester.enterText(find.byType(TextFormField).at(3), 'senha1234');
     await tester.enterText(find.byType(TextFormField).at(4), 'senha1234');
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Criar conta'),
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Criar conta'));
     await tester.pumpAndSettle();
 

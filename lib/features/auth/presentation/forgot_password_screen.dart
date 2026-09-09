@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../application/session_controller.dart';
+import '../domain/password_policy.dart';
+import 'password_requirements.dart';
 
 enum _Phase { email, code, done }
 
@@ -229,10 +231,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 onPressed: () => setState(() => _obscure = !_obscure),
               ),
             ),
-            validator: (v) => (v == null || v.length < 8)
-                ? 'A senha precisa ter pelo menos 8 caracteres.'
-                : null,
+            validator: (v) => PasswordPolicy.isValid(v ?? '')
+                ? null
+                : PasswordPolicy.requirementMessage,
           ),
+          PasswordRequirements(controller: _passwordController),
           const SizedBox(height: 16),
           TextFormField(
             controller: _confirmController,

@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../application/session_controller.dart';
+import '../domain/password_policy.dart';
+import 'password_requirements.dart';
 
 /// Aceitar um convite: o convidado recebe um código por e-mail e o usa aqui
 /// junto com nome e senha. Ao confirmar, entra direto na organização.
@@ -123,10 +125,13 @@ class _AcceptInviteScreenState extends ConsumerState<AcceptInviteScreen> {
                                 setState(() => _obscure = !_obscure),
                           ),
                         ),
-                        validator: (v) => (v == null || v.length < 8)
-                            ? 'A senha precisa ter pelo menos 8 caracteres.'
-                            : null,
+                        validator: (v) => PasswordPolicy.isValid(v ?? '')
+                            ? null
+                            : PasswordPolicy.requirementMessage,
                         onFieldSubmitted: (_) => _submit(),
+                      ),
+                      PasswordRequirements(
+                        controller: _passwordController,
                       ),
                       if (_errorMessage != null) ...[
                         const SizedBox(height: 12),
