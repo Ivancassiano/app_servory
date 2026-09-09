@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -116,18 +117,33 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                 children: [
                   Text(
                     widget.email.isEmpty
-                        ? 'Enviamos um código de confirmação para o seu e-mail. '
-                              'Cole-o abaixo para ativar sua conta.'
-                        : 'Enviamos um código de confirmação para '
-                              '${widget.email}. Cole-o abaixo para ativar sua conta.',
+                        ? 'Enviamos um código de 8 caracteres para o seu e-mail. '
+                              'Digite-o abaixo para ativar sua conta.'
+                        : 'Enviamos um código de 8 caracteres para '
+                              '${widget.email}. Digite-o abaixo para ativar sua conta.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 24),
                   TextField(
                     controller: _codeController,
                     autofocus: true,
+                    textCapitalization: TextCapitalization.characters,
+                    autocorrect: false,
+                    maxLength: 12, // 8 + espaço/hífen colados; o backend normaliza
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp('[A-Za-z0-9 -]')),
+                      TextInputFormatter.withFunction(
+                        (_, n) => n.copyWith(text: n.text.toUpperCase()),
+                      ),
+                    ],
+                    style: const TextStyle(
+                      fontFamily: 'IBM Plex Mono',
+                      fontSize: 18,
+                      letterSpacing: 3,
+                    ),
                     decoration: const InputDecoration(
                       labelText: 'Código de confirmação',
+                      counterText: '',
                     ),
                     onSubmitted: (_) => _confirm(),
                   ),
