@@ -40,6 +40,33 @@ void main() {
     );
   });
 
+  test('sem sessão: /register e /verify-email são acessíveis', () {
+    expect(
+      redirect(session: const SessionUnauthenticated(), from: '/register'),
+      isNull,
+    );
+    expect(
+      redirect(session: const SessionAuthenticating(), from: '/verify-email'),
+      isNull,
+    );
+    // uma rota qualquer fora do fluxo de entrada ainda joga pro login
+    expect(
+      redirect(session: const SessionUnauthenticated(), from: '/clients'),
+      '/login',
+    );
+  });
+
+  test('autenticado sai de /register e /verify-email', () {
+    expect(
+      redirect(session: authenticated, online: true, from: '/register'),
+      '/',
+    );
+    expect(
+      redirect(session: authenticated, online: true, from: '/verify-email'),
+      '/',
+    );
+  });
+
   test('autenticado e online: acessa tudo, sai das telas de gate', () {
     expect(redirect(session: authenticated, online: true, from: '/login'), '/');
     expect(

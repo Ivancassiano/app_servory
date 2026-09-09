@@ -6,6 +6,8 @@ import '../../features/auth/application/app_lock_controller.dart';
 import '../../features/auth/application/session_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/offline_expired_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
+import '../../features/auth/presentation/verify_email_screen.dart';
 import '../../features/auth/presentation/unlock_screen.dart';
 import '../../features/clients/presentation/client_detail_screen.dart';
 import '../../features/clients/presentation/client_list_screen.dart';
@@ -40,7 +42,18 @@ import '../widgets/splash_screen.dart';
 /// aparelho confirmou com o servidor (login ou refresh bem-sucedido).
 const offlineSessionTtl = Duration(days: 7);
 
-const _gatedRoutes = {'/login', '/splash', '/unlock', '/offline-expired'};
+const _gatedRoutes = {
+  '/login',
+  '/register',
+  '/verify-email',
+  '/splash',
+  '/unlock',
+  '/offline-expired',
+};
+
+/// Telas do fluxo de entrada acessíveis sem sessão (login, auto-cadastro e
+/// confirmação de e-mail). Fora dessas, quem não está logado vai pro /login.
+const _authFlowRoutes = {'/login', '/register', '/verify-email'};
 
 /// Instância única de `GoRouter`: sessão, conectividade e trava de app — as 3
 /// coisas que decidem pra onde redirecionar — chegam pelo `refreshListenable`,
@@ -84,6 +97,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      GoRoute(path: '/register', builder: (_, _) => const RegisterScreen()),
+      GoRoute(
+        path: '/verify-email',
+        builder: (_, state) => VerifyEmailScreen(
+          email: state.uri.queryParameters['email'] ?? '',
+        ),
+      ),
       GoRoute(path: '/unlock', builder: (_, _) => const UnlockScreen()),
       GoRoute(
         path: '/offline-expired',
@@ -268,7 +288,7 @@ String? decideRedirect({
 
     case SessionUnauthenticated():
     case SessionAuthenticating():
-      return currentLocation == '/login' ? null : '/login';
+      return _authFlowRoutes.contains(currentLocation) ? null : '/login';
 
     case SessionAuthenticated():
       // `online == null` enquanto o stream de conectividade ainda não

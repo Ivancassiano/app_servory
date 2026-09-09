@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers.dart';
+import '../../../core/storage/secure_store.dart';
 import '../data/auth_api.dart';
 
 /// Estado da sessão do app. [SessionUnknown] é o estado transitório enquanto
@@ -95,22 +96,66 @@ class SessionController extends Notifier<SessionState> {
         deviceName: _deviceName(),
         devicePlatform: _devicePlatform(),
       );
-      await store.saveSession(
-        accessToken: pair.accessToken,
-        refreshToken: pair.refreshToken,
-        organizationId: pair.organizationId,
-        userId: pair.userId,
-      );
-      await store.saveLastOnlineValidation(DateTime.now());
-      if (!ref.mounted) return;
-      state = SessionAuthenticated(
-        userId: pair.userId,
-        organizationId: pair.organizationId,
-      );
+      await _activate(store, pair);
     } catch (_) {
       if (ref.mounted) state = const SessionUnauthenticated();
       rethrow;
     }
+  }
+
+  /// Auto-cadastro. Não muda o estado da sessão — o usuário continua
+  /// deslogado e vai para a tela de confirmação de e-mail; o login só passa a
+  /// funcionar depois do [verifyEmail].
+  Future<void> register({
+    required String organizationName,
+    required String name,
+    required String email,
+    required String password,
+  }) {
+    return _authApi.register(
+      organizationName: organizationName,
+      name: name,
+      email: email,
+      password: password,
+    );
+  }
+
+  /// Confirma o e-mail pelo código e já entra (o backend devolve o par de
+  /// tokens). Mesma ativação do [login].
+  Future<void> verifyEmail({required String code}) async {
+    state = const SessionAuthenticating();
+    final store = ref.read(secureStoreProvider);
+    final deviceId = await store.getOrCreateDeviceId();
+    try {
+      final pair = await _authApi.verifyEmail(
+        token: code,
+        deviceId: deviceId,
+        deviceName: _deviceName(),
+        devicePlatform: _devicePlatform(),
+      );
+      await _activate(store, pair);
+    } catch (_) {
+      if (ref.mounted) state = const SessionUnauthenticated();
+      rethrow;
+    }
+  }
+
+  Future<void> resendVerification(String email) =>
+      _authApi.resendVerification(email: email);
+
+  Future<void> _activate(SecureStore store, TokenPair pair) async {
+    await store.saveSession(
+      accessToken: pair.accessToken,
+      refreshToken: pair.refreshToken,
+      organizationId: pair.organizationId,
+      userId: pair.userId,
+    );
+    await store.saveLastOnlineValidation(DateTime.now());
+    if (!ref.mounted) return;
+    state = SessionAuthenticated(
+      userId: pair.userId,
+      organizationId: pair.organizationId,
+    );
   }
 
   Future<void> logout() async {

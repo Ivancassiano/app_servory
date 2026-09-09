@@ -64,6 +64,65 @@ class AuthApi {
     }
   }
 
+  /// Auto-cadastro: cria a organização + conta admin. O login só é liberado
+  /// depois de confirmar o e-mail (ver [verifyEmail]) — aqui não volta token.
+  Future<void> register({
+    required String organizationName,
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      await _dio.post(
+        '/v1/auth/register',
+        data: {
+          'organization_name': organizationName,
+          'name': name,
+          'email': email,
+          'password': password,
+        },
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  /// Confirma o e-mail pelo código recebido e já devolve o par de tokens
+  /// (o código prova a posse do endereço, então o servidor abre a sessão).
+  Future<TokenPair> verifyEmail({
+    required String token,
+    required String deviceId,
+    required String deviceName,
+    required String devicePlatform,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/v1/auth/verify-email',
+        data: {
+          'token': token,
+          'device': {
+            'id': deviceId,
+            'name': deviceName,
+            'platform': devicePlatform,
+          },
+        },
+      );
+      return TokenPair.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  /// Reenvia o código de confirmação. Resposta sempre 202 — não revela se a
+  /// conta existe ou já foi confirmada.
+  Future<void> resendVerification({required String email}) async {
+    try {
+      await _dio.post('/v1/auth/verification/resend', data: {'email': email});
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   Future<void> logout(String accessToken) async {
     try {
       await _dio.post(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
@@ -18,6 +19,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String? _errorMessage;
+  bool _needsEmailVerification = false;
   bool _obscurePassword = true;
 
   @override
@@ -29,7 +31,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    setState(() => _errorMessage = null);
+    setState(() {
+      _errorMessage = null;
+      _needsEmailVerification = false;
+    });
 
     try {
       await ref
@@ -40,7 +45,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _errorMessage = e.friendlyMessage);
+      setState(() {
+        _errorMessage = e.friendlyMessage;
+        _needsEmailVerification = e.code == 'EMAIL_NOT_VERIFIED';
+      });
     } catch (_) {
       if (!mounted) return;
       setState(
@@ -150,6 +158,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           color: Theme.of(context).colorScheme.error,
                         ),
                       ),
+                      if (_needsEmailVerification) ...[
+                        const SizedBox(height: 4),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            onPressed: () {
+                              final email = Uri.encodeQueryComponent(
+                                _emailController.text.trim(),
+                              );
+                              context.push('/verify-email?email=$email');
+                            },
+                            child: const Text('Confirmar e-mail'),
+                          ),
+                        ),
+                      ],
                     ],
                     const SizedBox(height: 24),
                     FilledButton(
@@ -161,6 +184,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Text('Entrar'),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: isAuthenticating
+                          ? null
+                          : () => context.push('/register'),
+                      child: const Text('Criar conta'),
                     ),
                   ],
                 ),
