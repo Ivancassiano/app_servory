@@ -37,6 +37,7 @@ import '../../features/tasks/presentation/task_detail_screen.dart';
 import '../../features/tasks/presentation/task_list_screen.dart';
 import '../../features/service_orders/presentation/service_order_item_screen.dart';
 import '../../features/service_orders/presentation/service_order_report_screen.dart';
+import '../../features/sync/presentation/pending_changes_screen.dart';
 import '../connectivity/connectivity_provider.dart';
 import '../providers.dart';
 import '../widgets/splash_screen.dart';
@@ -120,6 +121,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
       GoRoute(path: '/me/person', builder: (_, _) => const PersonScreen()),
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+      GoRoute(
+        path: '/pending',
+        builder: (_, _) => const PendingChangesScreen(),
+      ),
       GoRoute(
         path: '/users',
         builder: (_, _) => const MembersScreen(),

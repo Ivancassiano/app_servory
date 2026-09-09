@@ -275,8 +275,88 @@ void main() {
         reason:
             'op1/op2 saem da outbox; op3 (erro transitório) fica pra tentar de novo',
       );
+      expect(remainingOutbox.single.attempts, 1);
+      expect(remainingOutbox.single.lastError, 'INTERNAL');
     },
   );
+
+  test('discardOperation: update presa vira "synced" e sai da outbox', () async {
+    final now = DateTime.now();
+    await db.batch((b) {
+      b.insert(
+        db.localClients,
+        LocalClientsCompanion.insert(
+          id: 'c1',
+          organizationId: 'org1',
+          kind: 'legal',
+          name: 'Editado offline',
+          localUpdatedAt: now,
+          syncStatus: const Value('pending'),
+          syncError: const Value('VALIDATION_ERROR'),
+        ),
+      );
+      b.insert(
+        db.syncOutbox,
+        SyncOutboxCompanion.insert(
+          operationId: 'op-x',
+          organizationId: 'org1',
+          entityType: 'client',
+          entityId: 'c1',
+          operationType: 'update',
+          payload: '{"name":"Editado offline"}',
+          occurredAt: now,
+        ),
+      );
+    });
+
+    await engine.discardOperation('op-x');
+
+    expect(await db.select(db.syncOutbox).get(), isEmpty);
+    final c1 = await (db.select(
+      db.localClients,
+    )..where((t) => t.id.equals('c1'))).getSingle();
+    expect(c1.syncStatus, 'synced');
+    expect(c1.syncError, isNull);
+  });
+
+  test('discardOperation: create presa apaga a linha local', () async {
+    final now = DateTime.now();
+    await db.batch((b) {
+      b.insert(
+        db.localClients,
+        LocalClientsCompanion.insert(
+          id: 'c-new',
+          organizationId: 'org1',
+          kind: 'legal',
+          name: 'Nunca subiu',
+          localUpdatedAt: now,
+          syncStatus: const Value('pending'),
+        ),
+      );
+      b.insert(
+        db.syncOutbox,
+        SyncOutboxCompanion.insert(
+          operationId: 'op-new',
+          organizationId: 'org1',
+          entityType: 'client',
+          entityId: 'c-new',
+          operationType: 'create',
+          payload: '{"name":"Nunca subiu"}',
+          occurredAt: now,
+        ),
+      );
+    });
+
+    await engine.discardOperation('op-new');
+
+    expect(await db.select(db.syncOutbox).get(), isEmpty);
+    expect(
+      await (db.select(
+        db.localClients,
+      )..where((t) => t.id.equals('c-new'))).getSingleOrNull(),
+      isNull,
+    );
+  });
 
   test(
     'push: item também grava de volta na tabela certa (não só client)',

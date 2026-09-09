@@ -34,6 +34,22 @@ const _readEntityTypes = [
   'qr_batch',
 ];
 
+/// Tabela local de cada `entity_type` da outbox — para descartar/limpar o
+/// estado pendente de uma operação sem um `switch` gigante.
+const _entityTables = {
+  'client': 'local_clients',
+  'location': 'local_locations',
+  'item': 'local_items',
+  'item_field_value': 'local_item_field_values',
+  'service_order': 'local_service_orders',
+  'service_order_item': 'local_service_order_items',
+  'service_order_part': 'local_service_order_parts',
+  'service_order_recommendation': 'local_service_order_recommendations',
+  'task': 'local_tasks',
+  'qr_code': 'local_qr_codes',
+  'qr_batch': 'local_qr_batches',
+};
+
 /// Orquestra `bootstrap`/`pull`/`push` entre o [SyncApi] e o [AppDatabase]
 /// local. Sem regra de negócio aqui — só tradução de shape (igual
 /// `internal/sync` no backend, ADR-0014).
@@ -49,6 +65,34 @@ class SyncEngine {
   final SyncApi _api;
   final AppDatabase _db;
   final String _organizationId;
+
+  /// Descarta uma operação presa na outbox — o que o usuário fez offline é
+  /// perdido. Se for um `create` que nunca chegou ao servidor, apaga também a
+  /// linha local; senão só tira a marca de "pendente/conflito" e deixa o
+  /// próximo `pull` trazer o estado do servidor.
+  Future<void> discardOperation(String operationId) async {
+    final row = await (_db.select(_db.syncOutbox)
+          ..where((t) => t.operationId.equals(operationId)))
+        .getSingleOrNull();
+    if (row == null) return;
+    await (_db.delete(_db.syncOutbox)
+          ..where((t) => t.operationId.equals(operationId)))
+        .go();
+
+    final table = _entityTables[row.entityType];
+    if (table == null) return; // nome de tabela é constante (não é input)
+    if (row.operationType == 'create') {
+      await _db.customStatement('DELETE FROM $table WHERE id = ?', [
+        row.entityId,
+      ]);
+    } else {
+      await _db.customStatement(
+        "UPDATE $table SET sync_status = 'synced', sync_error = NULL "
+        'WHERE id = ?',
+        [row.entityId],
+      );
+    }
+  }
 
   /// Dump completo paginado, uma vez por organização (quando o banco local
   /// ainda não tinha nada) — GUIA-FLUTTER.md §8.2.
@@ -129,12 +173,23 @@ class SyncEngine {
           result.conflict,
           result.errorCode,
         );
-        if (!result.conflict) {
-          continue; // erro transitório: mantém na outbox p/ tentar de novo
+        if (result.conflict) {
+          await (_db.delete(
+            _db.syncOutbox,
+          )..where((t) => t.operationId.equals(op.operationId))).go();
+          continue;
         }
-        await (_db.delete(
-          _db.syncOutbox,
-        )..where((t) => t.operationId.equals(op.operationId))).go();
+        // Erro não-conflito (validação, permissão, entidade sumiu): mantém na
+        // outbox para tentar de novo, mas registra o motivo/tentativas para a
+        // tela "Alterações pendentes" mostrar e o usuário poder descartar.
+        await (_db.update(_db.syncOutbox)
+              ..where((t) => t.operationId.equals(op.operationId)))
+            .write(
+              SyncOutboxCompanion(
+                attempts: Value(op.attempts + 1),
+                lastError: Value(result.errorCode ?? 'REJECTED'),
+              ),
+            );
       }
     }
   }

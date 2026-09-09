@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
+import '../../attachments/application/drain_uploads.dart';
 import '../../attachments/application/service_order_attachments_provider.dart';
 import '../../auth/application/session_controller.dart';
 import '../data/sync_api.dart';
@@ -102,13 +103,14 @@ class SyncRunner extends Notifier<SyncStatus> {
     );
   }
 
-  /// "Atualizar tudo": além do sync (push + pull), recarrega o que é REST
-  /// puro e fica FORA do protocolo de sync — fotos e assinatura, cuja URL de
-  /// download é assinada e temporária (§26.4) — e limpa o cache de imagens,
-  /// pra as miniaturas resolverem a URL nova (ex.: quando o host do storage
-  /// muda). É o botão da faixa de status em todas as telas.
+  /// "Atualizar tudo": sync (push + pull), **envia as fotos/assinatura ainda
+  /// na fila** (senão a barra fica presa em "1 alteração não enviada"),
+  /// recarrega o que é REST puro e fica FORA do protocolo de sync (fotos e
+  /// assinatura, cuja URL de download é assinada e temporária, §26.4) e limpa
+  /// o cache de imagens. É o botão da faixa de status em todas as telas.
   Future<void> refreshEverything() async {
     await runSync();
+    await drainUploads(ref);
     ref.invalidate(entityPhotosProvider);
     ref.invalidate(orderSignatureProvider);
     PaintingBinding.instance.imageCache
@@ -148,4 +150,61 @@ final pendingSyncCountStreamProvider = StreamProvider<int>((ref) {
 /// quer lidar com `AsyncValue`.
 final pendingSyncCountProvider = Provider<int>(
   (ref) => ref.watch(pendingSyncCountStreamProvider).value ?? 0,
+);
+
+/// Operações de escrita ainda na outbox (para a tela "Alterações pendentes").
+final pendingOutboxProvider =
+    StreamProvider.autoDispose<List<SyncOutboxData>>((ref) {
+      if (kIsWeb) return Stream.value(const []);
+      final AppDatabase db;
+      try {
+        db = ref.watch(appDatabaseProvider);
+      } catch (_) {
+        return Stream.value(const []);
+      }
+      return db.select(db.syncOutbox).watch().map(
+        (rows) => rows..sort((a, b) => a.occurredAt.compareTo(b.occurredAt)),
+      );
+    });
+
+/// Anexos (foto/assinatura) ainda na fila de upload.
+final pendingUploadsListProvider =
+    StreamProvider.autoDispose<List<UploadQueueData>>((ref) {
+      if (kIsWeb) return Stream.value(const []);
+      final AppDatabase db;
+      try {
+        db = ref.watch(appDatabaseProvider);
+      } catch (_) {
+        return Stream.value(const []);
+      }
+      return db.select(db.uploadQueue).watch().map(
+        (rows) => rows..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
+      );
+    });
+
+/// Ações da tela "Alterações pendentes": reenviar tudo e descartar item a item.
+class PendingChangesController {
+  PendingChangesController(this._ref);
+  final Ref _ref;
+
+  Future<void> retryAll() =>
+      _ref.read(syncRunnerProvider.notifier).refreshEverything();
+
+  Future<void> discardOutbox(String operationId) async {
+    await _ref.read(syncEngineProvider).discardOperation(operationId);
+    _ref.invalidate(pendingOutboxProvider);
+  }
+
+  /// Descarta um anexo da fila. O arquivo local fica (limpeza é melhor
+  /// esforço e depende de `dart:io`); some sozinho quando o app for
+  /// reinstalado.
+  Future<void> discardUpload(String id) async {
+    final db = _ref.read(appDatabaseProvider);
+    await (db.delete(db.uploadQueue)..where((t) => t.id.equals(id))).go();
+    _ref.invalidate(pendingUploadsListProvider);
+  }
+}
+
+final pendingChangesControllerProvider = Provider(
+  PendingChangesController.new,
 );

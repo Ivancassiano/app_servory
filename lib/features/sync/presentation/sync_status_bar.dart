@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/connectivity/connectivity_provider.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/application/session_controller.dart';
 import '../application/sync_provider.dart';
@@ -54,8 +55,9 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
     if (state == AppLifecycleState.resumed) _autoSync();
   }
 
-  /// Melhor esforço: drena a outbox se estiver online, autenticado e ocioso.
-  /// A linha já está persistida, então uma falha aqui só adia o envio.
+  /// Melhor esforço: envia o que está pendente (outbox + fila de anexos) se
+  /// estiver online, autenticado e ocioso. Tudo já está persistido, então uma
+  /// falha aqui só adia o envio.
   void _autoSync() {
     if (kIsWeb || !mounted) return;
     if (ref.read(sessionControllerProvider) is! SessionAuthenticated) return;
@@ -65,7 +67,7 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
     unawaited(
       ref
           .read(syncRunnerProvider.notifier)
-          .runSync()
+          .refreshEverything()
           .catchError((Object _) {}),
     );
   }
@@ -105,18 +107,34 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
             height: 30,
             child: Row(
               children: [
-                const SizedBox(width: 14),
-                Container(width: 8, height: 8, color: view.foreground),
-                const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    view.label,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'IBM Plex Mono',
-                      fontSize: 11,
-                      letterSpacing: 0.2,
-                      color: view.foreground,
+                  child: InkWell(
+                    // Com algo pendente, tocar no texto abre a lista pra ver o
+                    // motivo / descartar; sem nada pendente é só informativo.
+                    // `ref.read(appRouterProvider)` porque este widget é montado
+                    // no `builder` do MaterialApp.router — acima do Navigator,
+                    // onde `context.push` não acha o `InheritedGoRouter`.
+                    onTap: pending > 0
+                        ? () => ref.read(appRouterProvider).push('/pending')
+                        : null,
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 14),
+                        Container(width: 8, height: 8, color: view.foreground),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            view.label,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'IBM Plex Mono',
+                              fontSize: 11,
+                              letterSpacing: 0.2,
+                              color: view.foreground,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -150,7 +168,11 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
     );
   }
 
-  Future<void> _refresh(BuildContext context, WidgetRef ref, bool online) async {
+  Future<void> _refresh(
+    BuildContext context,
+    WidgetRef ref,
+    bool online,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     if (!online) {
       final pending = ref.read(pendingSyncCountProvider);
@@ -211,8 +233,9 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
       return _BarView(
         background: BrandColor.warnBg,
         foreground: BrandColor.warnText,
-        label: '${_changes(pending)} não enviada${pending == 1 ? '' : 's'} — '
-            'toque para enviar',
+        label:
+            '${_changes(pending)} não enviada${pending == 1 ? '' : 's'} — '
+            'toque para ver',
       );
     }
     return _BarView(

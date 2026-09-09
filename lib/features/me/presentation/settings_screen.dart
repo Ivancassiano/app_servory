@@ -59,6 +59,18 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _BiometricLoginTile(email: identityAsync.value?.email),
           const SizedBox(height: 16),
+          if (ref.watch(pendingSyncCountProvider) > 0) ...[
+            _SettingsGroup(
+              items: const [
+                _SettingsItem(
+                  Icons.cloud_off_outlined,
+                  'Alterações pendentes',
+                  '/pending',
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
           _SettingsGroup(
             items: [
               if (canSeeUsers)

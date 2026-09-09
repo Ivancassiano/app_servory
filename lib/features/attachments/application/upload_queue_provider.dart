@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
 import '../../../core/db/app_database.dart';
+import '../../../core/network/api_exception.dart';
 import '../../sync/application/sync_provider.dart';
 import '../data/attachment_cache.dart';
 import 'attachments_api_provider.dart';
@@ -122,7 +123,9 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
           )..where((t) => t.id.equals(item.id))).write(
             UploadQueueCompanion(
               attempts: Value(item.attempts + 1),
-              lastError: Value(e.toString()),
+              lastError: Value(
+                e is ApiException ? e.friendlyMessage : e.toString(),
+              ),
             ),
           );
         }
