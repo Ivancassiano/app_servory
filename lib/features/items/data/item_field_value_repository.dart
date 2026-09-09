@@ -77,6 +77,17 @@ class _LocalFirstItemFieldValueRepository extends LocalFirstRepositoryBase
     db.localItemFieldValues,
   )..where((t) => t.itemId.equals(itemId) & t.deleted.equals(false))).get();
 
+  /// Remove operações ainda na outbox desta linha — para reescrever um
+  /// `create` pendente em vez de empilhar um `update` (que pediria
+  /// `base_version` e seria rejeitado com VERSION_REQUIRED).
+  Future<void> _dropPendingOps(String entityId) => (db.delete(db.syncOutbox)
+        ..where(
+          (t) =>
+              t.entityId.equals(entityId) &
+              t.entityType.equals('item_field_value'),
+        ))
+      .go();
+
   @override
   Future<void> setValues(
     String itemId,
@@ -116,22 +127,60 @@ class _LocalFirstItemFieldValueRepository extends LocalFirstRepositoryBase
       for (final e in byDefId.entries) {
         final cur = byDef[e.key];
         if (e.value.isEmpty) {
-          if (cur != null) {
-            await (db.update(
-              db.localItemFieldValues,
-            )..where((t) => t.id.equals(cur.id))).write(
-              const LocalItemFieldValuesCompanion(
-                deleted: Value(true),
-                syncStatus: Value('pending'),
-              ),
-            );
-            await enqueue(
-              entityType: 'item_field_value',
-              entityId: cur.id,
-              operationType: 'delete',
-              payload: const {},
-            );
+          if (cur == null) {
+            continue;
           }
+          if (cur.version == null) {
+            // Nunca chegou ao servidor — só desfaz local, sem operação.
+            await _dropPendingOps(cur.id);
+            await (db.delete(
+              db.localItemFieldValues,
+            )..where((t) => t.id.equals(cur.id))).go();
+            continue;
+          }
+          await (db.update(
+            db.localItemFieldValues,
+          )..where((t) => t.id.equals(cur.id))).write(
+            const LocalItemFieldValuesCompanion(
+              deleted: Value(true),
+              syncStatus: Value('pending'),
+            ),
+          );
+          await enqueue(
+            entityType: 'item_field_value',
+            entityId: cur.id,
+            operationType: 'delete',
+            payload: const {},
+          );
+          continue;
+        }
+        if (cur != null && cur.version == null) {
+          // Existe local mas o servidor ainda não confirmou (create
+          // pendente): editar = reescrever o `create` com o valor novo, não
+          // um `update` (que exigiria base_version → VERSION_REQUIRED).
+          await (db.update(
+            db.localItemFieldValues,
+          )..where((t) => t.id.equals(cur.id))).write(
+            LocalItemFieldValuesCompanion(
+              valueText: Value(e.value.text),
+              valueNumber: Value(e.value.number),
+              valueDatetime: Value(e.value.datetime),
+              valueBoolean: Value(e.value.boolean),
+              localUpdatedAt: Value(DateTime.now()),
+              syncStatus: const Value('pending'),
+            ),
+          );
+          await _dropPendingOps(cur.id);
+          await enqueue(
+            entityType: 'item_field_value',
+            entityId: cur.id,
+            operationType: 'create',
+            payload: {
+              'item_id': itemId,
+              'field_def_id': e.key,
+              'value': e.value.raw,
+            },
+          );
           continue;
         }
         if (cur == null) {
@@ -185,24 +234,31 @@ class _LocalFirstItemFieldValueRepository extends LocalFirstRepositoryBase
           );
         }
       }
-      // defs que sumiram do conjunto novo → soft-delete + enfileira
+      // defs que sumiram do conjunto novo → soft-delete + enfileira (ou só
+      // desfaz local, se nunca chegou ao servidor).
       for (final v in existing) {
-        if (!byDefId.containsKey(v.fieldDefId)) {
-          await (db.update(
+        if (byDefId.containsKey(v.fieldDefId)) continue;
+        if (v.version == null) {
+          await _dropPendingOps(v.id);
+          await (db.delete(
             db.localItemFieldValues,
-          )..where((t) => t.id.equals(v.id))).write(
-            const LocalItemFieldValuesCompanion(
-              deleted: Value(true),
-              syncStatus: Value('pending'),
-            ),
-          );
-          await enqueue(
-            entityType: 'item_field_value',
-            entityId: v.id,
-            operationType: 'delete',
-            payload: const {},
-          );
+          )..where((t) => t.id.equals(v.id))).go();
+          continue;
         }
+        await (db.update(
+          db.localItemFieldValues,
+        )..where((t) => t.id.equals(v.id))).write(
+          const LocalItemFieldValuesCompanion(
+            deleted: Value(true),
+            syncStatus: Value('pending'),
+          ),
+        );
+        await enqueue(
+          entityType: 'item_field_value',
+          entityId: v.id,
+          operationType: 'delete',
+          payload: const {},
+        );
       }
     });
     unawaited(trySyncNow());

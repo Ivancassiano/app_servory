@@ -3,7 +3,7 @@
 // ignore_for_file: prefer_initializing_formals
 import 'dart:convert';
 
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show Value, Variable;
 
 import '../../../core/db/app_database.dart';
 import '../../clients/data/client_mapper.dart';
@@ -65,6 +65,20 @@ class SyncEngine {
   final SyncApi _api;
   final AppDatabase _db;
   final String _organizationId;
+
+  /// Versão atual de uma linha local (`null` se a tabela é desconhecida, a
+  /// linha sumiu ou nunca sincronizou). Nome de tabela vem de constante.
+  Future<int?> _entityVersion(String entityType, String entityId) async {
+    final table = _entityTables[entityType];
+    if (table == null) return null;
+    final row = await _db
+        .customSelect(
+          'SELECT version FROM $table WHERE id = ?',
+          variables: [Variable<String>(entityId)],
+        )
+        .getSingleOrNull();
+    return row?.read<int?>('version');
+  }
 
   /// Descarta uma operação presa na outbox — o que o usuário fez offline é
   /// perdido. Se for um `create` que nunca chegou ao servidor, apaga também a
@@ -144,18 +158,26 @@ class SyncEngine {
     final pending = await _db.select(_db.syncOutbox).get();
     if (pending.isEmpty) return;
 
-    final operations = pending
-        .map(
-          (row) => SyncOperationRequest(
-            operationId: row.operationId,
-            entityType: row.entityType,
-            entityId: row.entityId,
-            operationType: row.operationType,
-            baseVersion: row.baseVersion,
-            payload: jsonDecode(row.payload) as Map<String, dynamic>,
-          ),
-        )
-        .toList();
+    final operations = <SyncOperationRequest>[];
+    for (final row in pending) {
+      var baseVersion = row.baseVersion;
+      // Operação de update/ação enfileirada quando a linha ainda não tinha
+      // `version` (create sincronizou depois) — pega a versão atual agora,
+      // senão o servidor rejeita com VERSION_REQUIRED e ela trava na fila.
+      if (baseVersion == null && row.operationType != 'create') {
+        baseVersion = await _entityVersion(row.entityType, row.entityId);
+      }
+      operations.add(
+        SyncOperationRequest(
+          operationId: row.operationId,
+          entityType: row.entityType,
+          entityId: row.entityId,
+          operationType: row.operationType,
+          baseVersion: baseVersion,
+          payload: jsonDecode(row.payload) as Map<String, dynamic>,
+        ),
+      );
+    }
 
     final results = await _api.push(operations);
 

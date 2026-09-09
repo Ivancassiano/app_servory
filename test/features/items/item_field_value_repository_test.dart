@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
@@ -80,7 +82,7 @@ void main() {
       online: false,
       handler: (req) => (status: 200, body: {}),
     );
-    // valor pré-existente que vai sumir do conjunto novo
+    // valor JÁ sincronizado (tem version) que vai sumir do conjunto novo
     await db.into(db.localItemFieldValues).insert(
           LocalItemFieldValuesCompanion.insert(
             id: 'old',
@@ -88,6 +90,7 @@ void main() {
             itemId: 'i1',
             fieldDefId: 'd-antigo',
             valueText: const Value('x'),
+            version: const Value(3),
             localUpdatedAt: DateTime.now(),
           ),
         );
@@ -106,6 +109,50 @@ void main() {
     final ops = await db.select(db.syncOutbox).get();
     expect(ops.map((o) => o.entityType).toSet(), {'item_field_value'});
     expect(ops.map((o) => o.operationType).toSet(), {'create', 'delete'});
+  });
+
+  test('offline: editar valor ainda não sincronizado reescreve o create '
+      '(não gera update sem base_version)', () async {
+    final c = await build(
+      online: false,
+      handler: (req) => (status: 200, body: {}),
+    );
+    final repo = c.read(itemFieldValueRepositoryProvider);
+
+    // 1ª gravação offline → create
+    await repo.setValues('i1', {'d1': const TypedFieldValue(number: 1)});
+    // 2ª gravação antes de sincronizar → NÃO pode virar update sem version
+    await repo.setValues('i1', {'d1': const TypedFieldValue(number: 2)});
+
+    final vals = await db.select(db.localItemFieldValues).get();
+    expect(vals.single.valueNumber, 2);
+    expect(vals.single.version, isNull);
+
+    final ops = await db.select(db.syncOutbox).get();
+    expect(
+      ops.map((o) => o.operationType),
+      ['create'],
+      reason: 'uma operação create com o valor final, sem update',
+    );
+    expect(ops.single.baseVersion, isNull);
+    expect(
+      (jsonDecode(ops.single.payload) as Map)['value'],
+      2,
+    );
+  });
+
+  test('offline: limpar valor ainda não sincronizado só desfaz local', () async {
+    final c = await build(
+      online: false,
+      handler: (req) => (status: 200, body: {}),
+    );
+    final repo = c.read(itemFieldValueRepositoryProvider);
+
+    await repo.setValues('i1', {'d1': const TypedFieldValue(number: 1)});
+    await repo.setValues('i1', {'d1': const TypedFieldValue()}); // limpa
+
+    expect(await db.select(db.localItemFieldValues).get(), isEmpty);
+    expect(await db.select(db.syncOutbox).get(), isEmpty);
   });
 }
 

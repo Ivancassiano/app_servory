@@ -280,6 +280,57 @@ void main() {
     },
   );
 
+  test(
+    'push: update com base_version nulo pega a version atual da linha local',
+    () async {
+      final now = DateTime.now();
+      await db.batch((b) {
+        b.insert(
+          db.localClients,
+          LocalClientsCompanion.insert(
+            id: 'c1',
+            organizationId: 'org1',
+            kind: 'legal',
+            name: 'C',
+            localUpdatedAt: now,
+            version: const Value(7), // create já sincronizou
+            syncStatus: const Value('pending'),
+          ),
+        );
+        b.insert(
+          db.syncOutbox,
+          SyncOutboxCompanion.insert(
+            operationId: 'op-u',
+            organizationId: 'org1',
+            entityType: 'client',
+            entityId: 'c1',
+            operationType: 'update',
+            payload: '{"name":"C2"}',
+            occurredAt: now,
+            // base_version NÃO informado (enfileirado quando version era null)
+          ),
+        );
+      });
+
+      List<SyncOperationRequest>? sent;
+      when(() => api.push(any())).thenAnswer((inv) async {
+        sent = inv.positionalArguments.first as List<SyncOperationRequest>;
+        return const [
+          SyncOperationResult(
+            operationId: 'op-u',
+            status: 'accepted',
+            version: 8,
+          ),
+        ];
+      });
+
+      await engine.pushPending();
+
+      expect(sent!.single.baseVersion, 7);
+      expect(await db.select(db.syncOutbox).get(), isEmpty);
+    },
+  );
+
   test('discardOperation: update presa vira "synced" e sai da outbox', () async {
     final now = DateTime.now();
     await db.batch((b) {

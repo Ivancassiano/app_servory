@@ -74,6 +74,8 @@ class ApiException implements Exception {
     'NOT_FOUND': 'Registro não encontrado.',
     'VERSION_CONFLICT':
         'Este registro foi alterado por outra pessoa. Recarregue e tente de novo.',
+    'VERSION_REQUIRED':
+        'Não foi possível enviar essa edição. Descarte-a e refaça.',
     'NETWORK_ERROR':
         'Não foi possível conectar ao servidor. Verifique sua conexão.',
     'INTERNAL': _genericMessage,
