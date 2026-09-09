@@ -1,6 +1,6 @@
 {
-    "name": "servicereport",
-    "short_name": "servicereport",
+    "name": "Leiano ServiceReport",
+    "short_name": "ServiceReport",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#12151A",

@@ -18,7 +18,7 @@
          A fonte de verdade é o servidor; recomeçar limpo é melhor que
          restaurar quebrado. -->
     <application
-        android:label="servicereport"
+        android:label="Leiano ServiceReport"
         android:name="${applicationName}"
         android:allowBackup="false"
         android:fullBackupContent="false"
