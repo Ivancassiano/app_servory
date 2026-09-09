@@ -7,6 +7,8 @@ import 'package:servory/core/storage/secure_store.dart';
 import 'package:servory/features/auth/application/session_controller.dart';
 import 'package:servory/features/auth/data/auth_api.dart';
 
+import '../../support/fake_biometric_gate.dart';
+
 class MockAuthApi extends Mock implements AuthApi {}
 
 class MockSecureStore extends Mock implements SecureStore {}
@@ -14,11 +16,13 @@ class MockSecureStore extends Mock implements SecureStore {}
 void main() {
   late MockAuthApi authApi;
   late MockSecureStore store;
+  late FakeBiometricGate gate;
   late ProviderContainer container;
 
   setUp(() {
     authApi = MockAuthApi();
     store = MockSecureStore();
+    gate = FakeBiometricGate(supported: true);
 
     when(() => store.getOrCreateDeviceId()).thenAnswer((_) async => 'device-1');
     when(() => store.readAccessToken()).thenAnswer((_) async => null);
@@ -35,15 +39,49 @@ void main() {
     ).thenAnswer((_) async {});
     when(() => store.clearSession()).thenAnswer((_) async {});
     when(() => store.saveLastOnlineValidation(any())).thenAnswer((_) async {});
+    when(
+      () => store.readBiometricLoginEnabled(),
+    ).thenAnswer((_) async => false);
+    when(() => store.forgetBiometricLogin()).thenAnswer((_) async {});
+    when(() => store.readCredentials()).thenAnswer((_) async => null);
+    when(
+      () => store.setBiometricLoginEnabled(any()),
+    ).thenAnswer((_) async {});
+    when(
+      () => store.saveCredentials(
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+      ),
+    ).thenAnswer((_) async {});
 
     container = ProviderContainer(
       overrides: [
         authApiProvider.overrideWithValue(authApi),
         secureStoreProvider.overrideWithValue(store),
+        biometricGateProvider.overrideWithValue(gate),
       ],
     );
     addTearDown(container.dispose);
   });
+
+  void stubLoginOk() {
+    when(
+      () => authApi.login(
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+        deviceId: any(named: 'deviceId'),
+        deviceName: any(named: 'deviceName'),
+        devicePlatform: any(named: 'devicePlatform'),
+      ),
+    ).thenAnswer(
+      (_) async => const TokenPair(
+        accessToken: 'access',
+        refreshToken: 'refresh',
+        organizationId: 'org-1',
+        userId: 'user-1',
+      ),
+    );
+  }
 
   test('sem sessão salva, resolve para não-autenticado', () async {
     // dispara o build() (e a restauração assíncrona)
@@ -164,5 +202,77 @@ void main() {
       isA<SessionUnauthenticated>(),
     );
     verify(() => store.clearSession()).called(1);
+  });
+
+  test('login com biometria ligada guarda as credenciais', () async {
+    when(
+      () => store.readBiometricLoginEnabled(),
+    ).thenAnswer((_) async => true);
+    stubLoginOk();
+
+    await container
+        .read(sessionControllerProvider.notifier)
+        .login(email: 'a@b.com', password: 'segredo');
+
+    verify(
+      () => store.saveCredentials(email: 'a@b.com', password: 'segredo'),
+    ).called(1);
+  });
+
+  test('loginWithBiometrics: digital ok + credenciais salvas -> autentica', () async {
+    when(() => store.readCredentials()).thenAnswer(
+      (_) async => (email: 'a@b.com', password: 'segredo'),
+    );
+    stubLoginOk();
+
+    final ok = await container
+        .read(sessionControllerProvider.notifier)
+        .loginWithBiometrics();
+
+    expect(ok, isTrue);
+    expect(gate.authCalls, 1);
+    expect(
+      container.read(sessionControllerProvider),
+      isA<SessionAuthenticated>(),
+    );
+  });
+
+  test('loginWithBiometrics: digital recusada -> false, não autentica', () async {
+    gate.authResult = false;
+    when(() => store.readCredentials()).thenAnswer(
+      (_) async => (email: 'a@b.com', password: 'segredo'),
+    );
+
+    final ok = await container
+        .read(sessionControllerProvider.notifier)
+        .loginWithBiometrics();
+
+    expect(ok, isFalse);
+    verifyNever(
+      () => authApi.login(
+        email: any(named: 'email'),
+        password: any(named: 'password'),
+        deviceId: any(named: 'deviceId'),
+        deviceName: any(named: 'deviceName'),
+        devicePlatform: any(named: 'devicePlatform'),
+      ),
+    );
+  });
+
+  test('loginWithBiometrics: sem credenciais salvas -> false', () async {
+    final ok = await container
+        .read(sessionControllerProvider.notifier)
+        .loginWithBiometrics();
+    expect(ok, isFalse);
+    expect(gate.authCalls, 0);
+  });
+
+  test('logout esquece o login por digital', () async {
+    when(() => store.readAccessToken()).thenAnswer((_) async => 'tok');
+    when(() => authApi.logout(any())).thenAnswer((_) async {});
+
+    await container.read(sessionControllerProvider.notifier).logout();
+
+    verify(() => store.forgetBiometricLogin()).called(1);
   });
 }

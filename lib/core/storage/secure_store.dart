@@ -20,6 +20,9 @@ class SecureStore {
   static const _kUserId = 'user_id';
   static const _kDeviceId = 'device_id';
   static const _kLastOnlineValidationAt = 'last_online_validation_at';
+  static const _kBiometricLoginEnabled = 'biometric_login_enabled';
+  static const _kSavedEmail = 'saved_email';
+  static const _kSavedPassword = 'saved_password';
 
   Future<void> saveSession({
     required String accessToken,
@@ -74,6 +77,44 @@ class SecureStore {
 
   Future<void> saveDbKey(String organizationId, String hexKey) =>
       _storage.write(key: 'db_key_$organizationId', value: hexKey);
+
+  /// "Entrar com digital" ligado nas Configurações. Quando ligado, o login
+  /// guarda e-mail + senha (cifrados no Keychain/Keystore) para relogar por
+  /// biometria depois que a sessão do servidor expira. Fora de `clearSession`
+  /// de propósito — só `forgetBiometricLogin` (logout explícito) apaga.
+  Future<bool> readBiometricLoginEnabled() async =>
+      (await _storage.read(key: _kBiometricLoginEnabled)) == 'true';
+
+  Future<void> setBiometricLoginEnabled(bool enabled) => _storage.write(
+    key: _kBiometricLoginEnabled,
+    value: enabled ? 'true' : 'false',
+  );
+
+  Future<void> saveCredentials({
+    required String email,
+    required String password,
+  }) async {
+    await Future.wait([
+      _storage.write(key: _kSavedEmail, value: email),
+      _storage.write(key: _kSavedPassword, value: password),
+    ]);
+  }
+
+  Future<({String email, String password})?> readCredentials() async {
+    final email = await _storage.read(key: _kSavedEmail);
+    final password = await _storage.read(key: _kSavedPassword);
+    if (email == null || password == null) return null;
+    return (email: email, password: password);
+  }
+
+  /// Desliga o "entrar com digital" e esquece as credenciais salvas.
+  Future<void> forgetBiometricLogin() async {
+    await Future.wait([
+      _storage.delete(key: _kBiometricLoginEnabled),
+      _storage.delete(key: _kSavedEmail),
+      _storage.delete(key: _kSavedPassword),
+    ]);
+  }
 
   /// UUID gerado uma vez por instalação (GUIA-FLUTTER.md §3.1) e persistido
   /// para sempre — nunca regenerado a cada login. Se o armazenamento for

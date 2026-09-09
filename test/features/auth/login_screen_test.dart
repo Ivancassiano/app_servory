@@ -7,6 +7,8 @@ import 'package:servory/core/storage/secure_store.dart';
 import 'package:servory/features/auth/data/auth_api.dart';
 import 'package:servory/features/auth/presentation/login_screen.dart';
 
+import '../../support/fake_biometric_gate.dart';
+
 class MockAuthApi extends Mock implements AuthApi {}
 
 class MockSecureStore extends Mock implements SecureStore {}
@@ -32,6 +34,11 @@ void main() {
       ),
     ).thenAnswer((_) async {});
     when(() => store.saveLastOnlineValidation(any())).thenAnswer((_) async {});
+    when(
+      () => store.readBiometricLoginEnabled(),
+    ).thenAnswer((_) async => false);
+    when(() => store.readCredentials()).thenAnswer((_) async => null);
+    when(() => store.forgetBiometricLogin()).thenAnswer((_) async {});
   });
 
   Widget buildApp() {
@@ -39,6 +46,7 @@ void main() {
       overrides: [
         authApiProvider.overrideWithValue(authApi),
         secureStoreProvider.overrideWithValue(store),
+        biometricGateProvider.overrideWithValue(FakeBiometricGate()),
       ],
       child: const MaterialApp(home: LoginScreen()),
     );

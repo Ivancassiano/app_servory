@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/brand_mark.dart';
+import '../application/biometric_login.dart';
 import '../application/session_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -21,12 +23,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? _errorMessage;
   bool _needsEmailVerification = false;
   bool _obscurePassword = true;
+  bool _hasSavedLogin = false;
+  bool _promptedBiometrics = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedLogin();
+  }
+
+  Future<void> _loadSavedLogin() async {
+    final creds = await ref.read(secureStoreProvider).readCredentials();
+    if (!mounted || creds == null) return;
+    setState(() {
+      _emailController.text = creds.email;
+      _passwordController.text = creds.password;
+      _hasSavedLogin = true;
+    });
+    // Já abre a digital de cara — o botão fica como plano B se cancelar.
+    final available = await ref.read(biometricGateProvider).isSupported();
+    if (mounted && available && !_promptedBiometrics) {
+      _promptedBiometrics = true;
+      await _biometricLogin();
+    }
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _biometricLogin() async {
+    setState(() {
+      _errorMessage = null;
+      _needsEmailVerification = false;
+    });
+    try {
+      final ok = await ref
+          .read(sessionControllerProvider.notifier)
+          .loginWithBiometrics();
+      if (!mounted) return;
+      if (!ok) {
+        setState(() => _errorMessage = 'Não foi possível confirmar a digital.');
+      }
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _errorMessage = e.friendlyMessage);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _errorMessage = 'Não foi possível entrar com a digital.');
+      }
+    }
   }
 
   Future<void> _submit() async {
@@ -175,6 +223,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ],
                     ],
                     const SizedBox(height: 24),
+                    if (_hasSavedLogin &&
+                        (ref.watch(biometricAvailableProvider).value ??
+                            false)) ...[
+                      OutlinedButton.icon(
+                        onPressed: isAuthenticating ? null : _biometricLogin,
+                        icon: const Icon(Icons.fingerprint),
+                        label: const Text('Entrar com digital'),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     FilledButton(
                       onPressed: isAuthenticating ? null : _submit,
                       child: isAuthenticating

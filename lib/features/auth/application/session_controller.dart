@@ -77,6 +77,9 @@ class SessionController extends Notifier<SessionState> {
     // armazenamento seguro (container/widget desmontado no meio do boot) —
     // sem essa checagem, `state = ...` depois do await lança.
     if (!ref.mounted) return;
+    // `_restore` só resolve o SessionUnknown inicial; se um login/logout já
+    // moveu o estado enquanto líamos o armazenamento, respeita esse.
+    if (state is! SessionUnknown) return;
 
     state = hasSession
         ? SessionAuthenticated(userId: userId, organizationId: organizationId)
@@ -97,11 +100,58 @@ class SessionController extends Notifier<SessionState> {
         devicePlatform: _devicePlatform(),
       );
       await _activate(store, pair);
+      // Com "entrar com digital" ligado, guarda as credenciais para relogar
+      // por biometria quando a sessão do servidor expirar.
+      if (await store.readBiometricLoginEnabled()) {
+        await store.saveCredentials(email: email, password: password);
+      }
     } catch (_) {
       if (ref.mounted) state = const SessionUnauthenticated();
       rethrow;
     }
   }
+
+  /// Relogin por biometria: pede a digital/PIN e, se confirmado, usa as
+  /// credenciais salvas para logar de novo. Devolve `false` se a biometria
+  /// falhar/for cancelada ou não houver credenciais.
+  Future<bool> loginWithBiometrics() async {
+    final store = ref.read(secureStoreProvider);
+    final creds = await store.readCredentials();
+    if (creds == null) return false;
+    final ok = await ref
+        .read(biometricGateProvider)
+        .authenticate('Entre no ServiceReport com sua digital');
+    if (!ok) return false;
+    await login(email: creds.email, password: creds.password);
+    return true;
+  }
+
+  Future<bool> isBiometricLoginEnabled() =>
+      ref.read(secureStoreProvider).readBiometricLoginEnabled();
+
+  /// Liga o "entrar com digital": confirma a senha com o servidor e guarda as
+  /// credenciais. Não passa pelo estado `SessionAuthenticating` (o usuário já
+  /// está logado, na tela de Configurações). Lança se a senha estiver errada.
+  Future<void> enableBiometricLogin({
+    required String email,
+    required String password,
+  }) async {
+    final store = ref.read(secureStoreProvider);
+    final deviceId = await store.getOrCreateDeviceId();
+    final pair = await _authApi.login(
+      email: email,
+      password: password,
+      deviceId: deviceId,
+      deviceName: _deviceName(),
+      devicePlatform: _devicePlatform(),
+    );
+    await store.setBiometricLoginEnabled(true);
+    await store.saveCredentials(email: email, password: password);
+    await _activate(store, pair);
+  }
+
+  Future<void> disableBiometricLogin() =>
+      ref.read(secureStoreProvider).forgetBiometricLogin();
 
   /// Auto-cadastro. Não muda o estado da sessão — o usuário continua
   /// deslogado e vai para a tela de confirmação de e-mail; o login só passa a
@@ -189,11 +239,15 @@ class SessionController extends Notifier<SessionState> {
     if (accessToken != null) {
       await _authApi.logout(accessToken);
     }
-    await store.clearSession();
+    // "Sair" é logout completo: esquece a sessão E o login por digital.
+    await Future.wait([store.clearSession(), store.forgetBiometricLogin()]);
     if (!ref.mounted) return;
     state = const SessionUnauthenticated();
   }
 
+  /// Sessão do servidor expirou (refresh falhou/revogado). Limpa os tokens mas
+  /// mantém e-mail/senha salvos — a tela de login vem pré-preenchida e com o
+  /// "entrar com digital" (spec §16.4).
   void _handleSessionExpired() {
     unawaited(ref.read(secureStoreProvider).clearSession());
     state = const SessionUnauthenticated();

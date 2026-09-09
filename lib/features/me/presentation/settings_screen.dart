@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/brand_app_bar.dart';
+import '../../auth/application/biometric_login.dart';
 import '../../auth/application/session_controller.dart';
 import '../../sync/application/sync_provider.dart';
 import '../application/me_provider.dart';
@@ -53,6 +55,8 @@ class SettingsScreen extends ConsumerWidget {
             ),
             data: (identity) => _IdentityCard(identity: identity, sync: syncState),
           ),
+          const SizedBox(height: 16),
+          _BiometricLoginTile(email: identityAsync.value?.email),
           const SizedBox(height: 16),
           _SettingsGroup(
             items: [
@@ -344,6 +348,135 @@ class _InfoRow extends StatelessWidget {
             value.isNotEmpty ? value : '—',
             style: BrandText.fieldValue,
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// "Entrar com digital": ao ligar, confirma a senha e passa a guardá-la
+/// (cifrada) para relogar por biometria quando a sessão do servidor expirar.
+class _BiometricLoginTile extends ConsumerWidget {
+  const _BiometricLoginTile({required this.email});
+
+  final String? email;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final available = ref.watch(biometricAvailableProvider).value ?? false;
+    final enabledAsync = ref.watch(biometricLoginEnabledProvider);
+    final enabled = enabledAsync.value ?? false;
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        border: Border.fromBorderSide(BorderSide(color: BrandColor.border)),
+      ),
+      child: SwitchListTile(
+        secondary: const Icon(
+          Icons.fingerprint,
+          color: BrandColor.textTertiary,
+        ),
+        title: const Text(
+          'Entrar com digital',
+          style: TextStyle(
+            fontFamily: 'Space Grotesk',
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: BrandColor.ink,
+          ),
+        ),
+        subtitle: Text(
+          available
+              ? 'Preenche seu acesso e desbloqueia com a digital quando a '
+                    'sessão expira.'
+              : 'Configure biometria ou bloqueio de tela no aparelho para usar.',
+          style: BrandText.listMeta,
+        ),
+        value: enabled,
+        onChanged: (available && email != null && !enabledAsync.isLoading)
+            ? (v) => _toggle(context, ref, v)
+            : null,
+      ),
+    );
+  }
+
+  Future<void> _toggle(BuildContext context, WidgetRef ref, bool on) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final session = ref.read(sessionControllerProvider.notifier);
+    final pref = ref.read(biometricLoginEnabledProvider.notifier);
+
+    if (!on) {
+      await session.disableBiometricLogin();
+      pref.setLocal(false);
+      return;
+    }
+
+    final password = await showDialog<String>(
+      context: context,
+      builder: (ctx) => const _PasswordDialog(),
+    );
+    if (password == null || password.isEmpty) return;
+
+    try {
+      await session.enableBiometricLogin(email: email!, password: password);
+      pref.setLocal(true);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Login com digital ativado.')),
+      );
+    } on ApiException catch (e) {
+      pref.setLocal(false);
+      messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
+    } catch (_) {
+      pref.setLocal(false);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Não foi possível ativar agora.')),
+      );
+    }
+  }
+}
+
+class _PasswordDialog extends StatefulWidget {
+  const _PasswordDialog();
+
+  @override
+  State<_PasswordDialog> createState() => _PasswordDialogState();
+}
+
+class _PasswordDialogState extends State<_PasswordDialog> {
+  final _controller = TextEditingController();
+  bool _obscure = true;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Confirme sua senha'),
+      content: TextField(
+        controller: _controller,
+        obscureText: _obscure,
+        autofocus: true,
+        decoration: InputDecoration(
+          labelText: 'Senha',
+          suffixIcon: IconButton(
+            icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+            onPressed: () => setState(() => _obscure = !_obscure),
+          ),
+        ),
+        onSubmitted: (v) => Navigator.pop(context, v),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _controller.text),
+          child: const Text('Confirmar'),
         ),
       ],
     );
