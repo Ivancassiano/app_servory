@@ -42,10 +42,13 @@ class _AcceptInviteScreenState extends ConsumerState<AcceptInviteScreen> {
       _errorMessage = null;
     });
     try {
+      final code = _codeController.text
+          .replaceAll(RegExp('[^A-Za-z0-9]'), '')
+          .toUpperCase();
       await ref
           .read(sessionControllerProvider.notifier)
           .acceptInvite(
-            code: _codeController.text.trim(),
+            code: code,
             name: _nameController.text.trim(),
             password: _passwordController.text,
           );
@@ -82,15 +85,32 @@ class _AcceptInviteScreenState extends ConsumerState<AcceptInviteScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Cole o código do e-mail de convite e defina seu acesso. '
+                        'Digite o código do e-mail de convite e defina seu acesso. '
                         'Se você já tem conta, use a mesma senha.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 24),
                       TextFormField(
                         controller: _codeController,
+                        textCapitalization: TextCapitalization.characters,
+                        autocorrect: false,
+                        maxLength: 12,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp('[A-Za-z0-9 -]'),
+                          ),
+                          TextInputFormatter.withFunction(
+                            (_, n) => n.copyWith(text: n.text.toUpperCase()),
+                          ),
+                        ],
+                        style: const TextStyle(
+                          fontFamily: 'IBM Plex Mono',
+                          fontSize: 18,
+                          letterSpacing: 3,
+                        ),
                         decoration: const InputDecoration(
                           labelText: 'Código do convite',
+                          counterText: '',
                         ),
                         validator: (v) => (v == null || v.trim().isEmpty)
                             ? 'Informe o código.'
