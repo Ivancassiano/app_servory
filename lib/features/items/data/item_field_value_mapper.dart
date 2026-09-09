@@ -1,4 +1,5 @@
 import '../../../core/db/app_database.dart';
+import '../../../core/network/api_parse.dart';
 
 /// REST/sync ↔ `LocalItemFieldValue`. As 4 colunas de valor vêm cruas; só uma
 /// fica preenchida conforme o `data_type` do def.
@@ -13,7 +14,7 @@ LocalItemFieldValue itemFieldValueFromApiJson(
     itemId: j['item_id'] as String,
     fieldDefId: j['field_def_id'] as String,
     valueText: j['value_text'] as String?,
-    valueNumber: (j['value_number'] as num?)?.toDouble(),
+    valueNumber: parseApiNumber(j['value_number']),
     valueDatetime: j['value_datetime'] == null
         ? null
         : DateTime.tryParse(j['value_datetime'].toString()),

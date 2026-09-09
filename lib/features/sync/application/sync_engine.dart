@@ -199,6 +199,19 @@ class SyncEngine {
           await (_db.delete(
             _db.syncOutbox,
           )..where((t) => t.operationId.equals(op.operationId))).go();
+          // `create` em conflito = o servidor já tem essa linha (mesmo id ou
+          // chave única repetida — costuma ser um reenvio após o PUT online ter
+          // dado certo mas o cache da resposta ter falhado). Verdade é do
+          // servidor: apaga o órfão local e deixa o próximo `pull` trazer a
+          // linha boa. (Mesma regra do "Descartar" em discardOperation.)
+          if (op.operationType == 'create') {
+            final table = _entityTables[op.entityType];
+            if (table != null) {
+              await _db.customStatement('DELETE FROM $table WHERE id = ?', [
+                op.entityId,
+              ]);
+            }
+          }
           continue;
         }
         // Erro não-conflito (validação, permissão, entidade sumiu): mantém na
@@ -429,11 +442,16 @@ class SyncEngine {
               itemFromApiJson(data, organizationId: org).toCompanion(false),
             );
       case 'item_field_value':
-        await _db
-            .into(_db.localItemFieldValues)
-            .insertOnConflictUpdate(
-              itemFieldValueFromApiJson(data, organizationId: org),
-            );
+        final fv = itemFieldValueFromApiJson(data, organizationId: org);
+        await _db.into(_db.localItemFieldValues).insertOnConflictUpdate(fv);
+        // Limpa um eventual órfão nunca sincronizado do MESMO campo (id de
+        // dispositivo diferente): sobra quando um `create` offline colidiu com
+        // o valor que o servidor já tinha. A linha do servidor manda.
+        await _db.customStatement(
+          'DELETE FROM local_item_field_values '
+          'WHERE item_id = ? AND field_def_id = ? AND id <> ? AND version IS NULL',
+          [fv.itemId, fv.fieldDefId, fv.id],
+        );
       case 'service_order':
         await _db
             .into(_db.localServiceOrders)

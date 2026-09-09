@@ -77,6 +77,44 @@ void main() {
     expect(rows.single.syncStatus, 'synced');
   });
 
+  test('online: value_number string do backend não derruba pro caminho offline',
+      () async {
+    final c = await build(
+      online: true,
+      handler: (req) {
+        if (req.method == 'PUT') {
+          return (
+            status: 200,
+            body: {
+              'field_values': [
+                {
+                  'id': 'v1',
+                  'item_id': 'i1',
+                  'field_def_id': 'd1',
+                  'value_text': null,
+                  // pgtype.Numeric serializa como string
+                  'value_number': '2.0',
+                  'value_datetime': null,
+                  'value_boolean': null,
+                  'version': 1,
+                },
+              ],
+            },
+          );
+        }
+        return (status: 200, body: {});
+      },
+    );
+    final repo = c.read(itemFieldValueRepositoryProvider);
+    await repo.setValues('i1', {'d1': const TypedFieldValue(number: 2)});
+
+    final rows = await db.select(db.localItemFieldValues).get();
+    expect(rows.single.valueNumber, 2.0);
+    expect(rows.single.syncStatus, 'synced');
+    // nada foi pro caminho offline
+    expect(await db.select(db.syncOutbox).get(), isEmpty);
+  });
+
   test('offline: enfileira create/update/delete por linha', () async {
     final c = await build(
       online: false,

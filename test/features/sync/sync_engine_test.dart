@@ -280,6 +280,105 @@ void main() {
     },
   );
 
+  test('pull de item_field_value limpa órfão nunca sincronizado do mesmo campo',
+      () async {
+    final now = DateTime.now();
+    await db.into(db.localItemFieldValues).insert(
+          LocalItemFieldValuesCompanion.insert(
+            id: 'device-fv',
+            organizationId: 'org1',
+            itemId: 'i1',
+            fieldDefId: 'd1',
+            valueNumber: const Value(2),
+            localUpdatedAt: now,
+            syncStatus: const Value('conflict'),
+          ),
+        );
+    when(() => api.pull(cursor: 0, limit: any(named: 'limit'))).thenAnswer(
+      (_) async => const SyncPullResult(
+        entities: [
+          SyncEntityChange(
+            entityType: 'item_field_value',
+            entityId: 'server-fv',
+            deleted: false,
+            data: {
+              'id': 'server-fv',
+              'item_id': 'i1',
+              'field_def_id': 'd1',
+              'value_text': null,
+              'value_number': '2', // string do backend
+              'value_datetime': null,
+              'value_boolean': null,
+              'version': 1,
+            },
+          ),
+        ],
+        nextCursor: 10,
+      ),
+    );
+    when(() => api.pull(cursor: 10, limit: any(named: 'limit'))).thenAnswer(
+      (_) async => const SyncPullResult(entities: [], nextCursor: 10),
+    );
+
+    await engine.pull();
+
+    final rows = await db.select(db.localItemFieldValues).get();
+    expect(rows.map((r) => r.id), ['server-fv']);
+    expect(rows.single.valueNumber, 2.0);
+  });
+
+  test(
+    'push: create de item_field_value em conflito apaga o órfão local',
+    () async {
+      final now = DateTime.now();
+      await db.batch((b) {
+        b.insert(
+          db.localItemFieldValues,
+          LocalItemFieldValuesCompanion.insert(
+            id: 'device-fv',
+            organizationId: 'org1',
+            itemId: 'i1',
+            fieldDefId: 'd1',
+            valueNumber: const Value(2),
+            localUpdatedAt: now,
+            syncStatus: const Value('pending'),
+          ),
+        );
+        b.insert(
+          db.syncOutbox,
+          SyncOutboxCompanion.insert(
+            operationId: 'op-c',
+            organizationId: 'org1',
+            entityType: 'item_field_value',
+            entityId: 'device-fv',
+            operationType: 'create',
+            payload: '{"item_id":"i1","field_def_id":"d1","value":2}',
+            occurredAt: now,
+          ),
+        );
+      });
+
+      when(() => api.push(any())).thenAnswer(
+        (_) async => const [
+          SyncOperationResult(
+            operationId: 'op-c',
+            status: 'conflict',
+            errorCode: 'VERSION_CONFLICT',
+          ),
+        ],
+      );
+
+      await engine.pushPending();
+
+      expect(await db.select(db.syncOutbox).get(), isEmpty);
+      expect(
+        await db.select(db.localItemFieldValues).get(),
+        isEmpty,
+        reason: 'servidor já tinha o valor; o órfão local sai e o pull traz o bom',
+      );
+    },
+  );
+
   test(
     'push: update com base_version nulo pega a version atual da linha local',
     () async {
