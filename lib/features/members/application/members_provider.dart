@@ -2,15 +2,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/members_api.dart';
 
-final orgMembersProvider = FutureProvider<List<OrgMember>>(
+// autoDispose: a lista some da memória ao sair da tela e é sempre buscada
+// fresca ao voltar — não faz sentido cachear membros entre navegações, e
+// evita mostrar dados da sessão anterior depois de uma troca de conta.
+final orgMembersProvider = FutureProvider.autoDispose<List<OrgMember>>(
   (ref) => ref.watch(membersApiProvider).listMembers(),
 );
 
-final orgInvitationsProvider = FutureProvider<List<OrgInvitation>>(
+final orgInvitationsProvider = FutureProvider.autoDispose<List<OrgInvitation>>(
   (ref) => ref.watch(membersApiProvider).listInvitations(),
 );
 
-final orgRolesProvider = FutureProvider<List<OrgRole>>(
+final orgRolesProvider = FutureProvider.autoDispose<List<OrgRole>>(
   (ref) => ref.watch(membersApiProvider).listRoles(),
 );
 
