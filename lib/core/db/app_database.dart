@@ -443,6 +443,29 @@ class UploadQueue extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+/// Cache local de anexos que já estão no servidor (foto/assinatura), para
+/// vê-los offline. Fora do protocolo de sync — é só cache: pode ser
+/// recriado a qualquer momento a partir do servidor. `photoId` é o id do
+/// servidor; para a assinatura, a chave sintética `sig:<serviceOrderId>`.
+/// Preenchido ao concluir um upload (reaproveita o arquivo capturado) e ao
+/// listar as fotos online (baixa os bytes das que faltam).
+class LocalPhotoCache extends Table {
+  TextColumn get photoId => text().named('photo_id')();
+  TextColumn get organizationId => text().named('organization_id')();
+  TextColumn get ownerKind =>
+      text().named('owner_kind')(); // service_order | item | location
+  TextColumn get ownerId => text().named('owner_id')();
+  TextColumn get kind => text()(); // 'photo' | 'signature'
+  TextColumn get serviceOrderItemId =>
+      text().named('service_order_item_id').nullable()();
+  TextColumn get caption => text().nullable()();
+  TextColumn get localPath => text().named('local_path')();
+  DateTimeColumn get cachedAt => dateTime().named('cached_at')();
+
+  @override
+  Set<Column> get primaryKey => {photoId};
+}
+
 @DriftDatabase(
   tables: [
     LocalClients,
@@ -464,6 +487,7 @@ class UploadQueue extends Table {
     SyncOutbox,
     LocalSyncState,
     UploadQueue,
+    LocalPhotoCache,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -479,7 +503,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -605,6 +629,15 @@ class AppDatabase extends _$AppDatabase {
       if (from < 16) {
         // Item ganhou is_active (mesma coisa dos locais).
         await m.addColumn(localItems, localItems.isActive);
+      }
+      if (from < 17) {
+        // Cache local de anexos (ver fotos/assinatura offline). É só cache —
+        // sem bootstrap: enche sozinho ao listar as fotos online.
+        await m.createTable(localPhotoCache);
+        await m.database.customStatement(
+          'CREATE INDEX IF NOT EXISTS local_photo_cache_owner_idx '
+          'ON local_photo_cache (owner_kind, owner_id)',
+        );
       }
     },
   );

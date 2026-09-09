@@ -15828,6 +15828,587 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   }
 }
 
+class $LocalPhotoCacheTable extends LocalPhotoCache
+    with TableInfo<$LocalPhotoCacheTable, LocalPhotoCacheData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalPhotoCacheTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _photoIdMeta = const VerificationMeta(
+    'photoId',
+  );
+  @override
+  late final GeneratedColumn<String> photoId = GeneratedColumn<String>(
+    'photo_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerKindMeta = const VerificationMeta(
+    'ownerKind',
+  );
+  @override
+  late final GeneratedColumn<String> ownerKind = GeneratedColumn<String>(
+    'owner_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serviceOrderItemIdMeta =
+      const VerificationMeta('serviceOrderItemId');
+  @override
+  late final GeneratedColumn<String> serviceOrderItemId =
+      GeneratedColumn<String>(
+        'service_order_item_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _captionMeta = const VerificationMeta(
+    'caption',
+  );
+  @override
+  late final GeneratedColumn<String> caption = GeneratedColumn<String>(
+    'caption',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localPathMeta = const VerificationMeta(
+    'localPath',
+  );
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+    'local_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    photoId,
+    organizationId,
+    ownerKind,
+    ownerId,
+    kind,
+    serviceOrderItemId,
+    caption,
+    localPath,
+    cachedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_photo_cache';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalPhotoCacheData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('photo_id')) {
+      context.handle(
+        _photoIdMeta,
+        photoId.isAcceptableOrUnknown(data['photo_id']!, _photoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_photoIdMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('owner_kind')) {
+      context.handle(
+        _ownerKindMeta,
+        ownerKind.isAcceptableOrUnknown(data['owner_kind']!, _ownerKindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerKindMeta);
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('service_order_item_id')) {
+      context.handle(
+        _serviceOrderItemIdMeta,
+        serviceOrderItemId.isAcceptableOrUnknown(
+          data['service_order_item_id']!,
+          _serviceOrderItemIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('caption')) {
+      context.handle(
+        _captionMeta,
+        caption.isAcceptableOrUnknown(data['caption']!, _captionMeta),
+      );
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(
+        _localPathMeta,
+        localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localPathMeta);
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {photoId};
+  @override
+  LocalPhotoCacheData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalPhotoCacheData(
+      photoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_id'],
+      )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      ownerKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_kind'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      serviceOrderItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_order_item_id'],
+      ),
+      caption: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}caption'],
+      ),
+      localPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_path'],
+      )!,
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalPhotoCacheTable createAlias(String alias) {
+    return $LocalPhotoCacheTable(attachedDatabase, alias);
+  }
+}
+
+class LocalPhotoCacheData extends DataClass
+    implements Insertable<LocalPhotoCacheData> {
+  final String photoId;
+  final String organizationId;
+  final String ownerKind;
+  final String ownerId;
+  final String kind;
+  final String? serviceOrderItemId;
+  final String? caption;
+  final String localPath;
+  final DateTime cachedAt;
+  const LocalPhotoCacheData({
+    required this.photoId,
+    required this.organizationId,
+    required this.ownerKind,
+    required this.ownerId,
+    required this.kind,
+    this.serviceOrderItemId,
+    this.caption,
+    required this.localPath,
+    required this.cachedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['photo_id'] = Variable<String>(photoId);
+    map['organization_id'] = Variable<String>(organizationId);
+    map['owner_kind'] = Variable<String>(ownerKind);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['kind'] = Variable<String>(kind);
+    if (!nullToAbsent || serviceOrderItemId != null) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId);
+    }
+    if (!nullToAbsent || caption != null) {
+      map['caption'] = Variable<String>(caption);
+    }
+    map['local_path'] = Variable<String>(localPath);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  LocalPhotoCacheCompanion toCompanion(bool nullToAbsent) {
+    return LocalPhotoCacheCompanion(
+      photoId: Value(photoId),
+      organizationId: Value(organizationId),
+      ownerKind: Value(ownerKind),
+      ownerId: Value(ownerId),
+      kind: Value(kind),
+      serviceOrderItemId: serviceOrderItemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serviceOrderItemId),
+      caption: caption == null && nullToAbsent
+          ? const Value.absent()
+          : Value(caption),
+      localPath: Value(localPath),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory LocalPhotoCacheData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalPhotoCacheData(
+      photoId: serializer.fromJson<String>(json['photoId']),
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      ownerKind: serializer.fromJson<String>(json['ownerKind']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      serviceOrderItemId: serializer.fromJson<String?>(
+        json['serviceOrderItemId'],
+      ),
+      caption: serializer.fromJson<String?>(json['caption']),
+      localPath: serializer.fromJson<String>(json['localPath']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'photoId': serializer.toJson<String>(photoId),
+      'organizationId': serializer.toJson<String>(organizationId),
+      'ownerKind': serializer.toJson<String>(ownerKind),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'kind': serializer.toJson<String>(kind),
+      'serviceOrderItemId': serializer.toJson<String?>(serviceOrderItemId),
+      'caption': serializer.toJson<String?>(caption),
+      'localPath': serializer.toJson<String>(localPath),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  LocalPhotoCacheData copyWith({
+    String? photoId,
+    String? organizationId,
+    String? ownerKind,
+    String? ownerId,
+    String? kind,
+    Value<String?> serviceOrderItemId = const Value.absent(),
+    Value<String?> caption = const Value.absent(),
+    String? localPath,
+    DateTime? cachedAt,
+  }) => LocalPhotoCacheData(
+    photoId: photoId ?? this.photoId,
+    organizationId: organizationId ?? this.organizationId,
+    ownerKind: ownerKind ?? this.ownerKind,
+    ownerId: ownerId ?? this.ownerId,
+    kind: kind ?? this.kind,
+    serviceOrderItemId: serviceOrderItemId.present
+        ? serviceOrderItemId.value
+        : this.serviceOrderItemId,
+    caption: caption.present ? caption.value : this.caption,
+    localPath: localPath ?? this.localPath,
+    cachedAt: cachedAt ?? this.cachedAt,
+  );
+  LocalPhotoCacheData copyWithCompanion(LocalPhotoCacheCompanion data) {
+    return LocalPhotoCacheData(
+      photoId: data.photoId.present ? data.photoId.value : this.photoId,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      ownerKind: data.ownerKind.present ? data.ownerKind.value : this.ownerKind,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      serviceOrderItemId: data.serviceOrderItemId.present
+          ? data.serviceOrderItemId.value
+          : this.serviceOrderItemId,
+      caption: data.caption.present ? data.caption.value : this.caption,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalPhotoCacheData(')
+          ..write('photoId: $photoId, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('ownerKind: $ownerKind, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('kind: $kind, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
+          ..write('caption: $caption, ')
+          ..write('localPath: $localPath, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    photoId,
+    organizationId,
+    ownerKind,
+    ownerId,
+    kind,
+    serviceOrderItemId,
+    caption,
+    localPath,
+    cachedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalPhotoCacheData &&
+          other.photoId == this.photoId &&
+          other.organizationId == this.organizationId &&
+          other.ownerKind == this.ownerKind &&
+          other.ownerId == this.ownerId &&
+          other.kind == this.kind &&
+          other.serviceOrderItemId == this.serviceOrderItemId &&
+          other.caption == this.caption &&
+          other.localPath == this.localPath &&
+          other.cachedAt == this.cachedAt);
+}
+
+class LocalPhotoCacheCompanion extends UpdateCompanion<LocalPhotoCacheData> {
+  final Value<String> photoId;
+  final Value<String> organizationId;
+  final Value<String> ownerKind;
+  final Value<String> ownerId;
+  final Value<String> kind;
+  final Value<String?> serviceOrderItemId;
+  final Value<String?> caption;
+  final Value<String> localPath;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const LocalPhotoCacheCompanion({
+    this.photoId = const Value.absent(),
+    this.organizationId = const Value.absent(),
+    this.ownerKind = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.serviceOrderItemId = const Value.absent(),
+    this.caption = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalPhotoCacheCompanion.insert({
+    required String photoId,
+    required String organizationId,
+    required String ownerKind,
+    required String ownerId,
+    required String kind,
+    this.serviceOrderItemId = const Value.absent(),
+    this.caption = const Value.absent(),
+    required String localPath,
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  }) : photoId = Value(photoId),
+       organizationId = Value(organizationId),
+       ownerKind = Value(ownerKind),
+       ownerId = Value(ownerId),
+       kind = Value(kind),
+       localPath = Value(localPath),
+       cachedAt = Value(cachedAt);
+  static Insertable<LocalPhotoCacheData> custom({
+    Expression<String>? photoId,
+    Expression<String>? organizationId,
+    Expression<String>? ownerKind,
+    Expression<String>? ownerId,
+    Expression<String>? kind,
+    Expression<String>? serviceOrderItemId,
+    Expression<String>? caption,
+    Expression<String>? localPath,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (photoId != null) 'photo_id': photoId,
+      if (organizationId != null) 'organization_id': organizationId,
+      if (ownerKind != null) 'owner_kind': ownerKind,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (kind != null) 'kind': kind,
+      if (serviceOrderItemId != null)
+        'service_order_item_id': serviceOrderItemId,
+      if (caption != null) 'caption': caption,
+      if (localPath != null) 'local_path': localPath,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalPhotoCacheCompanion copyWith({
+    Value<String>? photoId,
+    Value<String>? organizationId,
+    Value<String>? ownerKind,
+    Value<String>? ownerId,
+    Value<String>? kind,
+    Value<String?>? serviceOrderItemId,
+    Value<String?>? caption,
+    Value<String>? localPath,
+    Value<DateTime>? cachedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalPhotoCacheCompanion(
+      photoId: photoId ?? this.photoId,
+      organizationId: organizationId ?? this.organizationId,
+      ownerKind: ownerKind ?? this.ownerKind,
+      ownerId: ownerId ?? this.ownerId,
+      kind: kind ?? this.kind,
+      serviceOrderItemId: serviceOrderItemId ?? this.serviceOrderItemId,
+      caption: caption ?? this.caption,
+      localPath: localPath ?? this.localPath,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (photoId.present) {
+      map['photo_id'] = Variable<String>(photoId.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (ownerKind.present) {
+      map['owner_kind'] = Variable<String>(ownerKind.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (serviceOrderItemId.present) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId.value);
+    }
+    if (caption.present) {
+      map['caption'] = Variable<String>(caption.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalPhotoCacheCompanion(')
+          ..write('photoId: $photoId, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('ownerKind: $ownerKind, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('kind: $kind, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
+          ..write('caption: $caption, ')
+          ..write('localPath: $localPath, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -15862,6 +16443,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $LocalSyncStateTable localSyncState = $LocalSyncStateTable(this);
   late final $UploadQueueTable uploadQueue = $UploadQueueTable(this);
+  late final $LocalPhotoCacheTable localPhotoCache = $LocalPhotoCacheTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -15886,6 +16470,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     syncOutbox,
     localSyncState,
     uploadQueue,
+    localPhotoCache,
   ];
 }
 
@@ -23564,6 +24149,307 @@ typedef $$UploadQueueTableProcessedTableManager =
       UploadQueueData,
       PrefetchHooks Function()
     >;
+typedef $$LocalPhotoCacheTableCreateCompanionBuilder =
+    LocalPhotoCacheCompanion Function({
+      required String photoId,
+      required String organizationId,
+      required String ownerKind,
+      required String ownerId,
+      required String kind,
+      Value<String?> serviceOrderItemId,
+      Value<String?> caption,
+      required String localPath,
+      required DateTime cachedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalPhotoCacheTableUpdateCompanionBuilder =
+    LocalPhotoCacheCompanion Function({
+      Value<String> photoId,
+      Value<String> organizationId,
+      Value<String> ownerKind,
+      Value<String> ownerId,
+      Value<String> kind,
+      Value<String?> serviceOrderItemId,
+      Value<String?> caption,
+      Value<String> localPath,
+      Value<DateTime> cachedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalPhotoCacheTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalPhotoCacheTable> {
+  $$LocalPhotoCacheTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get photoId => $composableBuilder(
+    column: $table.photoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerKind => $composableBuilder(
+    column: $table.ownerKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get caption => $composableBuilder(
+    column: $table.caption,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalPhotoCacheTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalPhotoCacheTable> {
+  $$LocalPhotoCacheTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get photoId => $composableBuilder(
+    column: $table.photoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerKind => $composableBuilder(
+    column: $table.ownerKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get caption => $composableBuilder(
+    column: $table.caption,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalPhotoCacheTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalPhotoCacheTable> {
+  $$LocalPhotoCacheTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get photoId =>
+      $composableBuilder(column: $table.photoId, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get ownerKind =>
+      $composableBuilder(column: $table.ownerKind, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get caption =>
+      $composableBuilder(column: $table.caption, builder: (column) => column);
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$LocalPhotoCacheTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalPhotoCacheTable,
+          LocalPhotoCacheData,
+          $$LocalPhotoCacheTableFilterComposer,
+          $$LocalPhotoCacheTableOrderingComposer,
+          $$LocalPhotoCacheTableAnnotationComposer,
+          $$LocalPhotoCacheTableCreateCompanionBuilder,
+          $$LocalPhotoCacheTableUpdateCompanionBuilder,
+          (
+            LocalPhotoCacheData,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalPhotoCacheTable,
+              LocalPhotoCacheData
+            >,
+          ),
+          LocalPhotoCacheData,
+          PrefetchHooks Function()
+        > {
+  $$LocalPhotoCacheTableTableManager(
+    _$AppDatabase db,
+    $LocalPhotoCacheTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalPhotoCacheTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalPhotoCacheTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalPhotoCacheTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> photoId = const Value.absent(),
+                Value<String> organizationId = const Value.absent(),
+                Value<String> ownerKind = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> serviceOrderItemId = const Value.absent(),
+                Value<String?> caption = const Value.absent(),
+                Value<String> localPath = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalPhotoCacheCompanion(
+                photoId: photoId,
+                organizationId: organizationId,
+                ownerKind: ownerKind,
+                ownerId: ownerId,
+                kind: kind,
+                serviceOrderItemId: serviceOrderItemId,
+                caption: caption,
+                localPath: localPath,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String photoId,
+                required String organizationId,
+                required String ownerKind,
+                required String ownerId,
+                required String kind,
+                Value<String?> serviceOrderItemId = const Value.absent(),
+                Value<String?> caption = const Value.absent(),
+                required String localPath,
+                required DateTime cachedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalPhotoCacheCompanion.insert(
+                photoId: photoId,
+                organizationId: organizationId,
+                ownerKind: ownerKind,
+                ownerId: ownerId,
+                kind: kind,
+                serviceOrderItemId: serviceOrderItemId,
+                caption: caption,
+                localPath: localPath,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalPhotoCacheTable, LocalPhotoCacheData>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalPhotoCacheTable,
+                    LocalPhotoCacheData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalPhotoCacheTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalPhotoCacheTable,
+      LocalPhotoCacheData,
+      $$LocalPhotoCacheTableFilterComposer,
+      $$LocalPhotoCacheTableOrderingComposer,
+      $$LocalPhotoCacheTableAnnotationComposer,
+      $$LocalPhotoCacheTableCreateCompanionBuilder,
+      $$LocalPhotoCacheTableUpdateCompanionBuilder,
+      (
+        LocalPhotoCacheData,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalPhotoCacheTable,
+          LocalPhotoCacheData
+        >,
+      ),
+      LocalPhotoCacheData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -23616,4 +24502,6 @@ class $AppDatabaseManager {
       $$LocalSyncStateTableTableManager(_db, _db.localSyncState);
   $$UploadQueueTableTableManager get uploadQueue =>
       $$UploadQueueTableTableManager(_db, _db.uploadQueue);
+  $$LocalPhotoCacheTableTableManager get localPhotoCache =>
+      $$LocalPhotoCacheTableTableManager(_db, _db.localPhotoCache);
 }

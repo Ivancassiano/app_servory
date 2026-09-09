@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 
 import '../../../core/db/app_database.dart';
 import '../../sync/application/sync_provider.dart';
+import '../data/attachment_cache.dart';
 import 'attachments_api_provider.dart';
 import 'service_order_attachments_provider.dart';
 
@@ -63,12 +64,14 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
     final api = ref.read(attachmentsApiProvider);
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
+      final cache = ref.read(attachmentCacheProvider);
       final pending = await db.select(db.uploadQueue).get();
       for (final item in pending) {
         try {
           final bytes = await File(item.filePath).readAsBytes();
+          Map<String, dynamic> resp;
           if (item.kind == 'photo') {
-            await api.addPhoto(
+            resp = await api.addPhoto(
               ownerKind: item.ownerKind,
               ownerId: item.ownerId,
               bytes: bytes,
@@ -78,10 +81,26 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
               serviceOrderItemId: item.serviceOrderItemId,
             );
           } else {
-            await api.putSignature(
+            resp = await api.putSignature(
               serviceOrderId: item.ownerId,
               bytes: bytes,
               filename: p.basename(item.filePath),
+            );
+          }
+          // Guarda o vínculo id-do-servidor → arquivo já no disco, para ver
+          // esta foto/assinatura offline depois (não copia o arquivo).
+          final serverId = item.kind == 'signature'
+              ? signatureCacheId(item.ownerId)
+              : resp['id'] as String?;
+          if (serverId != null) {
+            await cache.adoptUploaded(
+              photoId: serverId,
+              ownerKind: item.ownerKind,
+              ownerId: item.ownerId,
+              kind: item.kind,
+              sourceFilePath: item.filePath,
+              serviceOrderItemId: item.serviceOrderItemId,
+              caption: item.caption,
             );
           }
           await (db.delete(

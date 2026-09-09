@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
+import '../data/attachment_cache.dart';
 import 'attachment_controller.dart';
 import 'attachments_api_provider.dart';
 import 'service_order_attachments_provider.dart';
@@ -55,6 +56,7 @@ class _IoAttachmentController implements AttachmentController {
       ownerId: ownerId,
       photoId: photoId,
     );
+    await _ref.read(attachmentCacheProvider).forget(photoId);
     _ref.invalidate(entityPhotosProvider((ownerKind, ownerId)));
   }
 }

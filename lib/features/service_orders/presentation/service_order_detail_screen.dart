@@ -962,12 +962,16 @@ class _SignatureSection extends ConsumerWidget {
     }
 
     if (existing != null) {
+      final localSig = existing.localPath;
+      final sigImage = localSig != null
+          ? localFileImageProvider(localSig)
+          : null;
       return Row(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              existing.downloadUrl,
+            child: Image(
+              image: sigImage ?? NetworkImage(existing.downloadUrl),
               width: 120,
               height: 80,
               fit: BoxFit.contain,

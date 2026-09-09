@@ -39,6 +39,17 @@ class PhotosSection extends ConsumerWidget {
   final Set<String> pendingRemovalIds;
   final void Function(String photoId)? onToggleRemoval;
 
+  /// Prefere a cópia local (cache offline, mais rápida) e cai na URL
+  /// assinada quando não há cache.
+  static ImageProvider _photoImage(EntityPhoto p) {
+    final local = p.localPath;
+    if (local != null) {
+      final img = localFileImageProvider(local);
+      if (img != null) return img;
+    }
+    return NetworkImage(p.downloadUrl);
+  }
+
   Widget _toggleBadge({required bool marked, required VoidCallback onTap}) =>
       InkWell(
         onTap: onTap,
@@ -99,7 +110,7 @@ class PhotosSection extends ConsumerWidget {
     // Galeria única (arrasta pro lado): enviadas primeiro, depois pendentes.
     final gallery = <GalleryPhoto>[
       for (final p in uploaded)
-        GalleryPhoto(image: NetworkImage(p.downloadUrl), caption: p.caption ?? ''),
+        GalleryPhoto(image: _photoImage(p), caption: p.caption ?? ''),
       for (final item in pendingPhotos)
         if (localFileImageProvider(item.filePath) case final img?)
           GalleryPhoto(image: img, caption: item.caption ?? ''),

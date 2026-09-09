@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/connectivity/connectivity_provider.dart';
+import '../data/attachment_cache.dart';
 import 'attachments_api_provider.dart';
 
 /// Foto já enviada, com a URL de download já resolvida (o servidor nunca
@@ -13,6 +16,7 @@ class EntityPhoto {
     this.kind,
     this.caption,
     this.serviceOrderItemId,
+    this.localPath,
   });
 
   final String id;
@@ -23,29 +27,60 @@ class EntityPhoto {
   /// Item da visita a que a foto pertence — só faz sentido em fotos de OS;
   /// `null` = foto geral.
   final String? serviceOrderItemId;
+
+  /// Cópia local (cache offline), quando existe — a UI prefere ela à
+  /// `downloadUrl` (mais rápido e funciona offline).
+  final String? localPath;
 }
 
 /// Compat: código antigo ainda usa `OrderPhoto`.
 typedef OrderPhoto = EntityPhoto;
 
 class OrderSignature {
-  const OrderSignature({required this.id, required this.downloadUrl});
+  const OrderSignature({
+    required this.id,
+    required this.downloadUrl,
+    this.localPath,
+  });
 
   final String id;
   final String downloadUrl;
+  final String? localPath;
 }
 
-/// Fotos são REST puro (não fazem parte do sync) — só busca quando online;
-/// offline devolve vazio sem tentar rede (a fila de upload local,
-/// `uploadQueueForOwnerProvider`, já mostra o pendente). Chave
-/// `(ownerKind, ownerId)` — ownerKind ∈ {service_order, item, location}.
+/// Fotos são REST puro (não fazem parte do sync). Online: busca a lista +
+/// URLs assinadas e, em segundo plano, guarda uma cópia local (cache
+/// offline). Offline: devolve o que está em cache — as fotos já vistas uma
+/// vez continuam aparecendo (a fila de upload local, `uploadQueueForOwner`,
+/// mostra as ainda não enviadas). Chave `(ownerKind, ownerId)` —
+/// ownerKind ∈ {service_order, item, location}.
 final entityPhotosProvider =
     FutureProvider.family<List<EntityPhoto>, (String, String)>((ref, key) async {
       final online = ref.watch(isOnlineProvider).value;
-      if (online == false) return const [];
+      final cache = ref.watch(attachmentCacheProvider);
+
+      if (online == false) {
+        final cached = await cache.forOwner(key.$1, key.$2);
+        return [
+          for (final c in cached)
+            if (c.kind == 'photo')
+              EntityPhoto(
+                id: c.photoId,
+                downloadUrl: '',
+                localPath: c.localPath,
+                caption: c.caption,
+                serviceOrderItemId: c.serviceOrderItemId,
+              ),
+        ];
+      }
+
       final api = ref.watch(attachmentsApiProvider);
       final photos = await api.listPhotos(ownerKind: key.$1, ownerId: key.$2);
+      final byId = {
+        for (final c in await cache.forOwner(key.$1, key.$2)) c.photoId: c,
+      };
       final resolved = <EntityPhoto>[];
+      final toCache = <RemoteAttachment>[];
       for (final photo in photos) {
         final id = photo['id'] as String;
         try {
@@ -54,19 +89,31 @@ final entityPhotosProvider =
             ownerId: key.$2,
             photoId: id,
           );
+          final caption = photo['caption'] as String?;
+          final soItem = photo['service_order_item_id'] as String?;
+          toCache.add(
+            RemoteAttachment(
+              photoId: id,
+              url: url,
+              caption: caption,
+              serviceOrderItemId: soItem,
+            ),
+          );
           resolved.add(
             EntityPhoto(
               id: id,
               downloadUrl: url,
               kind: photo['kind'] as String?,
-              caption: photo['caption'] as String?,
-              serviceOrderItemId: photo['service_order_item_id'] as String?,
+              caption: caption,
+              serviceOrderItemId: soItem,
+              localPath: byId[id]?.localPath,
             ),
           );
         } catch (_) {
           continue;
         }
       }
+      unawaited(cache.syncPhotos(key.$1, key.$2, toCache));
       return resolved;
     });
 
@@ -81,10 +128,43 @@ final orderSignatureProvider = FutureProvider.family<OrderSignature?, String>((
   serviceOrderId,
 ) async {
   final online = ref.watch(isOnlineProvider).value;
-  if (online == false) return null;
+  final cache = ref.watch(attachmentCacheProvider);
+  final sigId = signatureCacheId(serviceOrderId);
+
+  if (online == false) {
+    final cached = await cache.forOwner('service_order', serviceOrderId);
+    for (final c in cached) {
+      if (c.kind == 'signature') {
+        return OrderSignature(
+          id: sigId,
+          downloadUrl: '',
+          localPath: c.localPath,
+        );
+      }
+    }
+    return null;
+  }
+
   final api = ref.watch(attachmentsApiProvider);
   final data = await api.getSignature(serviceOrderId);
-  if (data == null) return null;
+  if (data == null) {
+    unawaited(cache.syncSignature(serviceOrderId, null));
+    return null;
+  }
   final url = await api.signatureDownloadUrl(serviceOrderId);
-  return OrderSignature(id: data['id'] as String, downloadUrl: url);
+  unawaited(
+    cache.syncSignature(
+      serviceOrderId,
+      RemoteAttachment(photoId: sigId, url: url),
+    ),
+  );
+  String? local;
+  for (final c in await cache.forOwner('service_order', serviceOrderId)) {
+    if (c.kind == 'signature') local = c.localPath;
+  }
+  return OrderSignature(
+    id: data['id'] as String,
+    downloadUrl: url,
+    localPath: local,
+  );
 });
