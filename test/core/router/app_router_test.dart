@@ -40,13 +40,17 @@ void main() {
     );
   });
 
-  test('sem sessão: /register e /verify-email são acessíveis', () {
+  test('sem sessão: /register, /verify-email e /accept-invite são acessíveis', () {
     expect(
       redirect(session: const SessionUnauthenticated(), from: '/register'),
       isNull,
     );
     expect(
       redirect(session: const SessionAuthenticating(), from: '/verify-email'),
+      isNull,
+    );
+    expect(
+      redirect(session: const SessionUnauthenticated(), from: '/accept-invite'),
       isNull,
     );
     // uma rota qualquer fora do fluxo de entrada ainda joga pro login

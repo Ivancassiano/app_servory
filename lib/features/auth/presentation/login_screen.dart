@@ -192,6 +192,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           : () => context.push('/register'),
                       child: const Text('Criar conta'),
                     ),
+                    TextButton(
+                      onPressed: isAuthenticating
+                          ? null
+                          : () => context.push('/accept-invite'),
+                      child: const Text('Tenho um convite'),
+                    ),
                   ],
                 ),
               ),

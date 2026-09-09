@@ -6,6 +6,7 @@ import '../../features/auth/application/app_lock_controller.dart';
 import '../../features/auth/application/session_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/offline_expired_screen.dart';
+import '../../features/auth/presentation/accept_invite_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/verify_email_screen.dart';
 import '../../features/auth/presentation/unlock_screen.dart';
@@ -25,6 +26,7 @@ import '../../features/locations/presentation/location_detail_screen.dart';
 import '../../features/locations/presentation/location_list_screen.dart';
 import '../../features/me/presentation/home_screen.dart';
 import '../../features/me/presentation/person_screen.dart';
+import '../../features/members/presentation/members_screen.dart';
 import '../../features/me/presentation/settings_screen.dart';
 import '../../features/reference/data/type_catalog_repository.dart';
 import '../../features/reference/presentation/type_catalog_screen.dart';
@@ -46,14 +48,21 @@ const _gatedRoutes = {
   '/login',
   '/register',
   '/verify-email',
+  '/accept-invite',
   '/splash',
   '/unlock',
   '/offline-expired',
 };
 
-/// Telas do fluxo de entrada acessíveis sem sessão (login, auto-cadastro e
-/// confirmação de e-mail). Fora dessas, quem não está logado vai pro /login.
-const _authFlowRoutes = {'/login', '/register', '/verify-email'};
+/// Telas do fluxo de entrada acessíveis sem sessão (login, auto-cadastro,
+/// confirmação de e-mail e aceitar convite). Fora dessas, quem não está
+/// logado vai pro /login.
+const _authFlowRoutes = {
+  '/login',
+  '/register',
+  '/verify-email',
+  '/accept-invite',
+};
 
 /// Instância única de `GoRouter`: sessão, conectividade e trava de app — as 3
 /// coisas que decidem pra onde redirecionar — chegam pelo `refreshListenable`,
@@ -104,6 +113,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           email: state.uri.queryParameters['email'] ?? '',
         ),
       ),
+      GoRoute(
+        path: '/accept-invite',
+        builder: (_, _) => const AcceptInviteScreen(),
+      ),
       GoRoute(path: '/unlock', builder: (_, _) => const UnlockScreen()),
       GoRoute(
         path: '/offline-expired',
@@ -112,6 +125,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
       GoRoute(path: '/me/person', builder: (_, _) => const PersonScreen()),
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
+      GoRoute(path: '/users', builder: (_, _) => const MembersScreen()),
       GoRoute(
         path: '/clients',
         builder: (_, _) => const ClientListScreen(),

@@ -1,0 +1,57 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../data/members_api.dart';
+
+final orgMembersProvider = FutureProvider<List<OrgMember>>(
+  (ref) => ref.watch(membersApiProvider).listMembers(),
+);
+
+final orgInvitationsProvider = FutureProvider<List<OrgInvitation>>(
+  (ref) => ref.watch(membersApiProvider).listInvitations(),
+);
+
+final orgRolesProvider = FutureProvider<List<OrgRole>>(
+  (ref) => ref.watch(membersApiProvider).listRoles(),
+);
+
+/// Ações de escrita da tela de Usuários. Cada uma invalida os providers de
+/// leitura afetados para a lista recarregar.
+class MembersController {
+  MembersController(this._ref);
+
+  final Ref _ref;
+
+  MembersApi get _api => _ref.read(membersApiProvider);
+
+  Future<void> invite({required String email, required String roleId}) async {
+    await _api.createInvitation(email: email, roleId: roleId);
+    _ref.invalidate(orgInvitationsProvider);
+  }
+
+  Future<void> revokeInvitation(String id) async {
+    await _api.revokeInvitation(id);
+    _ref.invalidate(orgInvitationsProvider);
+  }
+
+  Future<void> changeRole(String userId, String roleId) async {
+    await _api.updateMember(userId, roleId: roleId);
+    _ref.invalidate(orgMembersProvider);
+  }
+
+  Future<void> setSuspended(String userId, {required bool suspended}) async {
+    await _api.updateMember(
+      userId,
+      status: suspended ? 'suspended' : 'active',
+    );
+    _ref.invalidate(orgMembersProvider);
+  }
+
+  Future<void> remove(String userId) async {
+    await _api.removeMember(userId);
+    _ref.invalidate(orgMembersProvider);
+  }
+}
+
+final membersControllerProvider = Provider<MembersController>(
+  MembersController.new,
+);

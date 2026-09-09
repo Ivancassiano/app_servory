@@ -143,6 +143,31 @@ class SessionController extends Notifier<SessionState> {
   Future<void> resendVerification(String email) =>
       _authApi.resendVerification(email: email);
 
+  /// Aceita um convite pelo código e entra direto (mesma ativação do login).
+  Future<void> acceptInvite({
+    required String code,
+    required String name,
+    required String password,
+  }) async {
+    state = const SessionAuthenticating();
+    final store = ref.read(secureStoreProvider);
+    final deviceId = await store.getOrCreateDeviceId();
+    try {
+      final pair = await _authApi.acceptInvitation(
+        token: code,
+        name: name,
+        password: password,
+        deviceId: deviceId,
+        deviceName: _deviceName(),
+        devicePlatform: _devicePlatform(),
+      );
+      await _activate(store, pair);
+    } catch (_) {
+      if (ref.mounted) state = const SessionUnauthenticated();
+      rethrow;
+    }
+  }
+
   Future<void> _activate(SecureStore store, TokenPair pair) async {
     await store.saveSession(
       accessToken: pair.accessToken,

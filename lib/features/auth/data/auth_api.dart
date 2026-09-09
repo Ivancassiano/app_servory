@@ -113,6 +113,36 @@ class AuthApi {
     }
   }
 
+  /// Aceita um convite: cria a conta (e-mail novo) ou associa o usuário
+  /// existente à organização, e já devolve o par de tokens.
+  Future<TokenPair> acceptInvitation({
+    required String token,
+    required String name,
+    required String password,
+    required String deviceId,
+    required String deviceName,
+    required String devicePlatform,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/v1/auth/invitations/accept',
+        data: {
+          'token': token,
+          'name': name,
+          'password': password,
+          'device': {
+            'id': deviceId,
+            'name': deviceName,
+            'platform': devicePlatform,
+          },
+        },
+      );
+      return TokenPair.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   /// Reenvia o código de confirmação. Resposta sempre 202 — não revela se a
   /// conta existe ou já foi confirmada.
   Future<void> resendVerification({required String email}) async {
