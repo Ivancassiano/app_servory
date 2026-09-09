@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/brand_app_bar.dart';
+import '../../../core/widgets/form_sheet.dart';
 import '../../auth/application/biometric_login.dart';
 import '../../auth/application/session_controller.dart';
 import '../../sync/application/sync_provider.dart';
@@ -411,9 +412,10 @@ class _BiometricLoginTile extends ConsumerWidget {
       return;
     }
 
-    final password = await showDialog<String>(
+    final password = await showModalBottomSheet<String>(
       context: context,
-      builder: (ctx) => const _PasswordDialog(),
+      isScrollControlled: true,
+      builder: (_) => const _PasswordSheet(),
     );
     if (password == null || password.isEmpty) return;
 
@@ -435,14 +437,14 @@ class _BiometricLoginTile extends ConsumerWidget {
   }
 }
 
-class _PasswordDialog extends StatefulWidget {
-  const _PasswordDialog();
+class _PasswordSheet extends StatefulWidget {
+  const _PasswordSheet();
 
   @override
-  State<_PasswordDialog> createState() => _PasswordDialogState();
+  State<_PasswordSheet> createState() => _PasswordSheetState();
 }
 
-class _PasswordDialogState extends State<_PasswordDialog> {
+class _PasswordSheetState extends State<_PasswordSheet> {
   final _controller = TextEditingController();
   bool _obscure = true;
 
@@ -454,26 +456,23 @@ class _PasswordDialogState extends State<_PasswordDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Confirme sua senha'),
-      content: TextField(
-        controller: _controller,
-        obscureText: _obscure,
-        autofocus: true,
-        decoration: InputDecoration(
-          labelText: 'Senha',
-          suffixIcon: IconButton(
-            icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-            onPressed: () => setState(() => _obscure = !_obscure),
+    return FormSheet(
+      title: 'Confirme sua senha',
+      children: [
+        TextField(
+          controller: _controller,
+          obscureText: _obscure,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: 'Senha',
+            suffixIcon: IconButton(
+              icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+              onPressed: () => setState(() => _obscure = !_obscure),
+            ),
           ),
+          onSubmitted: (v) => Navigator.pop(context, v),
         ),
-        onSubmitted: (v) => Navigator.pop(context, v),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
+        const SizedBox(height: 20),
         FilledButton(
           onPressed: () => Navigator.pop(context, _controller.text),
           child: const Text('Confirmar'),
