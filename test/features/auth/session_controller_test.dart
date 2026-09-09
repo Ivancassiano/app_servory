@@ -279,6 +279,35 @@ void main() {
     verify(() => store.saveLastEmail('a@b.com')).called(1);
   });
 
+  test('forgotPassword e resetPassword só repassam para a API', () async {
+    when(
+      () => authApi.forgotPassword(email: any(named: 'email')),
+    ).thenAnswer((_) async {});
+    when(
+      () => authApi.resetPassword(
+        code: any(named: 'code'),
+        newPassword: any(named: 'newPassword'),
+      ),
+    ).thenAnswer((_) async {});
+
+    final notifier = container.read(sessionControllerProvider.notifier);
+    await notifier.forgotPassword('a@b.com');
+    await notifier.resetPassword(code: 'ABCD2345', newPassword: 'nova-senha-1');
+
+    verify(() => authApi.forgotPassword(email: 'a@b.com')).called(1);
+    verify(
+      () => authApi.resetPassword(
+        code: 'ABCD2345',
+        newPassword: 'nova-senha-1',
+      ),
+    ).called(1);
+    // não autentica — o backend revoga tudo e o usuário loga de novo
+    expect(
+      container.read(sessionControllerProvider),
+      isNot(isA<SessionAuthenticated>()),
+    );
+  });
+
   test('logout limpa a sessão mas mantém o login por digital', () async {
     when(() => store.readAccessToken()).thenAnswer((_) async => 'tok');
     when(() => authApi.logout(any())).thenAnswer((_) async {});

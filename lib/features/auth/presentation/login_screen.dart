@@ -215,6 +215,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         },
                         onFieldSubmitted: (_) => _submit(),
                       ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: isAuthenticating
+                              ? null
+                              : () {
+                                  final email = _emailController.text.trim();
+                                  final q = email.isEmpty
+                                      ? ''
+                                      : '?email=${Uri.encodeQueryComponent(email)}';
+                                  context.push('/forgot-password$q');
+                                },
+                          child: const Text('Esqueci minha senha'),
+                        ),
+                      ),
                       if (_errorMessage != null) ...[
                         const SizedBox(height: 12),
                         Text(

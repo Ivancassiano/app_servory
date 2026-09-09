@@ -54,7 +54,7 @@ class ApiException implements Exception {
     'ORGANIZATION_NOT_RESOLVED':
         'Não foi possível determinar a organização ativa.',
     'INVALID_REFRESH_TOKEN': 'Sua sessão expirou. Entre novamente.',
-    'INVALID_RESET_TOKEN': 'Link de redefinição inválido ou expirado.',
+    'INVALID_RESET_TOKEN': 'Código de recuperação inválido ou expirado.',
     'INVALID_INVITATION': 'Convite inválido ou já utilizado.',
     'WEAK_PASSWORD': 'A senha precisa ter pelo menos 8 caracteres.',
     'EMAIL_EXISTS': 'Já existe uma conta com esse e-mail.',

@@ -6,6 +6,7 @@ import '../../features/auth/application/session_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/offline_expired_screen.dart';
 import '../../features/auth/presentation/accept_invite_screen.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/verify_email_screen.dart';
 import '../../features/clients/presentation/client_detail_screen.dart';
@@ -51,18 +52,20 @@ const _gatedRoutes = {
   '/register',
   '/verify-email',
   '/accept-invite',
+  '/forgot-password',
   '/splash',
   '/offline-expired',
 };
 
 /// Telas do fluxo de entrada acessíveis sem sessão (login, auto-cadastro,
-/// confirmação de e-mail e aceitar convite). Fora dessas, quem não está
-/// logado vai pro /login.
+/// confirmação de e-mail, aceitar convite e esqueci-a-senha). Fora dessas,
+/// quem não está logado vai pro /login.
 const _authFlowRoutes = {
   '/login',
   '/register',
   '/verify-email',
   '/accept-invite',
+  '/forgot-password',
 };
 
 /// Instância única de `GoRouter`: sessão, conectividade e trava de app — as 3
@@ -113,6 +116,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/accept-invite',
         builder: (_, _) => const AcceptInviteScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (_, state) =>
+            ForgotPasswordScreen(email: state.uri.queryParameters['email']),
       ),
       GoRoute(
         path: '/offline-expired',

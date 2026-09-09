@@ -205,6 +205,18 @@ class SessionController extends Notifier<SessionState> {
   Future<void> resendVerification(String email) =>
       _authApi.resendVerification(email: email);
 
+  /// "Esqueci minha senha" — dispara o e-mail com o código. Não mexe na
+  /// sessão.
+  Future<void> forgotPassword(String email) =>
+      _authApi.forgotPassword(email: email);
+
+  /// Redefine a senha pelo código. O backend revoga tudo — o usuário volta
+  /// para a tela de login e entra com a senha nova.
+  Future<void> resetPassword({
+    required String code,
+    required String newPassword,
+  }) => _authApi.resetPassword(code: code, newPassword: newPassword);
+
   /// Aceita um convite pelo código e entra direto (mesma ativação do login).
   Future<void> acceptInvite({
     required String code,

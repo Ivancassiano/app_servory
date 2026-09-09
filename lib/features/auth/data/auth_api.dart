@@ -153,6 +153,32 @@ class AuthApi {
     }
   }
 
+  /// Esqueci minha senha: manda um código de 6-8 caracteres para o e-mail.
+  /// Resposta sempre 202 — não revela se a conta existe.
+  Future<void> forgotPassword({required String email}) async {
+    try {
+      await _dio.post('/v1/auth/password/forgot', data: {'email': email});
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  /// Redefine a senha pelo código recebido por e-mail. Revoga todas as
+  /// sessões do usuário — depois disso ele loga de novo com a senha nova.
+  Future<void> resetPassword({
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      await _dio.post(
+        '/v1/auth/password/reset',
+        data: {'token': code, 'new_password': newPassword},
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   Future<void> logout(String accessToken) async {
     try {
       await _dio.post(
