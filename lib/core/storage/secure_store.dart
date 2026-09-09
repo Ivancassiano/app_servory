@@ -23,6 +23,7 @@ class SecureStore {
   static const _kBiometricLoginEnabled = 'biometric_login_enabled';
   static const _kSavedEmail = 'saved_email';
   static const _kSavedPassword = 'saved_password';
+  static const _kLastEmail = 'last_email';
 
   Future<void> saveSession({
     required String accessToken,
@@ -106,6 +107,14 @@ class SecureStore {
     if (email == null || password == null) return null;
     return (email: email, password: password);
   }
+
+  /// E-mail do último usuário que logou com sucesso neste aparelho. Sobrevive
+  /// a `clearSession`, a `forgetBiometricLogin` e ao "Sair" — a tela de login
+  /// sempre volta pré-preenchida com ele. Só é trocado pelo próximo login.
+  Future<String?> readLastEmail() => _storage.read(key: _kLastEmail);
+
+  Future<void> saveLastEmail(String email) =>
+      _storage.write(key: _kLastEmail, value: email);
 
   /// Desliga o "entrar com digital" e esquece as credenciais salvas.
   Future<void> forgetBiometricLogin() async {

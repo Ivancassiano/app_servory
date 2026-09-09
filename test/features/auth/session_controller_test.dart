@@ -44,6 +44,8 @@ void main() {
     ).thenAnswer((_) async => false);
     when(() => store.forgetBiometricLogin()).thenAnswer((_) async {});
     when(() => store.readCredentials()).thenAnswer((_) async => null);
+    when(() => store.readLastEmail()).thenAnswer((_) async => null);
+    when(() => store.saveLastEmail(any())).thenAnswer((_) async {});
     when(
       () => store.setBiometricLoginEnabled(any()),
     ).thenAnswer((_) async {});
@@ -267,12 +269,27 @@ void main() {
     expect(gate.authCalls, 0);
   });
 
-  test('logout esquece o login por digital', () async {
+  test('login guarda o e-mail do último usuário', () async {
+    stubLoginOk();
+
+    await container
+        .read(sessionControllerProvider.notifier)
+        .login(email: 'a@b.com', password: 'segredo');
+
+    verify(() => store.saveLastEmail('a@b.com')).called(1);
+  });
+
+  test('logout limpa a sessão mas mantém o login por digital', () async {
     when(() => store.readAccessToken()).thenAnswer((_) async => 'tok');
     when(() => authApi.logout(any())).thenAnswer((_) async {});
 
-    await container.read(sessionControllerProvider.notifier).logout();
+    final notifier = container.read(sessionControllerProvider.notifier);
+    await notifier.logout();
 
-    verify(() => store.forgetBiometricLogin()).called(1);
+    verify(() => store.clearSession()).called(1);
+    verifyNever(() => store.forgetBiometricLogin());
+    // O primeiro consumo devolve true (suprime o auto-prompt logo após "Sair").
+    expect(notifier.consumeSkipBiometricPrompt(), isTrue);
+    expect(notifier.consumeSkipBiometricPrompt(), isFalse);
   });
 }

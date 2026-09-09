@@ -34,6 +34,8 @@ void main() {
       () => store.readBiometricLoginEnabled(),
     ).thenAnswer((_) async => false);
     when(() => store.readCredentials()).thenAnswer((_) async => null);
+    when(() => store.readLastEmail()).thenAnswer((_) async => null);
+    when(() => store.saveLastEmail(any())).thenAnswer((_) async {});
     when(() => store.forgetBiometricLogin()).thenAnswer((_) async {});
   });
 

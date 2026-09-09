@@ -100,6 +100,8 @@ class SessionController extends Notifier<SessionState> {
         devicePlatform: _devicePlatform(),
       );
       await _activate(store, pair);
+      // A tela de login sempre volta pré-preenchida com o último e-mail.
+      await store.saveLastEmail(email);
       // Com "entrar com digital" ligado, guarda as credenciais para relogar
       // por biometria quando a sessão do servidor expirar.
       if (await store.readBiometricLoginEnabled()) {
@@ -147,6 +149,7 @@ class SessionController extends Notifier<SessionState> {
     );
     await store.setBiometricLoginEnabled(true);
     await store.saveCredentials(email: email, password: password);
+    await store.saveLastEmail(email);
     await _activate(store, pair);
   }
 
@@ -233,14 +236,28 @@ class SessionController extends Notifier<SessionState> {
     );
   }
 
+  /// Consumido uma vez pela tela de login: logo após um "Sair" explícito ela
+  /// não dispara o auto-prompt da digital (senão o usuário "sai" e volta na
+  /// hora). Numa expiração de sessão o prompt continua abrindo sozinho.
+  bool _skipBiometricPromptOnce = false;
+
+  bool consumeSkipBiometricPrompt() {
+    final skip = _skipBiometricPromptOnce;
+    _skipBiometricPromptOnce = false;
+    return skip;
+  }
+
   Future<void> logout() async {
     final store = ref.read(secureStoreProvider);
     final accessToken = await store.readAccessToken();
     if (accessToken != null) {
       await _authApi.logout(accessToken);
     }
-    // "Sair" é logout completo: esquece a sessão E o login por digital.
-    await Future.wait([store.clearSession(), store.forgetBiometricLogin()]);
+    // "Sair" limpa a sessão, mas mantém o e-mail e o "entrar com digital" —
+    // a tela de login volta pré-preenchida e com o botão da digital. Só o
+    // toggle nas Configurações esquece as credenciais de vez.
+    await store.clearSession();
+    _skipBiometricPromptOnce = true;
     if (!ref.mounted) return;
     state = const SessionUnauthenticated();
   }

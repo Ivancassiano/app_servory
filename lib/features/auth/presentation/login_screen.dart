@@ -33,19 +33,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _loadSavedLogin() async {
-    final creds = await ref.read(secureStoreProvider).readCredentials();
-    if (!mounted || creds == null) return;
+    final store = ref.read(secureStoreProvider);
+    final lastEmail = await store.readLastEmail();
+    final creds = await store.readCredentials();
+    if (!mounted) return;
     setState(() {
-      _emailController.text = creds.email;
-      _passwordController.text = creds.password;
-      _hasSavedLogin = true;
+      // Só o e-mail volta pré-preenchido; a senha fica em branco (digita ou
+      // usa a digital).
+      final email = lastEmail ?? creds?.email;
+      if (email != null && email.isNotEmpty) _emailController.text = email;
+      _hasSavedLogin = creds != null;
     });
+    if (!_hasSavedLogin || _promptedBiometrics) return;
     // Já abre a digital de cara — o botão fica como plano B se cancelar.
     final available = await ref.read(biometricGateProvider).isSupported();
-    if (mounted && available && !_promptedBiometrics) {
-      _promptedBiometrics = true;
-      await _biometricLogin();
+    if (!mounted || !available) return;
+    _promptedBiometrics = true;
+    // Logo depois de um "Sair" explícito, não abre a digital sozinho.
+    if (ref
+        .read(sessionControllerProvider.notifier)
+        .consumeSkipBiometricPrompt()) {
+      return;
     }
+    await _biometricLogin();
   }
 
   @override

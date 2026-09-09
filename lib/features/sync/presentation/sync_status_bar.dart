@@ -89,7 +89,10 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar> {
                 IconButton(
                   iconSize: 18,
                   visualDensity: VisualDensity.compact,
-                  tooltip: 'Atualizar tudo',
+                  // sem `tooltip:` — esta barra é montada no `builder` do
+                  // MaterialApp.router, acima do Navigator, então não há
+                  // `Overlay` ancestral para o tooltip (dispara assert em debug
+                  // e lança em release ao segurar o botão).
                   color: view.foreground,
                   onPressed: status.isLoading
                       ? null

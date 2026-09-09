@@ -427,7 +427,12 @@ class _BiometricLoginTile extends ConsumerWidget {
       );
     } on ApiException catch (e) {
       pref.setLocal(false);
-      messenger.showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
+      // O e-mail já é o do usuário logado — aqui o que pode estar errado é
+      // só a senha.
+      final msg = e.code == 'INVALID_CREDENTIALS'
+          ? 'Senha incorreta.'
+          : e.friendlyMessage;
+      messenger.showSnackBar(SnackBar(content: Text(msg)));
     } catch (_) {
       pref.setLocal(false);
       messenger.showSnackBar(
