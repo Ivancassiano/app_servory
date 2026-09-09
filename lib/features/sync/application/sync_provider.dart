@@ -1,7 +1,9 @@
+import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
+import '../../attachments/application/service_order_attachments_provider.dart';
 import '../../auth/application/session_controller.dart';
 import '../data/sync_api.dart';
 import 'sync_engine.dart';
@@ -35,10 +37,33 @@ final syncEngineProvider = Provider<SyncEngine>((ref) {
   );
 });
 
+/// Estado de sincronização que a UI observa: a fase atual (`phase`) e quando
+/// foi o último sync bem-sucedido (`lastSuccessAt`, pra faixa de status
+/// mostrar "atualizado há X min"). Os getters `isLoading`/`hasError` deixam o
+/// código que só olhava a `AsyncValue` continuar funcionando.
+class SyncStatus {
+  const SyncStatus({
+    this.phase = const AsyncValue<void>.data(null),
+    this.lastSuccessAt,
+  });
+
+  final AsyncValue<void> phase;
+  final DateTime? lastSuccessAt;
+
+  bool get isLoading => phase.isLoading;
+  bool get hasError => phase.hasError;
+
+  SyncStatus _copy({AsyncValue<void>? phase, DateTime? lastSuccessAt}) =>
+      SyncStatus(
+        phase: phase ?? this.phase,
+        lastSuccessAt: lastSuccessAt ?? this.lastSuccessAt,
+      );
+}
+
 /// "Está sincronizando agora?" — a UI usa pra mostrar spinner/erro.
-class SyncRunner extends Notifier<AsyncValue<void>> {
+class SyncRunner extends Notifier<SyncStatus> {
   @override
-  AsyncValue<void> build() => const AsyncValue.data(null);
+  SyncStatus build() => const SyncStatus();
 
   /// Roda o `bootstrap` só se o banco local desta organização ainda
   /// estiver vazio (1ª sincronização do dispositivo, GUIA-FLUTTER.md §8.2).
@@ -52,9 +77,9 @@ class SyncRunner extends Notifier<AsyncValue<void>> {
   }
 
   Future<void> runSync({bool bootstrap = false}) async {
-    state = const AsyncValue.loading();
+    state = state._copy(phase: const AsyncValue<void>.loading());
     final engine = ref.read(syncEngineProvider);
-    state = await AsyncValue.guard(() async {
+    final result = await AsyncValue.guard(() async {
       if (bootstrap) {
         await engine.bootstrap();
         await engine.pushPending();
@@ -70,9 +95,27 @@ class SyncRunner extends Notifier<AsyncValue<void>> {
       await engine.pushPending();
       await engine.pull();
     });
+    state = state._copy(
+      phase: result,
+      lastSuccessAt: result.hasError ? state.lastSuccessAt : DateTime.now(),
+    );
+  }
+
+  /// "Atualizar tudo": além do sync (push + pull), recarrega o que é REST
+  /// puro e fica FORA do protocolo de sync — fotos e assinatura, cuja URL de
+  /// download é assinada e temporária (§26.4) — e limpa o cache de imagens,
+  /// pra as miniaturas resolverem a URL nova (ex.: quando o host do storage
+  /// muda). É o botão da faixa de status em todas as telas.
+  Future<void> refreshEverything() async {
+    await runSync();
+    ref.invalidate(entityPhotosProvider);
+    ref.invalidate(orderSignatureProvider);
+    PaintingBinding.instance.imageCache
+      ..clear()
+      ..clearLiveImages();
   }
 }
 
-final syncRunnerProvider = NotifierProvider<SyncRunner, AsyncValue<void>>(
+final syncRunnerProvider = NotifierProvider<SyncRunner, SyncStatus>(
   SyncRunner.new,
 );

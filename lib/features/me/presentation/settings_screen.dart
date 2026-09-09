@@ -153,7 +153,7 @@ class _IdentityCard extends StatelessWidget {
   const _IdentityCard({required this.identity, required this.sync});
 
   final Identity identity;
-  final AsyncValue<void> sync;
+  final SyncStatus sync;
 
   @override
   Widget build(BuildContext context) {
