@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,11 +13,14 @@ import '../application/sync_provider.dart';
 /// (push + pull + recarrega fotos/assinaturas e limpa o cache de imagens).
 ///
 /// Fica escondida no login/splash/unlock e enquanto o teclado está aberto.
+/// No web não aparece: lá o app roda sempre online e não há banco local nem
+/// protocolo de sync (o "atualizar tudo" depende do `SyncEngine`).
 class SyncStatusBar extends ConsumerWidget {
   const SyncStatusBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (kIsWeb) return const SizedBox.shrink();
     final session = ref.watch(sessionControllerProvider);
     if (session is! SessionAuthenticated) return const SizedBox.shrink();
     if (MediaQuery.of(context).viewInsets.bottom > 0) {

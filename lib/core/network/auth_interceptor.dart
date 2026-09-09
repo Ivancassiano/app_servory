@@ -1,6 +1,8 @@
 // Campos privados vindos de parâmetro nomeado público — o padrão do projeto
 // (ver remote_collection.dart) é atribuir na lista de inicialização.
 // ignore_for_file: prefer_initializing_formals
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 
 import '../storage/secure_store.dart';
@@ -19,6 +21,7 @@ class AuthInterceptor extends Interceptor {
     required Dio businessDio,
     required SecureStore store,
     this.onSessionExpired,
+    this.onPermissionsChanged,
   }) : _authDio = authDio,
        _businessDio = businessDio,
        _store = store;
@@ -36,6 +39,11 @@ class AuthInterceptor extends Interceptor {
   /// Chamado quando o refresh falha (sessão inválida/revogada/reuso
   /// detectado) — o app deve forçar logout e voltar para a tela de login.
   final void Function()? onSessionExpired;
+
+  /// Chamado quando um refresh bem-sucedido traz um `permission_version`
+  /// diferente do token anterior — alguém mexeu no perfil/permissões do
+  /// usuário no meio da sessão; a UI deve recarregar `/v1/me/permissions`.
+  final void Function()? onPermissionsChanged;
 
   Future<bool>? _refreshing;
 
@@ -94,6 +102,7 @@ class AuthInterceptor extends Interceptor {
   Future<bool> _doRefresh() async {
     final refreshToken = await _store.readRefreshToken();
     if (refreshToken == null || refreshToken.isEmpty) return false;
+    final oldAccess = await _store.readAccessToken();
 
     try {
       final response = await _authDio.post(
@@ -101,10 +110,11 @@ class AuthInterceptor extends Interceptor {
         data: {'refresh_token': refreshToken},
       );
       final data = response.data as Map;
+      final newAccess = data['access_token'] as String;
       final orgId = await _store.readOrganizationId();
       final userId = await _store.readUserId();
       await _store.saveSession(
-        accessToken: data['access_token'] as String,
+        accessToken: newAccess,
         refreshToken: data['refresh_token'] as String,
         organizationId: (data['organization_id'] as String?) ?? orgId ?? '',
         userId: (data['user_id'] as String?) ?? userId ?? '',
@@ -112,10 +122,33 @@ class AuthInterceptor extends Interceptor {
       // Um refresh bem-sucedido é, por definição, uma confirmação com o
       // servidor — reinicia o prazo de 7 dias da sessão offline (spec §18.3).
       await _store.saveLastOnlineValidation(DateTime.now());
+
+      if (_permissionVersion(oldAccess) != _permissionVersion(newAccess)) {
+        onPermissionsChanged?.call();
+      }
       return true;
     } on DioException {
       await _store.clearSession();
       return false;
+    }
+  }
+
+  /// Lê a claim `permission_version` do payload do JWT (sem verificar a
+  /// assinatura — só comparação). `null` se o token não decodifica.
+  static int? _permissionVersion(String? jwt) {
+    if (jwt == null || jwt.isEmpty) return null;
+    final parts = jwt.split('.');
+    if (parts.length != 3) return null;
+    try {
+      final payload =
+          jsonDecode(
+                utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+              )
+              as Map<String, dynamic>;
+      final v = payload['permission_version'];
+      return v is int ? v : (v is num ? v.toInt() : null);
+    } catch (_) {
+      return null;
     }
   }
 }

@@ -20,8 +20,11 @@ class MembersScreen extends ConsumerWidget {
     final membersAsync = ref.watch(orgMembersProvider);
     final invitesAsync = ref.watch(orgInvitationsProvider);
     final rolesAsync = ref.watch(orgRolesProvider);
-    final canManage =
-        ref.watch(permissionsProvider).value?.can('user.invite') ?? false;
+    final perms = ref.watch(permissionsProvider).value;
+    final canInvite = perms?.can('user.invite') ?? false;
+    final canChangeRole = perms?.can('user.update') ?? false;
+    final canRemove = perms?.can('user.remove') ?? false;
+    final canManageMember = canChangeRole || canRemove;
     final myId = ref.watch(identityProvider).value?.userId;
 
     final roleName = <String, String>{
@@ -30,7 +33,7 @@ class MembersScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: brandAppBar(title: 'Usuários'),
-      floatingActionButton: canManage
+      floatingActionButton: canInvite
           ? FloatingActionButton.extended(
               onPressed: () => _openInvite(context, ref),
               icon: const Icon(Icons.person_add_alt_1_outlined),
@@ -61,8 +64,14 @@ class MembersScreen extends ConsumerWidget {
                       member: m,
                       roleLabel: m.roleName,
                       isSelf: m.userId == myId,
-                      onManage: canManage && m.userId != myId
-                          ? () => _memberActions(context, ref, m)
+                      onManage: canManageMember && m.userId != myId
+                          ? () => _memberActions(
+                              context,
+                              ref,
+                              m,
+                              canChangeRole: canChangeRole,
+                              canRemove: canRemove,
+                            )
                           : null,
                     ),
                 ],
@@ -80,7 +89,7 @@ class MembersScreen extends ConsumerWidget {
                           _InvitationTile(
                             invitation: inv,
                             roleLabel: roleName[inv.roleId] ?? '—',
-                            onRevoke: canManage
+                            onRevoke: canInvite
                                 ? () => _run(
                                     context,
                                     ref,
@@ -114,8 +123,10 @@ class MembersScreen extends ConsumerWidget {
   Future<void> _memberActions(
     BuildContext context,
     WidgetRef ref,
-    OrgMember m,
-  ) async {
+    OrgMember m, {
+    required bool canChangeRole,
+    required bool canRemove,
+  }) async {
     final action = await showModalBottomSheet<String>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -132,29 +143,36 @@ class MembersScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.badge_outlined),
-              title: const Text('Trocar perfil'),
-              onTap: () => Navigator.pop(ctx, 'role'),
-            ),
-            ListTile(
-              leading: Icon(
-                m.suspended ? Icons.play_arrow_outlined : Icons.pause_outlined,
+            if (canChangeRole) ...[
+              ListTile(
+                leading: const Icon(Icons.badge_outlined),
+                title: const Text('Trocar perfil'),
+                onTap: () => Navigator.pop(ctx, 'role'),
               ),
-              title: Text(m.suspended ? 'Reativar acesso' : 'Suspender acesso'),
-              onTap: () => Navigator.pop(ctx, 'suspend'),
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.person_remove_outlined,
-                color: BrandColor.errorText,
+              ListTile(
+                leading: Icon(
+                  m.suspended
+                      ? Icons.play_arrow_outlined
+                      : Icons.pause_outlined,
+                ),
+                title: Text(
+                  m.suspended ? 'Reativar acesso' : 'Suspender acesso',
+                ),
+                onTap: () => Navigator.pop(ctx, 'suspend'),
               ),
-              title: const Text(
-                'Remover da organização',
-                style: TextStyle(color: BrandColor.errorText),
+            ],
+            if (canRemove)
+              ListTile(
+                leading: const Icon(
+                  Icons.person_remove_outlined,
+                  color: BrandColor.errorText,
+                ),
+                title: const Text(
+                  'Remover da organização',
+                  style: TextStyle(color: BrandColor.errorText),
+                ),
+                onTap: () => Navigator.pop(ctx, 'remove'),
               ),
-              onTap: () => Navigator.pop(ctx, 'remove'),
-            ),
             const SizedBox(height: 8),
           ],
         ),

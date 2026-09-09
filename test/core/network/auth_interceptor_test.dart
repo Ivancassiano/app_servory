@@ -170,6 +170,82 @@ void main() {
     },
   );
 
+  String jwtWithPermVersion(int v) {
+    String seg(Object o) =>
+        base64Url.encode(utf8.encode(jsonEncode(o))).replaceAll('=', '');
+    return '${seg({'alg': 'none'})}.${seg({'permission_version': v})}.sig';
+  }
+
+  void refreshOnceReturning(String newAccess) {
+    var current = jwtWithPermVersion(3);
+    when(() => store.readAccessToken()).thenAnswer((_) async => current);
+    when(
+      () => store.saveSession(
+        accessToken: any(named: 'accessToken'),
+        refreshToken: any(named: 'refreshToken'),
+        organizationId: any(named: 'organizationId'),
+        userId: any(named: 'userId'),
+      ),
+    ).thenAnswer((inv) async {
+      current = inv.namedArguments[#accessToken] as String;
+    });
+    authDio.httpClientAdapter = _FakeAdapter(
+      (options) async => _jsonBody({
+        'access_token': newAccess,
+        'refresh_token': 'new-refresh',
+        'organization_id': 'org-1',
+        'user_id': 'user-1',
+      }, 200),
+    );
+    var attempt = 0;
+    businessDio.httpClientAdapter = _FakeAdapter((options) async {
+      attempt++;
+      return attempt == 1
+          ? _errorBody('UNAUTHORIZED', 401)
+          : _jsonBody({'ok': true}, 200);
+    });
+  }
+
+  test(
+    'permission_version diferente no refresh dispara onPermissionsChanged',
+    () async {
+      var changed = 0;
+      businessDio.interceptors.add(
+        AuthInterceptor(
+          authDio: authDio,
+          businessDio: businessDio,
+          store: store,
+          onPermissionsChanged: () => changed++,
+        ),
+      );
+      refreshOnceReturning(jwtWithPermVersion(7));
+
+      await businessDio.get<dynamic>('/v1/me');
+
+      expect(changed, 1);
+    },
+  );
+
+  test(
+    'permission_version igual no refresh NÃO dispara onPermissionsChanged',
+    () async {
+      var changed = 0;
+      businessDio.interceptors.add(
+        AuthInterceptor(
+          authDio: authDio,
+          businessDio: businessDio,
+          store: store,
+          onPermissionsChanged: () => changed++,
+        ),
+      );
+      refreshOnceReturning(jwtWithPermVersion(3));
+
+      await businessDio.get<dynamic>('/v1/me');
+
+      expect(changed, 0);
+    },
+  );
+
   test('falha no refresh limpa a sessão e chama onSessionExpired', () async {
     authDio.httpClientAdapter = _FakeAdapter((options) async {
       return _errorBody('INVALID_REFRESH_TOKEN', 401);

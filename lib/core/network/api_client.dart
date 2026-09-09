@@ -13,6 +13,7 @@ class ApiClient {
     required AppConfig config,
     required SecureStore store,
     void Function()? onSessionExpired,
+    void Function()? onPermissionsChanged,
   }) : authDio = Dio(
          BaseOptions(
            baseUrl: config.authBaseUrl,
@@ -31,6 +32,7 @@ class ApiClient {
         businessDio: businessDio,
         store: store,
         onSessionExpired: onSessionExpired,
+        onPermissionsChanged: onPermissionsChanged,
       ),
     );
   }
