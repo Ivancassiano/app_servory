@@ -21,8 +21,9 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final identityAsync = ref.watch(identityProvider);
     final syncState = ref.watch(syncRunnerProvider);
-    final canSeeUsers =
-        ref.watch(permissionsProvider).value?.can('user.read') ?? false;
+    final perms = ref.watch(permissionsProvider).value;
+    final canSeeUsers = perms?.can('user.read') ?? false;
+    final canSeeRoles = perms?.can('role.read') ?? false;
 
     return Scaffold(
       appBar: brandAppBar(title: 'Configurações'),
@@ -60,6 +61,12 @@ class SettingsScreen extends ConsumerWidget {
                   Icons.group_outlined,
                   'Usuários',
                   '/users',
+                ),
+              if (canSeeRoles)
+                _SettingsItem(
+                  Icons.admin_panel_settings_outlined,
+                  'Perfis',
+                  '/roles',
                 ),
               _SettingsItem(Icons.business_outlined, 'Empresas', '/companies'),
               _SettingsItem(

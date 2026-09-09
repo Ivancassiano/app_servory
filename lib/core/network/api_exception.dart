@@ -63,6 +63,11 @@ class ApiException implements Exception {
     'EMAIL_NOT_VERIFIED':
         'Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.',
     'INVALID_VERIFICATION_CODE': 'Código inválido ou expirado.',
+    'SYSTEM_ROLE': 'Perfil padrão não pode ser alterado. Duplique-o primeiro.',
+    'ROLE_IN_USE': 'Este perfil ainda tem membros. Mova-os antes de excluir.',
+    'ROLE_KEY_TAKEN': 'Já existe um perfil com esse nome.',
+    'UNKNOWN_PERMISSION': 'Permissão desconhecida — atualize o app.',
+    'INVALID_EFFECT': 'Efeito de permissão inválido.',
     'RATE_LIMITED': 'Muitas tentativas. Aguarde um instante e tente de novo.',
     'FORBIDDEN': 'Você não tem permissão para fazer isso.',
     'UNAUTHORIZED': 'Sua sessão expirou. Entre novamente.',
