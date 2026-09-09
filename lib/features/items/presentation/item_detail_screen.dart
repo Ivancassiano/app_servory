@@ -57,6 +57,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   /// só acontece no "Salvar" (o "Cancelar" descarta as marcações).
   Set<String> _photosToRemove = {};
   bool _seeded = false;
+  bool _fieldsSeeded = false;
   bool _saving = false;
   bool _viewMode = true;
   bool _isActive = true;
@@ -91,6 +92,24 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     _notes.text = it.notes;
   }
 
+  /// Carrega os valores dos campos personalizados já gravados no `_fieldValues`
+  /// — sem isso, editar o item e salvar mandaria um conjunto vazio pro
+  /// `setValues`, que apagaria todos os campos. Roda uma vez, quando o stream
+  /// dos valores já emitiu.
+  void _seedFieldValues(List<LocalItemFieldValue> rows) {
+    if (_fieldsSeeded) return;
+    _fieldsSeeded = true;
+    _fieldValues = {
+      for (final v in rows)
+        v.fieldDefId: TypedFieldValue(
+          text: v.valueText,
+          number: v.valueNumber,
+          datetime: v.valueDatetime,
+          boolean: v.valueBoolean,
+        ),
+    };
+  }
+
   ItemFields _collect() => ItemFields(
     name: _name.text.trim(),
     itemTypeId: _typeId,
@@ -123,6 +142,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         setState(() {
           _isActive = !it.isActive;
           _seeded = false;
+          _fieldsSeeded = false;
         });
       }
     } on ApiException catch (e) {
@@ -247,6 +267,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           );
         }
         _seedFrom(it);
+        final fvAsync = ref.watch(itemFieldValuesProvider(it.id));
+        if (fvAsync.hasValue) _seedFieldValues(fvAsync.value!);
         return _viewMode ? _view(context, it) : _form(context, it);
       },
     );
@@ -473,6 +495,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                       : () => setState(() {
                           _viewMode = true;
                           _seeded = false;
+                          _fieldsSeeded = false;
                           _photosToRemove = {};
                         }),
                   child: const Text('Cancelar'),
