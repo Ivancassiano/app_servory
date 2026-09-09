@@ -1,0 +1,14 @@
+# Copie para `android/key.properties` (fora do versionamento) na máquina que
+# publica o app. Gere a keystore UMA vez e guarde-a com backup — se ela se
+# perder, não dá para atualizar o app publicado (só reinstalar, o que apaga
+# os dados locais de quem usa).
+#
+#   keytool -genkey -v -keystore ~/servory-release.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias servory
+#
+# storeFile é relativo à pasta `android/` (ou um caminho absoluto).
+
+storePassword=troque-aqui
+keyPassword=troque-aqui
+keyAlias=servory
+storeFile=../servory-release.jks

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -118,4 +119,33 @@ class SyncRunner extends Notifier<SyncStatus> {
 
 final syncRunnerProvider = NotifierProvider<SyncRunner, SyncStatus>(
   SyncRunner.new,
+);
+
+/// Total de alterações locais aguardando envio ao servidor: operações na
+/// outbox (create/update/ações nomeadas) + anexos (foto/assinatura) na fila
+/// de upload. `0` = tudo o que foi feito neste aparelho já está no servidor
+/// (seguro atualizar o app). Alimenta o aviso da barra de status.
+final pendingSyncCountStreamProvider = StreamProvider<int>((ref) {
+  if (kIsWeb) return Stream.value(0);
+  final AppDatabase db;
+  try {
+    db = ref.watch(appDatabaseProvider);
+  } catch (_) {
+    return Stream.value(0); // sem sessão autenticada — nada local para contar
+  }
+  return db
+      .customSelect(
+        'SELECT '
+        '(SELECT COUNT(*) FROM sync_outbox) + '
+        '(SELECT COUNT(*) FROM upload_queue) AS n',
+        readsFrom: {db.syncOutbox, db.uploadQueue},
+      )
+      .watchSingle()
+      .map((row) => row.read<int>('n'));
+});
+
+/// Versão "só o número" (0 enquanto o stream não emitiu) para a UI que não
+/// quer lidar com `AsyncValue`.
+final pendingSyncCountProvider = Provider<int>(
+  (ref) => ref.watch(pendingSyncCountStreamProvider).value ?? 0,
 );

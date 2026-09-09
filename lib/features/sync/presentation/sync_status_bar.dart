@@ -24,24 +24,50 @@ class SyncStatusBar extends ConsumerStatefulWidget {
   ConsumerState<SyncStatusBar> createState() => _SyncStatusBarState();
 }
 
-class _SyncStatusBarState extends ConsumerState<SyncStatusBar> {
+class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
+    with WidgetsBindingObserver {
   Timer? _tick;
 
   @override
   void initState() {
     super.initState();
+    if (kIsWeb) return;
     // Redesenha a cada 30s só para o "há X min" acompanhar o relógio.
-    if (!kIsWeb) {
-      _tick = Timer.periodic(const Duration(seconds: 30), (_) {
-        if (mounted) setState(() {});
-      });
-    }
+    _tick = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) setState(() {});
+    });
+    // Sincroniza sozinho quando o app volta ao primeiro plano — o Android
+    // não avisa antes de uma atualização, então a defesa é subir a fila
+    // sempre que dá (ver também o listener de reconexão em [build]).
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     _tick?.cancel();
+    if (!kIsWeb) WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _autoSync();
+  }
+
+  /// Melhor esforço: drena a outbox se estiver online, autenticado e ocioso.
+  /// A linha já está persistida, então uma falha aqui só adia o envio.
+  void _autoSync() {
+    if (kIsWeb || !mounted) return;
+    if (ref.read(sessionControllerProvider) is! SessionAuthenticated) return;
+    if (!(ref.read(isOnlineProvider).value ?? false)) return;
+    if (ref.read(syncRunnerProvider).isLoading) return;
+    if (ref.read(pendingSyncCountProvider) == 0) return;
+    unawaited(
+      ref
+          .read(syncRunnerProvider.notifier)
+          .runSync()
+          .catchError((Object _) {}),
+    );
   }
 
   @override
@@ -53,11 +79,19 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar> {
       return const SizedBox.shrink();
     }
 
+    // Reconectou (offline → online): tenta drenar a fila na hora.
+    ref.listen(isOnlineProvider, (prev, next) {
+      final was = prev?.value ?? false;
+      final now = next.value ?? false;
+      if (!was && now) _autoSync();
+    });
+
     // `null` no 1º frame (o stream de conectividade ainda não emitiu) — trata
     // como online pra não piscar "offline" na abertura.
     final online = ref.watch(isOnlineProvider).value ?? true;
     final status = ref.watch(syncRunnerProvider);
-    final view = _describe(online: online, status: status);
+    final pending = ref.watch(pendingSyncCountProvider);
+    final view = _describe(online: online, status: status, pending: pending);
 
     return Material(
       color: view.background,
@@ -119,8 +153,16 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar> {
   Future<void> _refresh(BuildContext context, WidgetRef ref, bool online) async {
     final messenger = ScaffoldMessenger.of(context);
     if (!online) {
+      final pending = ref.read(pendingSyncCountProvider);
       messenger.showSnackBar(
-        const SnackBar(content: Text('Sem conexão — nada a atualizar agora.')),
+        SnackBar(
+          content: Text(
+            pending > 0
+                ? 'Sem conexão — suas alterações estão salvas e sobem sozinhas '
+                      'quando a internet voltar.'
+                : 'Sem conexão — nada a atualizar agora.',
+          ),
+        ),
       );
       return;
     }
@@ -137,12 +179,18 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar> {
     }
   }
 
-  _BarView _describe({required bool online, required SyncStatus status}) {
+  _BarView _describe({
+    required bool online,
+    required SyncStatus status,
+    required int pending,
+  }) {
     if (!online) {
-      return const _BarView(
+      return _BarView(
         background: BrandColor.errorBg,
         foreground: BrandColor.errorText,
-        label: 'Offline — mostrando dados salvos',
+        label: pending > 0
+            ? 'Offline — ${_changes(pending)} p/ enviar'
+            : 'Offline — mostrando dados salvos',
       );
     }
     if (status.isLoading) {
@@ -159,12 +207,22 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar> {
         label: 'Falha ao sincronizar — toque para atualizar',
       );
     }
+    if (pending > 0) {
+      return _BarView(
+        background: BrandColor.warnBg,
+        foreground: BrandColor.warnText,
+        label: '${_changes(pending)} não enviada${pending == 1 ? '' : 's'} — '
+            'toque para enviar',
+      );
+    }
     return _BarView(
       background: BrandColor.surface,
       foreground: BrandColor.textTertiary,
-      label: 'Online${_since(status.lastSuccessAt)}',
+      label: 'Tudo sincronizado${_since(status.lastSuccessAt)}',
     );
   }
+
+  String _changes(int n) => n == 1 ? '1 alteração' : '$n alterações';
 
   String _since(DateTime? at) {
     if (at == null) return '';

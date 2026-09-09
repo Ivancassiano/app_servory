@@ -60,16 +60,25 @@ class SessionController extends Notifier<SessionState> {
         : Future<void>.delayed(minSplashDuration);
 
     final store = ref.read(secureStoreProvider);
-    final accessToken = await store.readAccessToken();
-    final refreshToken = await store.readRefreshToken();
-    final organizationId = await store.readOrganizationId();
-    final userId = await store.readUserId();
-
-    final hasSession =
-        accessToken != null &&
-        refreshToken != null &&
-        organizationId != null &&
-        userId != null;
+    // Uma falha ao ler o armazenamento seguro (chave do Keystore rotacionada,
+    // dados corrompidos por um update) não pode travar o boot no splash —
+    // trata como "sem sessão" e cai na tela de login.
+    var hasSession = false;
+    String? organizationId;
+    String? userId;
+    try {
+      final accessToken = await store.readAccessToken();
+      final refreshToken = await store.readRefreshToken();
+      organizationId = await store.readOrganizationId();
+      userId = await store.readUserId();
+      hasSession =
+          accessToken != null &&
+          refreshToken != null &&
+          organizationId != null &&
+          userId != null;
+    } catch (_) {
+      hasSession = false;
+    }
 
     await minSplash;
 
@@ -82,7 +91,7 @@ class SessionController extends Notifier<SessionState> {
     if (state is! SessionUnknown) return;
 
     state = hasSession
-        ? SessionAuthenticated(userId: userId, organizationId: organizationId)
+        ? SessionAuthenticated(userId: userId!, organizationId: organizationId!)
         : const SessionUnauthenticated();
   }
 

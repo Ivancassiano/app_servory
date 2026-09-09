@@ -10,7 +10,15 @@ import 'package:uuid/uuid.dart';
 /// Chrome, que não guarda dado de negócio localmente, só a sessão.
 class SecureStore {
   SecureStore({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? _defaultStorage;
+
+  // `resetOnError`: se a chave-mestra do Keystore rotacionar num update do
+  // Android (bug conhecido), a leitura falharia com BadPadding e o app
+  // travaria no boot. Com isso, o plugin descarta o armazenamento e segue —
+  // o usuário só precisa logar de novo (o dado de negócio está no servidor).
+  static const _defaultStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(resetOnError: true),
+  );
 
   final FlutterSecureStorage _storage;
 
