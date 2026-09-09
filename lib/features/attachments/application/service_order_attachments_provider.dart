@@ -59,62 +59,74 @@ final entityPhotosProvider =
       final online = ref.watch(isOnlineProvider).value;
       final cache = ref.watch(attachmentCacheProvider);
 
-      if (online == false) {
-        final cached = await cache.forOwner(key.$1, key.$2);
-        return [
-          for (final c in cached)
-            if (c.kind == 'photo')
-              EntityPhoto(
-                id: c.photoId,
-                downloadUrl: '',
-                localPath: c.localPath,
-                caption: c.caption,
-                serviceOrderItemId: c.serviceOrderItemId,
-              ),
-        ];
-      }
+      EntityPhoto fromCached(CachedAttachment c) => EntityPhoto(
+        id: c.photoId,
+        downloadUrl: '',
+        localPath: c.localPath,
+        caption: c.caption,
+        serviceOrderItemId: c.serviceOrderItemId,
+      );
+
+      Future<List<EntityPhoto>> cachedPhotos() async => [
+        for (final c in await cache.forOwner(key.$1, key.$2))
+          if (c.kind == 'photo') fromCached(c),
+      ];
+
+      if (online == false) return cachedPhotos();
 
       final api = ref.watch(attachmentsApiProvider);
-      final photos = await api.listPhotos(ownerKind: key.$1, ownerId: key.$2);
-      final byId = {
-        for (final c in await cache.forOwner(key.$1, key.$2)) c.photoId: c,
-      };
-      final resolved = <EntityPhoto>[];
-      final toCache = <RemoteAttachment>[];
-      for (final photo in photos) {
-        final id = photo['id'] as String;
-        try {
-          final url = await api.photoDownloadUrl(
-            ownerKind: key.$1,
-            ownerId: key.$2,
-            photoId: id,
-          );
+      try {
+        final photos = await api.listPhotos(ownerKind: key.$1, ownerId: key.$2);
+        final byId = {
+          for (final c in await cache.forOwner(key.$1, key.$2)) c.photoId: c,
+        };
+        final resolved = <EntityPhoto>[];
+        final toCache = <RemoteAttachment>[];
+        for (final photo in photos) {
+          final id = photo['id'] as String;
           final caption = photo['caption'] as String?;
           final soItem = photo['service_order_item_id'] as String?;
-          toCache.add(
-            RemoteAttachment(
+          try {
+            final url = await api.photoDownloadUrl(
+              ownerKind: key.$1,
+              ownerId: key.$2,
               photoId: id,
-              url: url,
-              caption: caption,
-              serviceOrderItemId: soItem,
-            ),
-          );
-          resolved.add(
-            EntityPhoto(
-              id: id,
-              downloadUrl: url,
-              kind: photo['kind'] as String?,
-              caption: caption,
-              serviceOrderItemId: soItem,
-              localPath: byId[id]?.localPath,
-            ),
-          );
-        } catch (_) {
-          continue;
+            );
+            toCache.add(
+              RemoteAttachment(
+                photoId: id,
+                url: url,
+                caption: caption,
+                serviceOrderItemId: soItem,
+              ),
+            );
+            resolved.add(
+              EntityPhoto(
+                id: id,
+                downloadUrl: url,
+                kind: photo['kind'] as String?,
+                caption: caption,
+                serviceOrderItemId: soItem,
+                localPath: byId[id]?.localPath,
+              ),
+            );
+          } catch (_) {
+            // Sem a URL assinada, mas se já está em cache mostra do disco.
+            final c = byId[id];
+            if (c != null) resolved.add(fromCached(c));
+          }
         }
+        unawaited(cache.syncPhotos(key.$1, key.$2, toCache));
+        return resolved;
+      } catch (e, st) {
+        // "Online" pela conectividade, mas o servidor não respondeu (fora da
+        // rede/VPN, servidor caído): mostra o que está em cache.
+        final cached = await cachedPhotos();
+        if (cached.isNotEmpty) return cached;
+        // Nada em cache — deixa a tela mostrar o erro (`rethrow` não sobrevive
+        // ao `await` acima).
+        Error.throwWithStackTrace(e, st);
       }
-      unawaited(cache.syncPhotos(key.$1, key.$2, toCache));
-      return resolved;
     });
 
 /// Compat: fotos de uma ordem de serviço.
@@ -131,40 +143,44 @@ final orderSignatureProvider = FutureProvider.family<OrderSignature?, String>((
   final cache = ref.watch(attachmentCacheProvider);
   final sigId = signatureCacheId(serviceOrderId);
 
-  if (online == false) {
-    final cached = await cache.forOwner('service_order', serviceOrderId);
-    for (final c in cached) {
+  Future<OrderSignature?> cachedSignature() async {
+    for (final c in await cache.forOwner('service_order', serviceOrderId)) {
       if (c.kind == 'signature') {
-        return OrderSignature(
-          id: sigId,
-          downloadUrl: '',
-          localPath: c.localPath,
-        );
+        return OrderSignature(id: sigId, downloadUrl: '', localPath: c.localPath);
       }
     }
     return null;
   }
 
+  if (online == false) return cachedSignature();
+
   final api = ref.watch(attachmentsApiProvider);
-  final data = await api.getSignature(serviceOrderId);
-  if (data == null) {
-    unawaited(cache.syncSignature(serviceOrderId, null));
-    return null;
+  try {
+    final data = await api.getSignature(serviceOrderId);
+    if (data == null) {
+      unawaited(cache.syncSignature(serviceOrderId, null));
+      return null;
+    }
+    final url = await api.signatureDownloadUrl(serviceOrderId);
+    unawaited(
+      cache.syncSignature(
+        serviceOrderId,
+        RemoteAttachment(photoId: sigId, url: url),
+      ),
+    );
+    String? local;
+    for (final c in await cache.forOwner('service_order', serviceOrderId)) {
+      if (c.kind == 'signature') local = c.localPath;
+    }
+    return OrderSignature(
+      id: data['id'] as String,
+      downloadUrl: url,
+      localPath: local,
+    );
+  } catch (e, st) {
+    // Servidor inalcançável apesar do wi-fi — cai no cache.
+    final cached = await cachedSignature();
+    if (cached != null) return cached;
+    Error.throwWithStackTrace(e, st);
   }
-  final url = await api.signatureDownloadUrl(serviceOrderId);
-  unawaited(
-    cache.syncSignature(
-      serviceOrderId,
-      RemoteAttachment(photoId: sigId, url: url),
-    ),
-  );
-  String? local;
-  for (final c in await cache.forOwner('service_order', serviceOrderId)) {
-    if (c.kind == 'signature') local = c.localPath;
-  }
-  return OrderSignature(
-    id: data['id'] as String,
-    downloadUrl: url,
-    localPath: local,
-  );
 });
