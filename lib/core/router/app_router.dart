@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/application/app_lock_controller.dart';
 import '../../features/auth/application/session_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/offline_expired_screen.dart';
 import '../../features/auth/presentation/accept_invite_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/verify_email_screen.dart';
-import '../../features/auth/presentation/unlock_screen.dart';
 import '../../features/clients/presentation/client_detail_screen.dart';
 import '../../features/clients/presentation/client_list_screen.dart';
 import '../../features/companies/presentation/company_detail_screen.dart';
@@ -53,7 +51,6 @@ const _gatedRoutes = {
   '/verify-email',
   '/accept-invite',
   '/splash',
-  '/unlock',
   '/offline-expired',
 };
 
@@ -79,7 +76,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   void bump(Object? _, Object? _) => refresh.value++;
   ref.listen(sessionControllerProvider, bump);
   ref.listen(isOnlineProvider, bump);
-  ref.listen(appLockControllerProvider, bump);
 
   final store = ref.read(secureStoreProvider);
 
@@ -89,7 +85,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) async {
       final session = ref.read(sessionControllerProvider);
       final online = ref.read(isOnlineProvider).value;
-      final unlocked = ref.read(appLockControllerProvider);
 
       bool? expired;
       if (session is SessionAuthenticated && online == false) {
@@ -101,7 +96,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return decideRedirect(
         session: session,
         online: online,
-        unlocked: unlocked,
         offlineSessionExpired: expired,
         currentLocation: state.matchedLocation,
       );
@@ -112,15 +106,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/register', builder: (_, _) => const RegisterScreen()),
       GoRoute(
         path: '/verify-email',
-        builder: (_, state) => VerifyEmailScreen(
-          email: state.uri.queryParameters['email'] ?? '',
-        ),
+        builder: (_, state) =>
+            VerifyEmailScreen(email: state.uri.queryParameters['email'] ?? ''),
       ),
       GoRoute(
         path: '/accept-invite',
         builder: (_, _) => const AcceptInviteScreen(),
       ),
-      GoRoute(path: '/unlock', builder: (_, _) => const UnlockScreen()),
       GoRoute(
         path: '/offline-expired',
         builder: (_, _) => const OfflineExpiredScreen(),
@@ -182,9 +174,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/locations',
-        builder: (_, state) => LocationListScreen(
-          clientId: state.uri.queryParameters['clientId'],
-        ),
+        builder: (_, state) =>
+            LocationListScreen(clientId: state.uri.queryParameters['clientId']),
         routes: [
           GoRoute(
             path: ':id',
@@ -293,9 +284,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/tasks',
-        builder: (_, state) => TaskListScreen(
-          clientId: state.uri.queryParameters['clientId'],
-        ),
+        builder: (_, state) =>
+            TaskListScreen(clientId: state.uri.queryParameters['clientId']),
         routes: [
           GoRoute(
             path: ':id',
@@ -318,7 +308,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 String? decideRedirect({
   required SessionState session,
   required bool? online,
-  required bool unlocked,
   required bool? offlineSessionExpired,
   required String currentLocation,
 }) {
@@ -331,19 +320,13 @@ String? decideRedirect({
       return _authFlowRoutes.contains(currentLocation) ? null : '/login';
 
     case SessionAuthenticated():
-      // `online == null` enquanto o stream de conectividade ainda não
-      // emitiu o primeiro valor — trata como online pra não mostrar um
-      // "unlock" de mentira no primeiro frame.
-      if (online != false) {
-        return _gatedRoutes.contains(currentLocation) ? '/' : null;
-      }
-      if (offlineSessionExpired ?? true) {
+      // Estar logado basta para ver os dados — ficar offline não pede
+      // biometria. O único corte offline é o prazo de 7 dias sem confirmar
+      // com o servidor (spec §18.3): passou disso, tem que reconectar.
+      if (online == false && (offlineSessionExpired ?? true)) {
         return currentLocation == '/offline-expired'
             ? null
             : '/offline-expired';
-      }
-      if (!unlocked) {
-        return currentLocation == '/unlock' ? null : '/unlock';
       }
       return _gatedRoutes.contains(currentLocation) ? '/' : null;
   }

@@ -14,7 +14,7 @@ import '../application/sync_provider.dart';
 /// o estado do último sync; o botão à direita força um "atualizar tudo"
 /// (push + pull + recarrega fotos/assinaturas e limpa o cache de imagens).
 ///
-/// Fica escondida no login/splash/unlock e enquanto o teclado está aberto.
+/// Fica escondida no login/splash e enquanto o teclado está aberto.
 /// No web não aparece: lá o app roda sempre online e não há banco local nem
 /// protocolo de sync (o "atualizar tudo" depende do `SyncEngine`).
 class SyncStatusBar extends ConsumerStatefulWidget {

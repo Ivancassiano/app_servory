@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -51,6 +52,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
+      TextInput.finishAutofillContext();
       if (!mounted) return;
       final email = Uri.encodeQueryComponent(_emailController.text.trim());
       context.pushReplacement('/verify-email?email=$email');
@@ -78,111 +80,117 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Crie sua organização e a conta de administrador. '
-                      'Você confirma o e-mail no passo seguinte.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 24),
-                    TextFormField(
-                      controller: _orgController,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'Nome da organização',
-                      ),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Informe o nome da organização.'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _nameController,
-                      textCapitalization: TextCapitalization.words,
-                      autofillHints: const [AutofillHints.name],
-                      decoration: const InputDecoration(labelText: 'Seu nome'),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Informe seu nome.'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      autofillHints: const [AutofillHints.email],
-                      decoration: const InputDecoration(labelText: 'E-mail'),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Informe o e-mail.';
-                        }
-                        if (!v.contains('@')) return 'E-mail inválido.';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscure,
-                      autofillHints: const [AutofillHints.newPassword],
-                      decoration: InputDecoration(
-                        labelText: 'Senha',
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscure
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                          onPressed: () =>
-                              setState(() => _obscure = !_obscure),
-                        ),
-                      ),
-                      validator: (v) => (v == null || v.length < 8)
-                          ? 'A senha precisa ter pelo menos 8 caracteres.'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _confirmController,
-                      obscureText: _obscure,
-                      decoration: const InputDecoration(
-                        labelText: 'Confirmar senha',
-                      ),
-                      validator: (v) => (v != _passwordController.text)
-                          ? 'As senhas não conferem.'
-                          : null,
-                      onFieldSubmitted: (_) => _submit(),
-                    ),
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: 12),
+              child: AutofillGroup(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       Text(
-                        _errorMessage!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
+                        'Crie sua organização e a conta de administrador. '
+                        'Você confirma o e-mail no passo seguinte.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: _orgController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: const InputDecoration(
+                          labelText: 'Nome da organização',
                         ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Informe o nome da organização.'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _nameController,
+                        textCapitalization: TextCapitalization.words,
+                        autofillHints: const [AutofillHints.name],
+                        decoration: const InputDecoration(
+                          labelText: 'Seu nome',
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Informe seu nome.'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        autofillHints: const [AutofillHints.email],
+                        decoration: const InputDecoration(labelText: 'E-mail'),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Informe o e-mail.';
+                          }
+                          if (!v.contains('@')) return 'E-mail inválido.';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscure,
+                        autofillHints: const [AutofillHints.newPassword],
+                        decoration: InputDecoration(
+                          labelText: 'Senha',
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscure
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
+                          ),
+                        ),
+                        validator: (v) => (v == null || v.length < 8)
+                            ? 'A senha precisa ter pelo menos 8 caracteres.'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _confirmController,
+                        obscureText: _obscure,
+                        decoration: const InputDecoration(
+                          labelText: 'Confirmar senha',
+                        ),
+                        validator: (v) => (v != _passwordController.text)
+                            ? 'As senhas não conferem.'
+                            : null,
+                        onFieldSubmitted: (_) => _submit(),
+                      ),
+                      if (_errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          _errorMessage!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      FilledButton(
+                        onPressed: _busy ? null : _submit,
+                        child: _busy
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Criar conta'),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: _busy ? null : () => context.go('/login'),
+                        child: const Text('Já tenho conta'),
                       ),
                     ],
-                    const SizedBox(height: 24),
-                    FilledButton(
-                      onPressed: _busy ? null : _submit,
-                      child: _busy
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Criar conta'),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: _busy ? null : () => context.go('/login'),
-                      child: const Text('Já tenho conta'),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

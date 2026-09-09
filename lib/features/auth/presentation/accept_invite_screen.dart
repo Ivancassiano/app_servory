@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -46,6 +47,7 @@ class _AcceptInviteScreenState extends ConsumerState<AcceptInviteScreen> {
             name: _nameController.text.trim(),
             password: _passwordController.text,
           );
+      TextInput.finishAutofillContext();
       // Sucesso: a mudança de sessão leva o router para a home.
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -70,85 +72,91 @@ class _AcceptInviteScreenState extends ConsumerState<AcceptInviteScreen> {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Cole o código do e-mail de convite e defina seu acesso. '
-                      'Se você já tem conta, use a mesma senha.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 24),
-                    TextFormField(
-                      controller: _codeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Código do convite',
-                      ),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Informe o código.'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _nameController,
-                      textCapitalization: TextCapitalization.words,
-                      autofillHints: const [AutofillHints.name],
-                      decoration: const InputDecoration(labelText: 'Seu nome'),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Informe seu nome.'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscure,
-                      autofillHints: const [AutofillHints.password],
-                      decoration: InputDecoration(
-                        labelText: 'Senha',
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscure
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                          onPressed: () =>
-                              setState(() => _obscure = !_obscure),
-                        ),
-                      ),
-                      validator: (v) => (v == null || v.length < 8)
-                          ? 'A senha precisa ter pelo menos 8 caracteres.'
-                          : null,
-                      onFieldSubmitted: (_) => _submit(),
-                    ),
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: 12),
+              child: AutofillGroup(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       Text(
-                        _errorMessage!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
+                        'Cole o código do e-mail de convite e defina seu acesso. '
+                        'Se você já tem conta, use a mesma senha.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: _codeController,
+                        decoration: const InputDecoration(
+                          labelText: 'Código do convite',
                         ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Informe o código.'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _nameController,
+                        textCapitalization: TextCapitalization.words,
+                        autofillHints: const [AutofillHints.name],
+                        decoration: const InputDecoration(
+                          labelText: 'Seu nome',
+                        ),
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Informe seu nome.'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscure,
+                        autofillHints: const [AutofillHints.password],
+                        decoration: InputDecoration(
+                          labelText: 'Senha',
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscure
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () =>
+                                setState(() => _obscure = !_obscure),
+                          ),
+                        ),
+                        validator: (v) => (v == null || v.length < 8)
+                            ? 'A senha precisa ter pelo menos 8 caracteres.'
+                            : null,
+                        onFieldSubmitted: (_) => _submit(),
+                      ),
+                      if (_errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          _errorMessage!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      FilledButton(
+                        onPressed: _busy ? null : _submit,
+                        child: _busy
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Entrar na organização'),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: _busy ? null : () => context.go('/login'),
+                        child: const Text('Voltar ao login'),
                       ),
                     ],
-                    const SizedBox(height: 24),
-                    FilledButton(
-                      onPressed: _busy ? null : _submit,
-                      child: _busy
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Entrar na organização'),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: _busy ? null : () => context.go('/login'),
-                      child: const Text('Voltar ao login'),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
