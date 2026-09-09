@@ -17,6 +17,11 @@ final orgRolesProvider = FutureProvider.autoDispose<List<OrgRole>>(
   (ref) => ref.watch(membersApiProvider).listRoles(),
 );
 
+final memberOverridesProvider = FutureProvider.autoDispose
+    .family<Map<String, String>, String>(
+      (ref, userId) => ref.watch(membersApiProvider).getOverrides(userId),
+    );
+
 /// Ações de escrita da tela de Usuários. Cada uma invalida os providers de
 /// leitura afetados para a lista recarregar.
 class MembersController {
@@ -52,6 +57,14 @@ class MembersController {
   Future<void> remove(String userId) async {
     await _api.removeMember(userId);
     _ref.invalidate(orgMembersProvider);
+  }
+
+  Future<void> saveOverrides(
+    String userId,
+    Map<String, String> overrides,
+  ) async {
+    await _api.setOverrides(userId, overrides);
+    _ref.invalidate(memberOverridesProvider(userId));
   }
 }
 

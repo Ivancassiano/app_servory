@@ -147,6 +147,37 @@ class MembersApi {
         .map(OrgRole.fromJson)
         .toList();
   }
+
+  /// Exceções de permissão de um usuário — `key -> 'allow' | 'deny'`.
+  Future<Map<String, String>> getOverrides(String userId) async {
+    final r = await restCall(
+      () => _dio.get('/v1/users/$userId/permission-overrides'),
+    );
+    return {
+      for (final o in ((r.data as Map)['overrides'] as List? ?? const [])
+          .cast<Map<String, dynamic>>())
+        o['key'] as String: o['effect'] as String,
+    };
+  }
+
+  Future<void> setOverrides(
+    String userId,
+    Map<String, String> overrides,
+  ) async {
+    // O PUT recebe a lista sob "permissions" (schema PermissionList do
+    // OpenAPI); a resposta e o GET devolvem sob "overrides".
+    await restCall(
+      () => _dio.put(
+        '/v1/users/$userId/permission-overrides',
+        data: {
+          'permissions': [
+            for (final e in overrides.entries)
+              {'key': e.key, 'effect': e.value},
+          ],
+        },
+      ),
+    );
+  }
 }
 
 final membersApiProvider = Provider<MembersApi>(

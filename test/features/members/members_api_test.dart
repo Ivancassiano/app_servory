@@ -68,4 +68,39 @@ void main() {
     expect(stub.lastRequest.method, 'DELETE');
     expect(stub.lastRequest.path, '/v1/users/u7/membership');
   });
+
+  test('getOverrides lê a chave "overrides" -> mapa key->effect', () async {
+    final stub = StubDio(
+      (_) => (
+        status: 200,
+        body: {
+          'overrides': [
+            {'key': 'item.read', 'effect': 'deny'},
+            {'key': 'client.read', 'effect': 'allow'},
+          ],
+        },
+      ),
+    );
+    final ov = await MembersApi(stub.dio).getOverrides('u1');
+    expect(ov, {'item.read': 'deny', 'client.read': 'allow'});
+  });
+
+  test('setOverrides envia a lista sob "permissions" (PermissionList)', () async {
+    final stub = StubDio((_) => (status: 200, body: <String, Object>{}));
+    await MembersApi(
+      stub.dio,
+    ).setOverrides('u1', {'item.read': 'deny', 'item.cost.read': 'allow'});
+
+    final req = stub.lastRequest;
+    expect(req.method, 'PUT');
+    expect(req.path, '/v1/users/u1/permission-overrides');
+    final body = jsonDecode(jsonEncode(req.data)) as Map<String, dynamic>;
+    expect(body.keys, ['permissions']);
+    final perms = (body['permissions'] as List).cast<Map<String, dynamic>>();
+    expect(perms, hasLength(2));
+    expect(
+      {for (final p in perms) p['key'] as String: p['effect'] as String},
+      {'item.read': 'deny', 'item.cost.read': 'allow'},
+    );
+  });
 }

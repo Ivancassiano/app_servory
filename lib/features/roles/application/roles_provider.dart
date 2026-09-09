@@ -38,7 +38,16 @@ class RolesController {
       description: description,
     );
     if (allowKeys.isNotEmpty) {
-      await _api.setRolePermissions(role.id, allowKeys);
+      try {
+        await _api.setRolePermissions(role.id, allowKeys);
+      } catch (_) {
+        // O POST e o PUT não são atômicos — se as permissões falham, desfaz o
+        // perfil recém-criado para não deixar um perfil vazio órfão.
+        try {
+          await _api.deleteRole(role.id);
+        } catch (_) {}
+        rethrow;
+      }
     }
     _refresh(role.id);
     return role;

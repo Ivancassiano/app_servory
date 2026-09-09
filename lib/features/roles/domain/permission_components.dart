@@ -176,3 +176,57 @@ ComponentAccess accessOf(ComponentKeys keys, Set<String> granted) {
 
 bool _sameSet(Set<String> a, Set<String> b) =>
     a.length == b.length && a.containsAll(b);
+
+// --- exceções por usuário (allow/deny sobre o perfil) ---
+
+/// Nível de exceção de um usuário para um componente.
+enum OverrideAccess {
+  /// Sem exceção — vale o perfil.
+  inherit,
+  none,
+  view,
+  edit,
+
+  /// Exceções que não batem com um preset (mexeu chave a chave).
+  custom,
+}
+
+/// As chaves de exceção (`key -> allow|deny`) de um componente para um nível.
+Map<String, String> overrideMapFor(ComponentKeys keys, OverrideAccess access) {
+  switch (access) {
+    case OverrideAccess.inherit:
+    case OverrideAccess.custom:
+      return const {};
+    case OverrideAccess.none:
+      return {for (final k in keys.all) k: 'deny'};
+    case OverrideAccess.edit:
+      return {for (final k in keys.all) k: 'allow'};
+    case OverrideAccess.view:
+      final allow = {...keys.readKeys, ...keys.fieldReadKeys};
+      return {for (final k in keys.all) k: allow.contains(k) ? 'allow' : 'deny'};
+  }
+}
+
+/// Deduz o nível de exceção do usuário para um componente.
+OverrideAccess overrideAccessOf(
+  ComponentKeys keys,
+  Map<String, String> overrides,
+) {
+  final mine = <String, String>{
+    for (final k in keys.all)
+      if (overrides.containsKey(k)) k: overrides[k]!,
+  };
+  if (mine.isEmpty) return OverrideAccess.inherit;
+  for (final a in [
+    OverrideAccess.none,
+    OverrideAccess.view,
+    OverrideAccess.edit,
+  ]) {
+    final expected = overrideMapFor(keys, a);
+    if (mine.length == expected.length &&
+        expected.entries.every((e) => mine[e.key] == e.value)) {
+      return a;
+    }
+  }
+  return OverrideAccess.custom;
+}

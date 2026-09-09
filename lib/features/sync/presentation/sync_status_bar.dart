@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,11 +17,35 @@ import '../application/sync_provider.dart';
 /// Fica escondida no login/splash/unlock e enquanto o teclado está aberto.
 /// No web não aparece: lá o app roda sempre online e não há banco local nem
 /// protocolo de sync (o "atualizar tudo" depende do `SyncEngine`).
-class SyncStatusBar extends ConsumerWidget {
+class SyncStatusBar extends ConsumerStatefulWidget {
   const SyncStatusBar({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SyncStatusBar> createState() => _SyncStatusBarState();
+}
+
+class _SyncStatusBarState extends ConsumerState<SyncStatusBar> {
+  Timer? _tick;
+
+  @override
+  void initState() {
+    super.initState();
+    // Redesenha a cada 30s só para o "há X min" acompanhar o relógio.
+    if (!kIsWeb) {
+      _tick = Timer.periodic(const Duration(seconds: 30), (_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     if (kIsWeb) return const SizedBox.shrink();
     final session = ref.watch(sessionControllerProvider);
     if (session is! SessionAuthenticated) return const SizedBox.shrink();
@@ -140,7 +166,7 @@ class SyncStatusBar extends ConsumerWidget {
   String _since(DateTime? at) {
     if (at == null) return '';
     final d = DateTime.now().difference(at);
-    if (d.inSeconds < 45) return ' · atualizado agora';
+    if (d.inMinutes < 1) return ' · atualizado agora';
     if (d.inMinutes < 60) return ' · há ${d.inMinutes} min';
     if (d.inHours < 24) return ' · há ${d.inHours} h';
     return ' · há ${d.inDays} d';

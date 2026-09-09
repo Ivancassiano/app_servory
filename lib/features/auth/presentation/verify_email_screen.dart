@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../application/session_controller.dart';
+import '../application/verification_cooldown.dart';
 
 /// Confirma o e-mail pelo código recebido. Ao dar certo, o backend devolve a
 /// sessão e o roteador leva para a home automaticamente.
@@ -27,14 +28,22 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
   Timer? _timer;
 
   @override
+  void initState() {
+    super.initState();
+    // Retoma o cooldown se o usuário já reenviou há pouco (saiu e voltou).
+    final left = ref.read(verificationResendProvider.notifier).remaining();
+    if (left > 0) _startCooldown(left);
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     _codeController.dispose();
     super.dispose();
   }
 
-  void _startCooldown() {
-    setState(() => _resendCooldown = 30);
+  void _startCooldown(int seconds) {
+    setState(() => _resendCooldown = seconds);
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (!mounted) return;
@@ -72,7 +81,8 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
   }
 
   Future<void> _resend() async {
-    _startCooldown();
+    ref.read(verificationResendProvider.notifier).mark();
+    _startCooldown(verificationResendCooldown.inSeconds);
     final messenger = ScaffoldMessenger.of(context);
     try {
       await ref

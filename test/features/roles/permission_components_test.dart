@@ -114,4 +114,48 @@ void main() {
       expect(permComponentGroups, contains(c.group));
     }
   });
+
+  group('exceções por usuário (override)', () {
+    final k = keysOf(_c('clients'), _catalog);
+
+    test('sem exceções => inherit', () {
+      expect(overrideAccessOf(k, {}), OverrideAccess.inherit);
+    });
+
+    test('overrideMapFor(none) marca tudo como deny', () {
+      final m = overrideMapFor(k, OverrideAccess.none);
+      expect(m.length, k.all.length);
+      expect(m.values.every((v) => v == 'deny'), isTrue);
+      expect(overrideAccessOf(k, m), OverrideAccess.none);
+    });
+
+    test('overrideMapFor(view): leituras allow, escrita deny', () {
+      final m = overrideMapFor(k, OverrideAccess.view);
+      expect(m['client.read'], 'allow');
+      expect(m['client.name.read'], 'allow');
+      expect(m['client.name.write'], 'deny');
+      expect(m['client.delete'], 'deny');
+      expect(overrideAccessOf(k, m), OverrideAccess.view);
+    });
+
+    test('overrideMapFor(edit) tudo allow', () {
+      final m = overrideMapFor(k, OverrideAccess.edit);
+      expect(m.values.every((v) => v == 'allow'), isTrue);
+      expect(overrideAccessOf(k, m), OverrideAccess.edit);
+    });
+
+    test('mistura fora de preset => custom', () {
+      expect(
+        overrideAccessOf(k, {'client.read': 'allow'}),
+        OverrideAccess.custom,
+      );
+    });
+
+    test('exceção de outro componente não afeta este', () {
+      expect(
+        overrideAccessOf(k, {'item.read': 'deny'}),
+        OverrideAccess.inherit,
+      );
+    });
+  });
 }

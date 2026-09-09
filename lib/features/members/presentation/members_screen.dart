@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
@@ -24,7 +25,8 @@ class MembersScreen extends ConsumerWidget {
     final canInvite = perms?.can('user.invite') ?? false;
     final canChangeRole = perms?.can('user.update') ?? false;
     final canRemove = perms?.can('user.remove') ?? false;
-    final canManageMember = canChangeRole || canRemove;
+    final canOverrides = perms?.can('permission_override.read') ?? false;
+    final canManageMember = canChangeRole || canRemove || canOverrides;
     final myId = ref.watch(identityProvider).value?.userId;
 
     final roleName = <String, String>{
@@ -71,6 +73,7 @@ class MembersScreen extends ConsumerWidget {
                               m,
                               canChangeRole: canChangeRole,
                               canRemove: canRemove,
+                              canOverrides: canOverrides,
                             )
                           : null,
                     ),
@@ -126,6 +129,7 @@ class MembersScreen extends ConsumerWidget {
     OrgMember m, {
     required bool canChangeRole,
     required bool canRemove,
+    required bool canOverrides,
   }) async {
     final action = await showModalBottomSheet<String>(
       context: context,
@@ -143,6 +147,12 @@ class MembersScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            if (canOverrides)
+              ListTile(
+                leading: const Icon(Icons.tune_outlined),
+                title: const Text('Exceções de permissão'),
+                onTap: () => Navigator.pop(ctx, 'overrides'),
+              ),
             if (canChangeRole) ...[
               ListTile(
                 leading: const Icon(Icons.badge_outlined),
@@ -181,6 +191,9 @@ class MembersScreen extends ConsumerWidget {
     if (action == null || !context.mounted) return;
 
     switch (action) {
+      case 'overrides':
+        final name = Uri.encodeQueryComponent(m.name.isEmpty ? m.email : m.name);
+        context.push('/users/${m.userId}/overrides?name=$name');
       case 'role':
         final roleId = await _pickRole(context, ref, current: m.roleId);
         if (roleId != null && roleId != m.roleId && context.mounted) {

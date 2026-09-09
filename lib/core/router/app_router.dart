@@ -26,6 +26,7 @@ import '../../features/locations/presentation/location_detail_screen.dart';
 import '../../features/locations/presentation/location_list_screen.dart';
 import '../../features/me/presentation/home_screen.dart';
 import '../../features/me/presentation/person_screen.dart';
+import '../../features/members/presentation/member_overrides_screen.dart';
 import '../../features/members/presentation/members_screen.dart';
 import '../../features/roles/presentation/role_edit_screen.dart';
 import '../../features/roles/presentation/roles_screen.dart';
@@ -127,7 +128,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
       GoRoute(path: '/me/person', builder: (_, _) => const PersonScreen()),
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
-      GoRoute(path: '/users', builder: (_, _) => const MembersScreen()),
+      GoRoute(
+        path: '/users',
+        builder: (_, _) => const MembersScreen(),
+        routes: [
+          GoRoute(
+            path: ':id/overrides',
+            builder: (_, state) => MemberOverridesScreen(
+              userId: state.pathParameters['id']!,
+              memberName: state.uri.queryParameters['name'],
+            ),
+          ),
+        ],
+      ),
       GoRoute(
         path: '/roles',
         builder: (_, _) => const RolesScreen(),
