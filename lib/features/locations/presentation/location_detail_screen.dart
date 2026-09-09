@@ -56,6 +56,10 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
   bool _isActive = true;
   List<StagedPhoto> _stagedPhotos = [];
 
+  /// Só na edição: ids de fotos já enviadas marcadas pra remoção — o `DELETE`
+  /// só acontece no "Salvar" (o "Cancelar" descarta as marcações).
+  Set<String> _photosToRemove = {};
+
   /// Só na criação: ids de itens a vincular a este local depois que ele
   /// ganhar um id (no `_submit`). Na edição o vínculo é imediato.
   List<String> _stagedItemIds = [];
@@ -173,6 +177,22 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
           baseVersion: _version,
           fields: _collect(),
         );
+        if (_photosToRemove.isNotEmpty) {
+          // Fotos marcadas pra remoção só saem de verdade agora, no "Salvar".
+          final attach = ref.read(attachmentControllerProvider);
+          for (final photoId in _photosToRemove) {
+            try {
+              await attach.deletePhoto(
+                ownerKind: 'location',
+                ownerId: existing.id,
+                photoId: photoId,
+              );
+            } catch (_) {
+              // uma foto que falha não impede o salvamento
+            }
+          }
+          _photosToRemove = {};
+        }
         if (mounted) setState(() => _viewMode = true);
       }
     } on ApiException catch (e) {
@@ -502,7 +522,10 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => setState(() => _viewMode = false),
+            onPressed: () => setState(() {
+              _viewMode = false;
+              _photosToRemove = {};
+            }),
           ),
         ],
       ),
@@ -516,7 +539,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
           const SizedBox(height: 16),
           Text('Fotos', style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
-          PhotosSection(ownerKind: 'location', ownerId: l.id),
+          PhotosSection(ownerKind: 'location', ownerId: l.id, showAdd: false),
           const Divider(height: 32),
           Text(
             'Itens neste local',
@@ -709,7 +732,16 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                   onChanged: (p) => setState(() => _stagedPhotos = p),
                 )
               else
-                PhotosSection(ownerKind: 'location', ownerId: existing.id),
+                PhotosSection(
+                  ownerKind: 'location',
+                  ownerId: existing.id,
+                  pendingRemovalIds: _photosToRemove,
+                  onToggleRemoval: (photoId) => setState(() {
+                    if (!_photosToRemove.remove(photoId)) {
+                      _photosToRemove.add(photoId);
+                    }
+                  }),
+                ),
               const Divider(height: 32),
               _linkedItemsSection(context, existing),
               const SizedBox(height: 24),
@@ -726,6 +758,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                       : () => setState(() {
                           _viewMode = true;
                           _seeded = false;
+                          _photosToRemove = {};
                         }),
                   child: const Text('Cancelar'),
                 ),

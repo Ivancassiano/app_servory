@@ -52,6 +52,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   /// Só na criação: fotos escolhidas antes de o item ter id; sobem no `_submit`.
   List<StagedPhoto> _stagedPhotos = [];
+
+  /// Só na edição: ids de fotos já enviadas marcadas pra remoção — o `DELETE`
+  /// só acontece no "Salvar" (o "Cancelar" descarta as marcações).
+  Set<String> _photosToRemove = {};
   bool _seeded = false;
   bool _saving = false;
   bool _viewMode = true;
@@ -173,6 +177,22 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             .read(itemFieldValueRepositoryProvider)
             .setValues(id, _fieldValues);
       }
+      if (existing != null && _photosToRemove.isNotEmpty) {
+        // Fotos marcadas pra remoção só saem de verdade agora, no "Salvar".
+        final attach = ref.read(attachmentControllerProvider);
+        for (final photoId in _photosToRemove) {
+          try {
+            await attach.deletePhoto(
+              ownerKind: 'item',
+              ownerId: id,
+              photoId: photoId,
+            );
+          } catch (_) {
+            // uma foto que falha não impede o salvamento
+          }
+        }
+        _photosToRemove = {};
+      }
       if (existing == null && _stagedPhotos.isNotEmpty) {
         // Fotos escolhidas no cadastro sobem agora que o item tem id.
         final attach = ref.read(attachmentControllerProvider);
@@ -260,7 +280,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            onPressed: () => setState(() => _viewMode = false),
+            onPressed: () => setState(() {
+              _viewMode = false;
+              _photosToRemove = {};
+            }),
           ),
         ],
       ),
@@ -290,7 +313,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           const SizedBox(height: 16),
           Text('Fotos', style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
-          PhotosSection(ownerKind: 'item', ownerId: it.id),
+          PhotosSection(ownerKind: 'item', ownerId: it.id, showAdd: false),
           const Divider(height: 32),
           RelatedServiceOrdersSection(itemId: it.id),
           const Divider(),
@@ -426,7 +449,16 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   onChanged: (p) => setState(() => _stagedPhotos = p),
                 )
               else
-                PhotosSection(ownerKind: 'item', ownerId: existing.id),
+                PhotosSection(
+                  ownerKind: 'item',
+                  ownerId: existing.id,
+                  pendingRemovalIds: _photosToRemove,
+                  onToggleRemoval: (photoId) => setState(() {
+                    if (!_photosToRemove.remove(photoId)) {
+                      _photosToRemove.add(photoId);
+                    }
+                  }),
+                ),
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: (_saving || !canSave)
@@ -441,6 +473,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                       : () => setState(() {
                           _viewMode = true;
                           _seeded = false;
+                          _photosToRemove = {};
                         }),
                   child: const Text('Cancelar'),
                 ),

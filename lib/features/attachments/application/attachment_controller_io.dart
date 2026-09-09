@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
 import 'attachment_controller.dart';
+import 'attachments_api_provider.dart';
+import 'service_order_attachments_provider.dart';
 import 'upload_queue_controller.dart';
 
 AttachmentController createAttachmentController(Ref ref) =>
@@ -41,4 +43,18 @@ class _IoAttachmentController implements AttachmentController {
     serviceOrderId: orderId,
     bytes: bytes,
   );
+
+  @override
+  Future<void> deletePhoto({
+    required String ownerKind,
+    required String ownerId,
+    required String photoId,
+  }) async {
+    await _ref.read(attachmentsApiProvider).deletePhoto(
+      ownerKind: ownerKind,
+      ownerId: ownerId,
+      photoId: photoId,
+    );
+    _ref.invalidate(entityPhotosProvider((ownerKind, ownerId)));
+  }
 }

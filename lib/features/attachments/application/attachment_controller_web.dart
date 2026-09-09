@@ -48,4 +48,18 @@ class _WebAttachmentController implements AttachmentController {
     );
     _ref.invalidate(orderSignatureProvider(orderId));
   }
+
+  @override
+  Future<void> deletePhoto({
+    required String ownerKind,
+    required String ownerId,
+    required String photoId,
+  }) async {
+    await _ref.read(attachmentsApiProvider).deletePhoto(
+      ownerKind: ownerKind,
+      ownerId: ownerId,
+      photoId: photoId,
+    );
+    _ref.invalidate(entityPhotosProvider((ownerKind, ownerId)));
+  }
 }

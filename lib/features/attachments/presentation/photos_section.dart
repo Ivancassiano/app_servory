@@ -13,17 +13,67 @@ import 'photo_thumb.dart';
 /// (`uploadQueueForOwnerProvider`, só nativo). Tocar numa foto abre em tela
 /// cheia com a legenda. `serviceOrderItemId` (só faz sentido em ordem de
 /// serviço) nulo = fotos **gerais**; setado = só as do item da visita.
+///
+/// - [showAdd] (padrão `true`): mostra o botão "Adicionar foto". As telas de
+///   **visualização** de item/local passam `false` — lá a foto é só leitura.
+/// - [onToggleRemoval] (só nos formulários de **edição** de item/local): põe um
+///   "×" em cada foto já enviada pra marcá-la pra remoção. A marcação é
+///   **reversível** e só vira `DELETE` de verdade quando a tela chama
+///   `AttachmentController.deletePhoto` no "Salvar" — clicar em "Cancelar"
+///   descarta as marcações. [pendingRemovalIds] são as fotos já marcadas.
 class PhotosSection extends ConsumerWidget {
   const PhotosSection({
     super.key,
     required this.ownerKind,
     required this.ownerId,
     this.serviceOrderItemId,
+    this.showAdd = true,
+    this.pendingRemovalIds = const {},
+    this.onToggleRemoval,
   });
 
   final String ownerKind;
   final String ownerId;
   final String? serviceOrderItemId;
+  final bool showAdd;
+  final Set<String> pendingRemovalIds;
+  final void Function(String photoId)? onToggleRemoval;
+
+  Widget _toggleBadge({required bool marked, required VoidCallback onTap}) =>
+      InkWell(
+        onTap: onTap,
+        child: Container(
+          color: Colors.black54,
+          padding: const EdgeInsets.all(2),
+          child: Icon(
+            marked ? Icons.undo : Icons.close,
+            size: 16,
+            color: Colors.white,
+          ),
+        ),
+      );
+
+  Widget _uploadedThumb(
+    BuildContext context, {
+    required List<GalleryPhoto> gallery,
+    required int index,
+    required String photoId,
+  }) {
+    final marked = pendingRemovalIds.contains(photoId);
+    final thumb = PhotoThumb(
+      image: gallery[index].image,
+      caption: gallery[index].caption,
+      badge: onToggleRemoval == null
+          ? null
+          : _toggleBadge(
+              marked: marked,
+              onTap: () => onToggleRemoval!(photoId),
+            ),
+      onTap: () =>
+          openPhotoGallery(context, photos: gallery, initialIndex: index),
+    );
+    return marked ? Opacity(opacity: 0.4, child: thumb) : thumb;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,6 +105,13 @@ class PhotosSection extends ConsumerWidget {
           GalleryPhoto(image: img, caption: item.caption ?? ''),
     ];
 
+    if (!showAdd && gallery.isEmpty) {
+      return const Align(
+        alignment: Alignment.centerLeft,
+        child: Text('Nenhuma foto.'),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -71,14 +128,11 @@ class PhotosSection extends ConsumerWidget {
           runSpacing: 8,
           children: [
             for (var i = 0; i < uploaded.length; i++)
-              PhotoThumb(
-                image: gallery[i].image,
-                caption: gallery[i].caption,
-                onTap: () => openPhotoGallery(
-                  context,
-                  photos: gallery,
-                  initialIndex: i,
-                ),
+              _uploadedThumb(
+                context,
+                gallery: gallery,
+                index: i,
+                photoId: uploaded[i].id,
               ),
             for (var j = 0; j < pendingPhotos.length; j++)
               if (localFileImageProvider(pendingPhotos[j].filePath)
@@ -99,23 +153,25 @@ class PhotosSection extends ConsumerWidget {
                 ),
           ],
         ),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: OutlinedButton.icon(
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              builder: (_) => PhotoCaptureSheet(
-                ownerKind: ownerKind,
-                ownerId: ownerId,
-                serviceOrderItemId: serviceOrderItemId,
+        if (showAdd) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (_) => PhotoCaptureSheet(
+                  ownerKind: ownerKind,
+                  ownerId: ownerId,
+                  serviceOrderItemId: serviceOrderItemId,
+                ),
               ),
+              icon: const Icon(Icons.add_a_photo_outlined),
+              label: const Text('Adicionar foto'),
             ),
-            icon: const Icon(Icons.add_a_photo_outlined),
-            label: const Text('Adicionar foto'),
           ),
-        ),
+        ],
       ],
     );
   }

@@ -25,6 +25,14 @@ abstract interface class AttachmentController {
     required String orderId,
     required Uint8List bytes,
   });
+
+  /// Apaga uma foto já enviada (REST puro, precisa de conexão) e recarrega a
+  /// galeria do dono.
+  Future<void> deletePhoto({
+    required String ownerKind,
+    required String ownerId,
+    required String photoId,
+  });
 }
 
 final attachmentControllerProvider = Provider<AttachmentController>(
