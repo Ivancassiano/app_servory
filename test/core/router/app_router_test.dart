@@ -11,14 +11,12 @@ void main() {
   String? redirect({
     required SessionState session,
     bool? online,
-    bool unlocked = false,
     bool? expired,
     String from = '/',
   }) {
     return decideRedirect(
       session: session,
       online: online,
-      unlocked: unlocked,
       offlineSessionExpired: expired,
       currentLocation: from,
     );
@@ -40,10 +38,47 @@ void main() {
     );
   });
 
+  test(
+    'sem sessão: /register, /verify-email e /accept-invite são acessíveis',
+    () {
+      expect(
+        redirect(session: const SessionUnauthenticated(), from: '/register'),
+        isNull,
+      );
+      expect(
+        redirect(session: const SessionAuthenticating(), from: '/verify-email'),
+        isNull,
+      );
+      expect(
+        redirect(
+          session: const SessionUnauthenticated(),
+          from: '/accept-invite',
+        ),
+        isNull,
+      );
+      // uma rota qualquer fora do fluxo de entrada ainda joga pro login
+      expect(
+        redirect(session: const SessionUnauthenticated(), from: '/clients'),
+        '/login',
+      );
+    },
+  );
+
+  test('autenticado sai de /register e /verify-email', () {
+    expect(
+      redirect(session: authenticated, online: true, from: '/register'),
+      '/',
+    );
+    expect(
+      redirect(session: authenticated, online: true, from: '/verify-email'),
+      '/',
+    );
+  });
+
   test('autenticado e online: acessa tudo, sai das telas de gate', () {
     expect(redirect(session: authenticated, online: true, from: '/login'), '/');
     expect(
-      redirect(session: authenticated, online: true, from: '/unlock'),
+      redirect(session: authenticated, online: true, from: '/offline-expired'),
       '/',
     );
     expect(
@@ -79,40 +114,13 @@ void main() {
   });
 
   test(
-    'autenticado, offline, dentro do prazo, ainda não destravou: força unlock',
+    'autenticado, offline, dentro do prazo: acessa normalmente (sem pedir biometria)',
     () {
       expect(
         redirect(
           session: authenticated,
           online: false,
           expired: false,
-          unlocked: false,
-          from: '/',
-        ),
-        '/unlock',
-      );
-      expect(
-        redirect(
-          session: authenticated,
-          online: false,
-          expired: false,
-          unlocked: false,
-          from: '/unlock',
-        ),
-        isNull,
-      );
-    },
-  );
-
-  test(
-    'autenticado, offline, dentro do prazo, já destravou: acessa normalmente',
-    () {
-      expect(
-        redirect(
-          session: authenticated,
-          online: false,
-          expired: false,
-          unlocked: true,
           from: '/clients',
         ),
         isNull,
@@ -122,10 +130,9 @@ void main() {
           session: authenticated,
           online: false,
           expired: false,
-          unlocked: true,
-          from: '/unlock',
+          from: '/',
         ),
-        '/',
+        isNull,
       );
     },
   );

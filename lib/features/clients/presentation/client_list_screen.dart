@@ -23,6 +23,7 @@ class ClientListScreen extends ConsumerWidget {
       ),
       body: SearchableListView<LocalClient>(
         async: async,
+        paging: ref.watch(clientListPagingProvider),
         onRefresh: () => ref.read(clientRepositoryProvider).refresh(),
         hintText: 'Buscar cliente',
         emptyMessage: 'Nenhum cliente ainda. Puxe pra baixo para sincronizar.',

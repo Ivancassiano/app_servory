@@ -18,8 +18,7 @@ LocalQrCode qrCodeFromApiJson(
     status: stringOr(j['status'], 'available'),
     batchId: j['batch_id'] as String?,
     clientId: j['client_id'] as String?,
-    locationId: j['location_id'] as String?,
-    equipmentId: j['equipment_id'] as String?,
+    itemId: j['item_id'] as String?,
     assignedAt: parseApiDate(j['assigned_at']),
     createdAt: parseApiDate(j['created_at']),
     version: j['version'] as int?,
@@ -57,36 +56,31 @@ LocalQrBatch qrBatchFromApiJson(
 /// Alvo de uma etiqueta — exatamente um dos três. `POST /v1/qr-codes`,
 /// `.../assign` e o `payload` de sync aceitam esse mesmo shape.
 class QrTarget {
-  const QrTarget._(this.clientId, this.locationId, this.equipmentId);
-  const QrTarget.client(String id) : this._(id, null, null);
-  const QrTarget.location(String id) : this._(null, id, null);
-  const QrTarget.equipment(String id) : this._(null, null, id);
+  const QrTarget._(this.clientId, this.itemId);
+  const QrTarget.client(String id) : this._(id, null);
+  const QrTarget.item(String id) : this._(null, id);
 
   final String? clientId;
-  final String? locationId;
-  final String? equipmentId;
+  final String? itemId;
 
   Map<String, dynamic> toJson() => {
     'client_id': ?clientId,
-    'location_id': ?locationId,
-    'equipment_id': ?equipmentId,
+    'item_id': ?itemId,
   };
 
   Map<String, String> toQuery() => {
     'client_id': ?clientId,
-    'location_id': ?locationId,
-    'equipment_id': ?equipmentId,
+    'item_id': ?itemId,
   };
 
   @override
   bool operator ==(Object other) =>
       other is QrTarget &&
       other.clientId == clientId &&
-      other.locationId == locationId &&
-      other.equipmentId == equipmentId;
+      other.itemId == itemId;
 
   @override
-  int get hashCode => Object.hash(clientId, locationId, equipmentId);
+  int get hashCode => Object.hash(clientId, itemId);
 }
 
 /// Resultado de `GET /v1/qr-codes/resolve/{code}` (schema `QRCodeResolved`).
@@ -117,14 +111,12 @@ class QrResolvedEntity {
     required this.id,
     required this.name,
     this.clientId,
-    this.locationId,
   });
 
-  final String kind; // client | location | equipment
+  final String kind; // client | item
   final String id;
   final String name;
   final String? clientId;
-  final String? locationId;
 
   factory QrResolvedEntity.fromApiJson(Map<String, dynamic> j) =>
       QrResolvedEntity(
@@ -132,6 +124,5 @@ class QrResolvedEntity {
         id: j['id'] as String? ?? '',
         name: j['name'] as String? ?? '',
         clientId: j['client_id'] as String?,
-        locationId: j['location_id'] as String?,
       );
 }

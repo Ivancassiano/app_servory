@@ -15,6 +15,7 @@ import '../../sync/application/sync_provider.dart';
 /// ordem de serviço. `wire` é o valor persistido em `LocalReferenceData.kind`.
 enum ReferenceKind {
   serviceOrderType('service_order_type'),
+  taskType('task_type'),
   company('company'),
   orgUser('org_user');
 
@@ -26,6 +27,7 @@ enum ReferenceKind {
       path: '/v1/service-order-types',
       key: 'service_order_types',
     ),
+    ReferenceKind.taskType => (path: '/v1/task-types', key: 'task_types'),
     ReferenceKind.company => (path: '/v1/companies', key: 'companies'),
     ReferenceKind.orgUser => (path: '/v1/users', key: 'users'),
   };
@@ -57,6 +59,7 @@ ReferenceItem referenceItemFromApiJson(ReferenceKind kind, Map<String, dynamic> 
         subtitle: name.isNotEmpty ? email : '',
       );
     case ReferenceKind.serviceOrderType:
+    case ReferenceKind.taskType:
     case ReferenceKind.company:
       return ReferenceItem(
         id: j['id'] as String? ?? '',

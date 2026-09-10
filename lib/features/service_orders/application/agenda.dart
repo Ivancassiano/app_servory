@@ -49,24 +49,14 @@ List<AgendaItem> buildAgenda(
       continue;
     }
 
-    items.add(
-      AgendaItem(entry: e, scheduledLocal: local, bucket: bucket),
-    );
+    items.add(AgendaItem(entry: e, scheduledLocal: local, bucket: bucket));
   }
 
   items.sort((a, b) => a.scheduledLocal.compareTo(b.scheduledLocal));
   return items;
 }
 
-const _weekdays = [
-  'Seg',
-  'Ter',
-  'Qua',
-  'Qui',
-  'Sex',
-  'Sáb',
-  'Dom',
-];
+const _weekdays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
 String _hhmm(DateTime d) =>
     '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';

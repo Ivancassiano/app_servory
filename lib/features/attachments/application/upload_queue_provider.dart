@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
 import '../../../core/db/app_database.dart';
+import '../../../core/network/api_exception.dart';
 import '../../sync/application/sync_provider.dart';
+import '../data/attachment_cache.dart';
 import 'attachments_api_provider.dart';
 import 'service_order_attachments_provider.dart';
 
@@ -17,6 +19,17 @@ final uploadQueueForOrderProvider =
       final db = ref.watch(appDatabaseProvider);
       final query = db.select(db.uploadQueue)
         ..where((t) => t.serviceOrderId.equals(serviceOrderId))
+        ..orderBy([(t) => OrderingTerm(expression: t.createdAt)]);
+      return query.watch();
+    });
+
+/// Pendências de upload de um dono qualquer (chave `(ownerKind, ownerId)`).
+final uploadQueueForOwnerProvider =
+    StreamProvider.family<List<UploadQueueData>, (String, String)>((ref, key) {
+      final db = ref.watch(appDatabaseProvider);
+      final query = db.select(db.uploadQueue)
+        ..where((t) => t.ownerKind.equals(key.$1))
+        ..where((t) => t.ownerId.equals(key.$2))
         ..orderBy([(t) => OrderingTerm(expression: t.createdAt)]);
       return query.watch();
     });
@@ -52,23 +65,43 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
     final api = ref.read(attachmentsApiProvider);
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
+      final cache = ref.read(attachmentCacheProvider);
       final pending = await db.select(db.uploadQueue).get();
       for (final item in pending) {
         try {
           final bytes = await File(item.filePath).readAsBytes();
+          Map<String, dynamic> resp;
           if (item.kind == 'photo') {
-            await api.addPhoto(
-              serviceOrderId: item.serviceOrderId,
+            resp = await api.addPhoto(
+              ownerKind: item.ownerKind,
+              ownerId: item.ownerId,
               bytes: bytes,
               filename: p.basename(item.filePath),
               kind: item.photoKind,
               caption: item.caption,
+              serviceOrderItemId: item.serviceOrderItemId,
             );
           } else {
-            await api.putSignature(
-              serviceOrderId: item.serviceOrderId,
+            resp = await api.putSignature(
+              serviceOrderId: item.ownerId,
               bytes: bytes,
               filename: p.basename(item.filePath),
+            );
+          }
+          // Guarda o vínculo id-do-servidor → arquivo já no disco, para ver
+          // esta foto/assinatura offline depois (não copia o arquivo).
+          final serverId = item.kind == 'signature'
+              ? signatureCacheId(item.ownerId)
+              : resp['id'] as String?;
+          if (serverId != null) {
+            await cache.adoptUploaded(
+              photoId: serverId,
+              ownerKind: item.ownerKind,
+              ownerId: item.ownerId,
+              kind: item.kind,
+              sourceFilePath: item.filePath,
+              serviceOrderItemId: item.serviceOrderItemId,
+              caption: item.caption,
             );
           }
           await (db.delete(
@@ -78,9 +111,11 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
           // antes do envio até a tela recarregar por outro motivo — achado
           // ao testar o envio da assinatura ao vivo.
           if (item.kind == 'photo') {
-            ref.invalidate(orderPhotosProvider(item.serviceOrderId));
+            ref.invalidate(
+              entityPhotosProvider((item.ownerKind, item.ownerId)),
+            );
           } else {
-            ref.invalidate(orderSignatureProvider(item.serviceOrderId));
+            ref.invalidate(orderSignatureProvider(item.ownerId));
           }
         } catch (e) {
           await (db.update(
@@ -88,7 +123,9 @@ class UploadQueueRunner extends Notifier<AsyncValue<void>> {
           )..where((t) => t.id.equals(item.id))).write(
             UploadQueueCompanion(
               attempts: Value(item.attempts + 1),
-              lastError: Value(e.toString()),
+              lastError: Value(
+                e is ApiException ? e.friendlyMessage : e.toString(),
+              ),
             ),
           );
         }

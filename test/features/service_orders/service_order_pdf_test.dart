@@ -49,18 +49,21 @@ void main() {
     LocalServiceOrder order, {
     List<LocalServiceOrderPart> parts = const [],
     List<ReportPhoto> photos = const [],
+    List<ReportItem> items = const [],
     Uint8List? signature,
   }) {
     return ServiceOrderReportData(
       order: order,
       client: null,
-      location: null,
-      equipment: null,
+      item: null,
+      itemType: null,
       parts: parts,
+      items: items,
       photos: photos,
       signaturePng: signature,
       generatedAt: DateTime(2026, 5, 9, 14, 30),
       technicianName: 'Técnico Teste',
+      technicianRegistration: 'CREA-SP 123456',
       organizationName: 'ClimaTech Serviços',
       hasPendingUploads: false,
     );
@@ -103,10 +106,58 @@ void main() {
         order,
         parts: parts,
         photos: [
-          ReportPhoto(bytes: _pngPixel, kind: 'before', caption: 'Antes do reparo'),
+          ReportPhoto(
+            bytes: _pngPixel,
+            kind: 'before',
+            caption: 'Antes do reparo',
+          ),
           ReportPhoto(bytes: _pngPixel),
         ],
         signature: _pngPixel,
+      ),
+    );
+
+    expect(String.fromCharCodes(bytes.take(5)), '%PDF-');
+    expect(bytes.length, greaterThan(1000));
+  });
+
+  test('inclui a seção de itens com fotos por item', () async {
+    final order = await insertOrder();
+    await db
+        .into(db.localServiceOrderItems)
+        .insert(
+          LocalServiceOrderItemsCompanion.insert(
+            id: 'soi1',
+            organizationId: 'org1',
+            serviceOrderId: 'so1',
+            itemId: 'item1',
+            localUpdatedAt: DateTime.now(),
+            approval: const Value('approved'),
+            diagnosis: const Value('Filtro sujo'),
+          ),
+        );
+    final row = await (db.select(
+      db.localServiceOrderItems,
+    )..where((t) => t.id.equals('soi1'))).getSingle();
+
+    final bytes = await buildServiceOrderPdf(
+      reportData(
+        order,
+        items: [
+          ReportItem(
+            row: row,
+            itemName: 'Ar-condicionado sala',
+            parts: const [],
+            photos: [
+              ReportPhoto(
+                bytes: _pngPixel,
+                kind: 'after',
+                caption: 'Depois da limpeza',
+                serviceOrderItemId: 'soi1',
+              ),
+            ],
+          ),
+        ],
       ),
     );
 

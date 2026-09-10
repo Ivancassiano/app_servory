@@ -2,8 +2,8 @@ import '../../../core/db/app_database.dart';
 import '../../../core/network/api_parse.dart';
 
 /// REST/sync ↔ `LocalLocation`. A resposta (`GET` e `data` de sync) traz o
-/// endereço **plano** (`postal_code`, `street`, …); só o corpo de
-/// `POST/PATCH` aninha sob `address` — tratado nos `*Body` da Fatia 2.
+/// endereço **plano** (`postal_code`, `street`, …); só o corpo de `POST/PATCH`
+/// aninha sob `address`.
 LocalLocation locationFromApiJson(
   Map<String, dynamic> j, {
   required String organizationId,
@@ -13,7 +13,6 @@ LocalLocation locationFromApiJson(
     id: j['id'] as String,
     organizationId: organizationId,
     clientId: stringOr(j['client_id']),
-    parentLocationId: j['parent_location_id'] as String?,
     name: stringOr(j['name']),
     postalCode: stringOr(j['postal_code']),
     street: stringOr(j['street']),
@@ -22,10 +21,8 @@ LocalLocation locationFromApiJson(
     district: stringOr(j['district']),
     city: stringOr(j['city']),
     state: stringOr(j['state']),
-    contactPerson: stringOr(j['contact_person']),
-    phone: stringOr(j['phone']),
-    accessInstructions: stringOr(j['access_instructions']),
     notes: stringOr(j['notes']),
+    isActive: j['is_active'] as bool? ?? true,
     version: j['version'] as int?,
     createdAt: parseApiDate(j['created_at']),
     updatedAt: parseApiDate(j['updated_at']),
@@ -36,10 +33,8 @@ LocalLocation locationFromApiJson(
   );
 }
 
-/// Endereço estruturado. O corpo de `POST/PATCH` (e o payload de sync) aninha
-/// sob `address`; a resposta devolve plano. Todos os campos são opcionais no
-/// backend — mandamos sempre os sete para que limpar um no formulário limpe
-/// no servidor (`pick` sobrescreve com "" tão bem quanto com um valor).
+/// Endereço estruturado do local — aninha em `address` no POST/PATCH e no
+/// payload de sync; a resposta devolve plano.
 class LocationAddressInput {
   const LocationAddressInput({
     this.postalCode = '',
@@ -82,37 +77,55 @@ class LocationAddressInput {
   };
 }
 
-/// Campos de topo do `LocationInput` + endereço aninhado.
-Map<String, dynamic> locationUpdateBody({
+Map<String, dynamic> _locationFields({
   required String name,
-  required String contactPerson,
-  required String phone,
   required String notes,
-  LocationAddressInput address = LocationAddressInput.empty,
+  required LocationAddressInput address,
+  bool? isActive,
 }) => {
   'name': name,
-  'contact_person': contactPerson,
-  'phone': phone,
-  'notes': notes,
   'address': address.toJson(),
+  'notes': notes,
+  'is_active': ?isActive,
 };
 
-/// `POST /v1/locations` — `client_id` e `name` obrigatórios; `parent_location_id`
-/// opcional (hierarquia).
+/// `POST /v1/locations` — `client_id` obrigatório.
 Map<String, dynamic> locationCreateBody({
   required String clientId,
-  String? parentLocationId,
   required String name,
-  required String contactPerson,
-  required String phone,
-  required String notes,
+  String notes = '',
   LocationAddressInput address = LocationAddressInput.empty,
+  bool? isActive,
 }) => {
   'client_id': clientId,
-  'parent_location_id': ?parentLocationId,
-  'name': name,
-  'contact_person': contactPerson,
-  'phone': phone,
-  'notes': notes,
-  'address': address.toJson(),
+  ..._locationFields(
+    name: name,
+    notes: notes,
+    address: address,
+    isActive: isActive,
+  ),
 };
+
+/// `PATCH /v1/locations/{id}`.
+Map<String, dynamic> locationUpdateBody({
+  required String name,
+  String notes = '',
+  LocationAddressInput address = LocationAddressInput.empty,
+  bool? isActive,
+}) => _locationFields(
+  name: name,
+  notes: notes,
+  address: address,
+  isActive: isActive,
+);
+
+/// Endereço do local numa linha só (exibição).
+String locationAddressLine(LocalLocation l) => [
+  l.street,
+  l.number,
+  l.complement,
+  l.district,
+  l.city,
+  l.state,
+  l.postalCode,
+].where((s) => s.isNotEmpty).join(', ');

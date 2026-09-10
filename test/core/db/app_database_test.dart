@@ -84,11 +84,14 @@ void main() {
           UploadQueueCompanion.insert(
             id: 'u1',
             organizationId: 'org1',
-            serviceOrderId: 'so1',
+            ownerKind: const Value('service_order'),
+            ownerId: 'so1',
+            serviceOrderId: const Value('so1'),
             kind: 'photo',
             filePath: '/tmp/foto.jpg',
             sha256: 'abc123',
             photoKind: const Value('before'),
+            serviceOrderItemId: const Value('soi1'),
             createdAt: DateTime.now(),
           ),
         );
@@ -96,6 +99,7 @@ void main() {
     var pending = await db.select(db.uploadQueue).get();
     expect(pending, hasLength(1));
     expect(pending.single.attempts, 0);
+    expect(pending.single.serviceOrderItemId, 'soi1');
 
     await (db.update(db.uploadQueue)..where((t) => t.id.equals('u1'))).write(
       const UploadQueueCompanion(

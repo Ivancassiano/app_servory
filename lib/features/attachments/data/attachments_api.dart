@@ -13,20 +13,35 @@ class AttachmentsApi {
 
   final Dio _dio;
 
+  /// Base REST das fotos por tipo de dono. `ownerKind` ∈ {service_order, item,
+  /// location}.
+  static String _photosBase(String ownerKind, String ownerId) {
+    final seg = switch (ownerKind) {
+      'item' => 'items',
+      'location' => 'locations',
+      _ => 'service-orders',
+    };
+    return '/v1/$seg/$ownerId/photos';
+  }
+
   Future<Map<String, dynamic>> addPhoto({
-    required String serviceOrderId,
+    required String ownerKind,
+    required String ownerId,
     required Uint8List bytes,
     required String filename,
     String? kind,
     String? caption,
+    String? serviceOrderItemId,
   }) async {
     try {
       final response = await _dio.post(
-        '/v1/service-orders/$serviceOrderId/photos',
+        _photosBase(ownerKind, ownerId),
         data: FormData.fromMap({
           'file': MultipartFile.fromBytes(bytes, filename: filename),
-          'kind': ?kind,
+          if (ownerKind == 'service_order') 'kind': ?kind,
           if (caption != null && caption.isNotEmpty) 'caption': caption,
+          if (ownerKind == 'service_order')
+            'service_order_item_id': ?serviceOrderItemId,
         }),
       );
       return response.data as Map<String, dynamic>;
@@ -35,11 +50,12 @@ class AttachmentsApi {
     }
   }
 
-  Future<List<Map<String, dynamic>>> listPhotos(String serviceOrderId) async {
+  Future<List<Map<String, dynamic>>> listPhotos({
+    required String ownerKind,
+    required String ownerId,
+  }) async {
     try {
-      final response = await _dio.get(
-        '/v1/service-orders/$serviceOrderId/photos',
-      );
+      final response = await _dio.get(_photosBase(ownerKind, ownerId));
       return ((response.data as Map)['photos'] as List? ?? const [])
           .cast<Map<String, dynamic>>();
     } on DioException catch (e) {
@@ -48,23 +64,25 @@ class AttachmentsApi {
   }
 
   Future<void> deletePhoto({
-    required String serviceOrderId,
+    required String ownerKind,
+    required String ownerId,
     required String photoId,
   }) async {
     try {
-      await _dio.delete('/v1/service-orders/$serviceOrderId/photos/$photoId');
+      await _dio.delete('${_photosBase(ownerKind, ownerId)}/$photoId');
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
   }
 
   Future<String> photoDownloadUrl({
-    required String serviceOrderId,
+    required String ownerKind,
+    required String ownerId,
     required String photoId,
   }) async {
     try {
       final response = await _dio.get(
-        '/v1/service-orders/$serviceOrderId/photos/$photoId/download',
+        '${_photosBase(ownerKind, ownerId)}/$photoId/download',
       );
       return (response.data as Map)['url'] as String;
     } on DioException catch (e) {

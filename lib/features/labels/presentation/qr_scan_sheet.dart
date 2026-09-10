@@ -71,7 +71,10 @@ class _QrScanSheetState extends State<_QrScanSheet> {
         left: 16,
         right: 16,
         top: 16,
-        bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+        bottom:
+            16 +
+            MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).viewPadding.bottom,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

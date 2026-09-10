@@ -14,100 +14,57 @@ import 'package:servory/features/sync/application/sync_provider.dart';
 import '../../support/stub_dio.dart';
 
 void main() {
-  test('locationCreateBody: client_id obrigatório, parent opcional omitido', () {
-    expect(
-      locationCreateBody(
-        clientId: 'c1',
-        name: 'Filial',
-        contactPerson: '',
-        phone: '',
-        notes: '',
-      ),
-      {
-        'client_id': 'c1',
-        'name': 'Filial',
-        'contact_person': '',
-        'phone': '',
-        'notes': '',
-        'address': {
-          'postal_code': '',
-          'street': '',
-          'number': '',
-          'complement': '',
-          'district': '',
-          'city': '',
-          'state': '',
-        },
-      },
-    );
-    expect(
-      locationCreateBody(
-        clientId: 'c1',
-        parentLocationId: 'p1',
-        name: 'Sala',
-        contactPerson: '',
-        phone: '',
-        notes: '',
-      )['parent_location_id'],
-      'p1',
-    );
-  });
-
-  test('locationUpdateBody aninha o endereço sob address', () {
-    final body = locationUpdateBody(
-      name: 'Filial',
-      contactPerson: '',
-      phone: '',
-      notes: '',
-      address: const LocationAddressInput(
-        postalCode: '01310-100',
-        street: 'Av. Paulista',
-        number: '1000',
-        city: 'São Paulo',
-        state: 'SP',
-      ),
-    );
-    expect(body['address'], {
-      'postal_code': '01310-100',
-      'street': 'Av. Paulista',
-      'number': '1000',
-      'complement': '',
-      'district': '',
-      'city': 'São Paulo',
+  test('locationFromApiJson lê endereço plano', () {
+    final l = locationFromApiJson(const {
+      'id': 'l1',
+      'client_id': 'c1',
+      'name': 'Matriz',
+      'street': 'Av X',
+      'city': 'SP',
       'state': 'SP',
-    });
+      'is_active': false,
+      'version': 2,
+    }, organizationId: 'org1');
+    expect(l.name, 'Matriz');
+    expect(l.street, 'Av X');
+    expect(l.clientId, 'c1');
+    expect(l.isActive, false);
+    expect(l.version, 2);
   });
 
-  test('web: create faz POST /v1/locations', () async {
-    RequestOptions? posted;
-    final stub = StubDio((req) {
-      if (req.method == 'POST') {
-        posted = req;
-        return (
-          status: 201,
-          body: {'id': 'srv-loc', 'client_id': 'c1', 'name': 'Filial', 'version': 1},
-        );
-      }
-      return (status: 200, body: {'locations': <dynamic>[]});
-    });
-    final repo = RemoteLocationRepository(stub.dio, 'org1');
-    addTearDown(repo.dispose);
-    final id = await repo.create(
+  test('locationFromApiJson: is_active ausente = ativo', () {
+    final l = locationFromApiJson(const {
+      'id': 'l1',
+      'client_id': 'c1',
+      'name': 'Matriz',
+    }, organizationId: 'org1');
+    expect(l.isActive, true);
+  });
+
+  test('locationUpdateBody manda is_active só quando passado', () {
+    expect(locationUpdateBody(name: 'X'), isNot(contains('is_active')));
+    expect(
+      locationUpdateBody(name: 'X', isActive: false),
+      containsPair('is_active', false),
+    );
+  });
+
+  test('locationCreateBody aninha o endereço sob address', () {
+    final body = locationCreateBody(
       clientId: 'c1',
       name: 'Filial',
-      contactPerson: '',
-      phone: '',
-      notes: '',
+      address: const LocationAddressInput(street: 'Rua B', city: 'Rio'),
     );
-    expect(id, 'srv-loc');
-    expect(posted?.path, '/v1/locations');
-    expect((posted?.data as Map)['client_id'], 'c1');
+    expect(body['client_id'], 'c1');
+    expect(body['name'], 'Filial');
+    expect(body['address'], containsPair('street', 'Rua B'));
   });
 
-  test('app offline: grava local pending + outbox', () async {
+  test('offline: grava local pendente + outbox create', () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(db.close);
-    final stub = StubDio((_) => (status: 200, body: {'results': <dynamic>[]}));
+    final stub = StubDio(
+      (req) => (status: 200, body: {'locations': <dynamic>[]}),
+    );
     final c = ProviderContainer(
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
@@ -117,23 +74,59 @@ void main() {
       ],
     );
     addTearDown(c.dispose);
+    addTearDown(db.close);
     c.listen(isOnlineProvider, (_, _) {});
     await pumpEventQueue();
 
-    final id = await c.read(locationRepositoryProvider).create(
+    final repo = c.read(locationRepositoryProvider);
+    final id = await repo.create(
       clientId: 'c1',
-      name: 'Filial',
-      contactPerson: 'Ana',
-      phone: '',
-      notes: '',
+      fields: const LocationFields(
+        name: 'Matriz',
+        address: LocationAddressInput(street: 'Av X'),
+      ),
     );
     final rows = await db.select(db.localLocations).get();
     expect(rows.single.id, id);
-    expect(rows.single.clientId, 'c1');
+    expect(rows.single.name, 'Matriz');
+    expect(rows.single.street, 'Av X');
     expect(rows.single.syncStatus, 'pending');
     final outbox = await db.select(db.syncOutbox).get();
-    expect(outbox.single.operationType, 'create');
     expect(outbox.single.entityType, 'location');
+    expect(outbox.single.operationType, 'create');
+  });
+
+  test('offline: delete marca tombstone + outbox delete', () async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    final stub = StubDio(
+      (req) => (status: 200, body: {'locations': <dynamic>[]}),
+    );
+    final c = ProviderContainer(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        apiClientProvider.overrideWithValue(_FakeApiClient(stub.dio)),
+        isOnlineProvider.overrideWith((ref) => Stream.value(false)),
+        sessionControllerProvider.overrideWith(_FakeSession.new),
+      ],
+    );
+    addTearDown(c.dispose);
+    addTearDown(db.close);
+    c.listen(isOnlineProvider, (_, _) {});
+    await pumpEventQueue();
+
+    final repo = c.read(locationRepositoryProvider);
+    final id = await repo.create(
+      clientId: 'c1',
+      fields: const LocationFields(name: 'Matriz'),
+    );
+    await repo.delete(id: id, baseVersion: 1);
+
+    final row = await (db.select(
+      db.localLocations,
+    )..where((t) => t.id.equals(id))).getSingle();
+    expect(row.deleted, true);
+    final ops = await db.select(db.syncOutbox).get();
+    expect(ops.map((o) => o.operationType), containsAll(['create', 'delete']));
   });
 }
 

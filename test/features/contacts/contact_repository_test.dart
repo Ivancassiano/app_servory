@@ -57,7 +57,7 @@ void main() {
     expect((post.data as Map)['is_whatsapp'], true);
   });
 
-  test('update manda version; delete faz DELETE no contactId (escopo local)', () async {
+  test('update manda version; delete faz DELETE no contactId', () async {
     final stub = StubDio((req) {
       if (req.method == 'PATCH') {
         return (status: 200, body: {'id': 'ct1', 'name': 'Y', 'version': 3});
@@ -70,7 +70,7 @@ void main() {
     );
     addTearDown(container.dispose);
     final repo = container.read(contactRepositoryProvider);
-    const key = (ContactScope.location, 'loc1');
+    const key = (ContactScope.client, 'cli1');
 
     await repo.update(
       key,
@@ -85,7 +85,7 @@ void main() {
       notes: '',
     );
     final patch = stub.requests.firstWhere((r) => r.method == 'PATCH');
-    expect(patch.path, '/v1/locations/loc1/contacts/ct1');
+    expect(patch.path, '/v1/clients/cli1/contacts/ct1');
     expect((patch.data as Map)['version'], 2);
 
     await repo.delete(key, 'ct1');
@@ -93,7 +93,7 @@ void main() {
       stub.requests.any(
         (r) =>
             r.method == 'DELETE' &&
-            r.path == '/v1/locations/loc1/contacts/ct1',
+            r.path == '/v1/clients/cli1/contacts/ct1',
       ),
       isTrue,
     );

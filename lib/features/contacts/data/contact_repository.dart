@@ -4,13 +4,11 @@ import '../../../core/data/remote_collection.dart';
 import '../../../core/network/api_parse.dart';
 import '../../../core/providers.dart';
 
-/// `ClientContact` / `LocationContact` do OpenAPI — shape idêntico, só muda
-/// o recurso-pai. **REST-only** (não entra no sync): a lista completa de
-/// contatos é trabalho de cadastro, online. O "contato rápido"
-/// (`contact_person`) continua no próprio cliente/local.
+/// `ClientContact` do OpenAPI. **REST-only** (não entra no sync): a lista
+/// completa de contatos é trabalho de cadastro, online. O "contato rápido"
+/// (`contact_person`) continua no próprio cliente.
 enum ContactScope {
-  client('/v1/clients'),
-  location('/v1/locations');
+  client('/v1/clients');
 
   const ContactScope(this.basePath);
   final String basePath;

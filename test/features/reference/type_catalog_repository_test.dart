@@ -19,23 +19,23 @@ void main() {
 
   test('refresh lê a lista pela chave do tipo e ordena por nome', () async {
     final stub = StubDio((req) {
-      if (req.path == '/v1/equipment-types') {
+      if (req.path == '/v1/item-types') {
         return (
           status: 200,
           body: {
-            'equipment_types': [
+            'item_types': [
               {'id': 'b', 'name': 'Bomba', 'description': '', 'version': 1},
               {'id': 'a', 'name': 'Ar-condicionado', 'description': '', 'version': 1},
             ],
           },
         );
       }
-      return (status: 200, body: {'equipment_types': <dynamic>[]});
+      return (status: 200, body: {'item_types': <dynamic>[]});
     });
     final repo = TypeCatalogRepository(stub.dio);
     addTearDown(repo.dispose);
 
-    final items = await repo.watchList(TypeCatalog.equipmentType).firstWhere(
+    final items = await repo.watchList(TypeCatalog.itemType).firstWhere(
       (l) => l.isNotEmpty,
     );
     expect(items.map((e) => e.name), ['Ar-condicionado', 'Bomba']);
@@ -69,26 +69,26 @@ void main() {
         return (status: 200, body: {'id': 'et1', 'name': 'X', 'version': 3});
       }
       if (req.method == 'DELETE') return (status: 204, body: '');
-      return (status: 200, body: {'equipment_types': <dynamic>[]});
+      return (status: 200, body: {'item_types': <dynamic>[]});
     });
     final repo = TypeCatalogRepository(stub.dio);
     addTearDown(repo.dispose);
 
     await repo.update(
-      TypeCatalog.equipmentType,
+      TypeCatalog.itemType,
       'et1',
       version: 2,
       name: 'X',
       description: 'y',
     );
     final patch = stub.requests.firstWhere((r) => r.method == 'PATCH');
-    expect(patch.path, '/v1/equipment-types/et1');
+    expect(patch.path, '/v1/item-types/et1');
     expect((patch.data as Map)['version'], 2);
 
-    await repo.delete(TypeCatalog.equipmentType, 'et1');
+    await repo.delete(TypeCatalog.itemType, 'et1');
     expect(
       stub.requests.any(
-        (r) => r.method == 'DELETE' && r.path == '/v1/equipment-types/et1',
+        (r) => r.method == 'DELETE' && r.path == '/v1/item-types/et1',
       ),
       isTrue,
     );

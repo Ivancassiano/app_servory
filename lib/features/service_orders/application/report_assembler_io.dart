@@ -7,10 +7,12 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../clients/application/clients_provider.dart';
-import '../../equipments/application/equipments_provider.dart';
+import '../../items/application/items_provider.dart';
 import '../../locations/application/locations_provider.dart';
 import '../../me/application/me_provider.dart';
+import '../../me/application/person_provider.dart';
 import '../../sync/application/sync_provider.dart';
+import 'report_items.dart';
 import 'service_order_report.dart';
 
 /// Nativo: monta o laudo do que está no dispositivo (banco local +
@@ -29,20 +31,32 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
   }
 
   final client = await ref.watch(clientByIdProvider(order.clientId).future);
-  final location = order.locationId == null
+  final item = order.itemId == null
       ? null
-      : await ref.watch(locationByIdProvider(order.locationId!).future);
-  final equipment = order.equipmentId == null
+      : await ref.watch(itemByIdProvider(order.itemId!).future);
+  final itemType = item?.itemTypeId == null
       ? null
-      : await ref.watch(equipmentByIdProvider(order.equipmentId!).future);
+      : (ref.watch(itemTypeListProvider).value ?? const [])
+          .where((t) => t.id == item!.itemTypeId)
+          .firstOrNull;
+  final location = item?.locationId == null
+      ? null
+      : await ref.watch(locationByIdProvider(item!.locationId!).future);
 
-  final parts = await (db.select(db.localServiceOrderParts)
-        ..where(
-          (t) => t.serviceOrderId.equals(orderId) & t.deleted.equals(false),
-        )
-        ..orderBy([(t) => OrderingTerm(expression: t.localUpdatedAt)]))
-      .get();
-
+  final allParts =
+      await (db.select(db.localServiceOrderParts)
+            ..where(
+              (t) => t.serviceOrderId.equals(orderId) & t.deleted.equals(false),
+            )
+            ..orderBy([(t) => OrderingTerm(expression: t.localUpdatedAt)]))
+          .get();
+  final itemRows =
+      await (db.select(db.localServiceOrderItems)..where(
+        (t) => t.serviceOrderId.equals(orderId) & t.deleted.equals(false),
+      )).get();
+  final catalog = {
+    for (final i in await db.select(db.localItems).get()) i.id: i,
+  };
   final queued = await (db.select(
     db.uploadQueue,
   )..where((t) => t.serviceOrderId.equals(orderId))).get();
@@ -54,7 +68,7 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
     orderId,
   );
 
-  final photos = await _readPhotos(
+  final allPhotos = await _readPhotos(
     Directory(p.join(baseDir, 'photos')),
     metaByPath,
   );
@@ -62,23 +76,49 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
     Directory(p.join(baseDir, 'signature')),
   );
 
+  final split = partitionReport(
+    allParts: allParts,
+    itemRows: itemRows,
+    catalogById: catalog,
+    allPhotos: allPhotos,
+  );
+  final parts = split.generalParts;
+  final photos = split.generalPhotos;
+
   final identity = ref.read(identityProvider).asData?.value;
+  final registration = await _technicianRegistration(ref);
 
   return ServiceOrderReportData(
     order: order,
     client: client,
+    item: item,
+    itemType: itemType,
     location: location,
-    equipment: equipment,
     parts: parts,
+    items: split.items,
     photos: photos,
     signaturePng: signaturePng,
     generatedAt: DateTime.now(),
     technicianName: identity?.name.isNotEmpty == true ? identity!.name : null,
+    technicianRegistration: registration,
     organizationName: identity?.organizationName.isNotEmpty == true
         ? identity!.organizationName
         : null,
     hasPendingUploads: queued.isNotEmpty,
   );
+}
+
+/// Registro profissional do técnico (`/v1/me/person`). Uma chamada REST
+/// tolerante a falha — offline o laudo simplesmente sai sem a linha.
+Future<String?> _technicianRegistration(Ref ref) async {
+  try {
+    final reg = (await ref.watch(
+      myPersonProvider.future,
+    )).professionalRegistration;
+    return reg.isNotEmpty ? reg : null;
+  } catch (_) {
+    return null;
+  }
 }
 
 Future<List<ReportPhoto>> _readPhotos(
@@ -97,6 +137,7 @@ Future<List<ReportPhoto>> _readPhotos(
         bytes: await f.readAsBytes(),
         kind: metaByPath[f.path]?.photoKind,
         caption: metaByPath[f.path]?.caption,
+        serviceOrderItemId: metaByPath[f.path]?.serviceOrderItemId,
       ),
   ];
 }

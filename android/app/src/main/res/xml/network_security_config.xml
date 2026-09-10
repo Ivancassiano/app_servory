@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- HTTP em texto puro liberado APENAS para os hosts de desenvolvimento
+     (backend local rodando sem TLS). Em producao o app fala HTTPS pelos
+     overrides AUTH_BASE_URL/API_BASE_URL passados via dart-define, cobertos
+     pelo base-config com cleartextTrafficPermitted false. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <!-- Mac na LAN (teste em celular fisico apontando pro backend local). -->
+        <domain includeSubdomains="true">192.168.1.7</domain>
+    </domain-config>
+</network-security-config>

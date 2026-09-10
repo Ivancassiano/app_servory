@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 
+/// `ImageProvider` de um arquivo local (`null` no web — sem fila de anexos).
+ImageProvider? localFileImageProvider(String path) => FileImage(File(path));
+
 /// Prévia de um arquivo local (anexo ainda não enviado). Só existe no
 /// caminho nativo — no web não há fila local de anexos.
 Widget localFileImage(

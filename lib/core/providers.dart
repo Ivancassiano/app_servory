@@ -31,11 +31,26 @@ final sessionExpiredPortProvider = Provider<SessionExpiredPort>(
   (ref) => SessionExpiredPort(),
 );
 
+/// Ponte para o interceptor avisar que o `permission_version` do token mudou
+/// num refresh (o admin trocou o perfil/permissão do usuário no meio da
+/// sessão). Quem escuta reavalia `permissionsProvider`/`identityProvider`.
+class PermissionsChangedPort {
+  void Function()? _listener;
+  void bind(void Function() listener) => _listener = listener;
+  void notify() => _listener?.call();
+}
+
+final permissionsChangedPortProvider = Provider<PermissionsChangedPort>(
+  (ref) => PermissionsChangedPort(),
+);
+
 final apiClientProvider = Provider<ApiClient>((ref) {
-  final port = ref.watch(sessionExpiredPortProvider);
+  final expiredPort = ref.watch(sessionExpiredPortProvider);
+  final permsPort = ref.watch(permissionsChangedPortProvider);
   return ApiClient(
     config: ref.watch(appConfigProvider),
     store: ref.watch(secureStoreProvider),
-    onSessionExpired: port.notify,
+    onSessionExpired: expiredPort.notify,
+    onPermissionsChanged: permsPort.notify,
   );
 });

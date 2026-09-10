@@ -13,33 +13,70 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/network/rest.dart';
 import '../../../core/providers.dart';
 import '../../auth/application/session_controller.dart';
+import 'service_order_item_mapper.dart';
 import 'service_order_mapper.dart';
 
 /// Ver [ClientRepository] para o racional. Cobre o cabeçalho da ordem, as
-/// ações nomeadas (`start`/`complete`/`reopen`, ADR-0018) e as peças.
+/// ações nomeadas (`start`/`complete`/`reopen`, ADR-0018), os itens (laudo por
+/// equipamento) e as peças.
 abstract interface class ServiceOrderRepository {
   Stream<List<LocalServiceOrder>> watchList();
   Stream<LocalServiceOrder?> watchById(String id);
   Stream<List<LocalServiceOrderPart>> watchParts(String orderId);
+  Stream<List<LocalServiceOrderItem>> watchItems(String orderId);
   Future<void> refresh();
 
+  Future<String> addItem({
+    required String orderId,
+    String? itemId,
+    String diagnosis = '',
+    String workPerformed = '',
+    String finalCondition = '',
+    String note = '',
+  });
+
+  Future<void> updateItem({
+    required String orderId,
+    required String itemId,
+    required int? baseVersion,
+    required String diagnosis,
+    required String workPerformed,
+    required String finalCondition,
+    required String note,
+  });
+
+  Future<void> deleteItem({required String orderId, required String itemId});
+
+  Future<void> setItemApproval({
+    required String orderId,
+    required String itemId,
+    required String approval,
+  });
+
+  /// Agenda a aplicação das correções: cria a ordem-filha (só itens aprovados)
+  /// ligada a [parentOrderId]. Online-only (POST /v1/service-orders/{id}/follow-up).
+  Future<String> createFollowUp({
+    required String parentOrderId,
+    DateTime? scheduledFor,
+  });
+
+  /// [mode] ∈ {`draft`, `open`, `start`} (spec §7.6). `start` já entra em
+  /// andamento; `open` agenda/abre; `draft` salva rascunho.
   Future<String> create({
     required String clientId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
     DateTime? scheduledFor,
-    required bool open,
+    required String mode,
     required String reason,
   });
 
   Future<void> update({
     required String id,
     required int? baseVersion,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -67,6 +104,7 @@ abstract interface class ServiceOrderRepository {
     required String unitCost,
     required String unitPrice,
     required String notes,
+    String? serviceOrderItemId,
   });
 
   Future<void> updatePart({
@@ -104,6 +142,14 @@ final serviceOrderRepositoryProvider = Provider<ServiceOrderRepository>((ref) {
 
 // ---------------------------------------------------------------------------
 
+/// Status local inicial para o modo de criação (o servidor faz o mesmo
+/// mapeamento em `createStatus`).
+String _statusForMode(String mode) => switch (mode) {
+  'start' => 'in_progress',
+  'open' => 'open',
+  _ => 'draft',
+};
+
 class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     implements ServiceOrderRepository {
   LocalFirstServiceOrderRepository(super.ref);
@@ -137,29 +183,236 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
   }
 
   @override
+  Stream<List<LocalServiceOrderItem>> watchItems(String orderId) {
+    final q = db.select(db.localServiceOrderItems)
+      ..where(
+        (t) => t.serviceOrderId.equals(orderId) & t.deleted.equals(false),
+      )
+      ..orderBy([
+        (t) => OrderingTerm(expression: t.position),
+        (t) => OrderingTerm(expression: t.createdAt),
+      ]);
+    return q.watch();
+  }
+
+  @override
+  Future<String> addItem({
+    required String orderId,
+    String? itemId,
+    String diagnosis = '',
+    String workPerformed = '',
+    String finalCondition = '',
+    String note = '',
+  }) async {
+    final body = serviceOrderItemBody(
+      itemId: itemId,
+      diagnosis: diagnosis,
+      workPerformed: workPerformed,
+      finalCondition: finalCondition,
+      note: note,
+    );
+    if (online) {
+      try {
+        final r = await restCall(
+          () => dio.post('/v1/service-orders/$orderId/items', data: body),
+        );
+        final item = serviceOrderItemFromApiJson(
+          r.data as Map<String, dynamic>,
+          organizationId: orgId,
+        );
+        await db.into(db.localServiceOrderItems).insertOnConflictUpdate(item);
+        return item.id;
+      } on ApiException catch (e) {
+        if (!isOfflineError(e)) rethrow;
+      }
+    }
+    final id = _uuid();
+    await db.transaction(() async {
+      await db.into(db.localServiceOrderItems).insert(
+            LocalServiceOrderItemsCompanion.insert(
+              id: id,
+              organizationId: orgId,
+              serviceOrderId: orderId,
+              itemId: itemId ?? '',
+              diagnosis: Value(diagnosis),
+              workPerformed: Value(workPerformed),
+              finalCondition: Value(finalCondition),
+              note: Value(note),
+              localUpdatedAt: DateTime.now(),
+              syncStatus: const Value('pending'),
+              lastSyncedAt: const Value(null),
+            ),
+          );
+      await enqueue(
+        entityType: 'service_order_item',
+        entityId: id,
+        operationType: 'create',
+        payload: {...body, 'service_order_id': orderId},
+      );
+    });
+    unawaited(trySyncNow());
+    return id;
+  }
+
+  @override
+  Future<void> updateItem({
+    required String orderId,
+    required String itemId,
+    required int? baseVersion,
+    required String diagnosis,
+    required String workPerformed,
+    required String finalCondition,
+    required String note,
+  }) async {
+    final body = serviceOrderItemBody(
+      diagnosis: diagnosis,
+      workPerformed: workPerformed,
+      finalCondition: finalCondition,
+      note: note,
+    );
+    if (online) {
+      try {
+        final r = await restCall(
+          () => dio.patch(
+            '/v1/service-orders/$orderId/items/$itemId',
+            data: {...body, 'version': ?baseVersion},
+          ),
+        );
+        await db.into(db.localServiceOrderItems).insertOnConflictUpdate(
+              serviceOrderItemFromApiJson(
+                r.data as Map<String, dynamic>,
+                organizationId: orgId,
+              ),
+            );
+        return;
+      } on ApiException catch (e) {
+        if (!isOfflineError(e)) rethrow;
+      }
+    }
+    await db.transaction(() async {
+      await (db.update(db.localServiceOrderItems)
+            ..where((t) => t.id.equals(itemId)))
+          .write(
+        LocalServiceOrderItemsCompanion(
+          diagnosis: Value(diagnosis),
+          workPerformed: Value(workPerformed),
+          finalCondition: Value(finalCondition),
+          note: Value(note),
+          localUpdatedAt: Value(DateTime.now()),
+          syncStatus: const Value('pending'),
+        ),
+      );
+      await enqueue(
+        entityType: 'service_order_item',
+        entityId: itemId,
+        operationType: 'update',
+        payload: body,
+        baseVersion: baseVersion,
+      );
+    });
+    unawaited(trySyncNow());
+  }
+
+  @override
+  Future<void> deleteItem({
+    required String orderId,
+    required String itemId,
+  }) async {
+    if (online) {
+      try {
+        await restCall(
+          () => dio.delete('/v1/service-orders/$orderId/items/$itemId'),
+        );
+        await (db.delete(db.localServiceOrderItems)
+              ..where((t) => t.id.equals(itemId)))
+            .go();
+        return;
+      } on ApiException catch (e) {
+        if (!isOfflineError(e)) rethrow;
+      }
+    }
+    await db.transaction(() async {
+      await (db.update(db.localServiceOrderItems)
+            ..where((t) => t.id.equals(itemId)))
+          .write(
+        const LocalServiceOrderItemsCompanion(
+          deleted: Value(true),
+          syncStatus: Value('pending'),
+        ),
+      );
+      await enqueue(
+        entityType: 'service_order_item',
+        entityId: itemId,
+        operationType: 'delete',
+        payload: const {},
+      );
+    });
+    unawaited(trySyncNow());
+  }
+
+  @override
+  Future<void> setItemApproval({
+    required String orderId,
+    required String itemId,
+    required String approval,
+  }) async {
+    // Aprovação é ação online (escritório, decisão do cliente) — sem fila.
+    final r = await restCall(
+      () => dio.post(
+        '/v1/service-orders/$orderId/items/$itemId/approval',
+        data: {'approval': approval},
+      ),
+    );
+    await db.into(db.localServiceOrderItems).insertOnConflictUpdate(
+          serviceOrderItemFromApiJson(
+            r.data as Map<String, dynamic>,
+            organizationId: orgId,
+          ),
+        );
+  }
+
+  @override
+  Future<String> createFollowUp({
+    required String parentOrderId,
+    DateTime? scheduledFor,
+  }) async {
+    final r = await restCall(
+      () => dio.post(
+        '/v1/service-orders/$parentOrderId/follow-up',
+        data: {'scheduled_for': ?scheduledFor?.toUtc().toIso8601String()},
+      ),
+    );
+    final child = serviceOrderFromApiJson(
+      r.data as Map<String, dynamic>,
+      organizationId: orgId,
+    );
+    await db.into(db.localServiceOrders).insertOnConflictUpdate(child);
+    unawaited(trySyncNow()); // puxa os itens copiados
+    return child.id;
+  }
+
+  @override
   Future<void> refresh() => runSync();
 
   @override
   Future<String> create({
     required String clientId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
     DateTime? scheduledFor,
-    required bool open,
+    required String mode,
     required String reason,
   }) async {
     final body = serviceOrderCreateBody(
       clientId: clientId,
-      locationId: locationId,
-      equipmentId: equipmentId,
+      itemId: itemId,
       serviceOrderTypeId: serviceOrderTypeId,
       companyId: companyId,
       assignedUserId: assignedUserId,
       scheduledFor: scheduledFor,
-      open: open,
+      mode: mode,
       reason: reason,
     );
     if (online) {
@@ -184,13 +437,13 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
               id: id,
               organizationId: orgId,
               clientId: clientId,
-              locationId: Value(locationId),
-              equipmentId: Value(equipmentId),
+              itemId: Value(itemId),
               serviceOrderTypeId: Value(serviceOrderTypeId),
               companyId: Value(companyId),
               assignedUserId: Value(assignedUserId),
               scheduledFor: Value(scheduledFor),
-              status: Value(open ? 'open' : 'draft'),
+              status: Value(_statusForMode(mode)),
+              startedAt: Value(mode == 'start' ? DateTime.now() : null),
               reason: Value(reason),
               localUpdatedAt: DateTime.now(),
               syncStatus: const Value('pending'),
@@ -212,8 +465,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
   Future<void> update({
     required String id,
     required int? baseVersion,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -225,8 +477,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     required String notes,
   }) async {
     final body = serviceOrderUpdateBody(
-      locationId: locationId,
-      equipmentId: equipmentId,
+      itemId: itemId,
       serviceOrderTypeId: serviceOrderTypeId,
       companyId: companyId,
       assignedUserId: assignedUserId,
@@ -260,12 +511,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
       await (db.update(db.localServiceOrders)..where((t) => t.id.equals(id)))
           .write(
         LocalServiceOrdersCompanion(
-          locationId: locationId != null
-              ? Value(locationId)
-              : const Value.absent(),
-          equipmentId: equipmentId != null
-              ? Value(equipmentId)
-              : const Value.absent(),
+          itemId: itemId != null ? Value(itemId) : const Value.absent(),
           serviceOrderTypeId: serviceOrderTypeId != null
               ? Value(serviceOrderTypeId)
               : const Value.absent(),
@@ -366,6 +612,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
     required String unitCost,
     required String unitPrice,
     required String notes,
+    String? serviceOrderItemId,
   }) async {
     final body = servicePartCreateBody(
       description: description,
@@ -375,6 +622,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
       unitCost: unitCost,
       unitPrice: unitPrice,
       notes: notes,
+      serviceOrderItemId: serviceOrderItemId,
     );
     if (online) {
       try {
@@ -399,6 +647,7 @@ class LocalFirstServiceOrderRepository extends LocalFirstRepositoryBase
               id: id,
               organizationId: orgId,
               serviceOrderId: orderId,
+              serviceOrderItemId: Value(serviceOrderItemId),
               description: Value(description),
               partNumber: Value(partNumber),
               quantity: Value(quantity.isEmpty ? '1' : quantity),
@@ -566,6 +815,9 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
     for (final c in _partsByOrder.values) {
       c.dispose();
     }
+    for (final c in _itemsByOrder.values) {
+      c.dispose();
+    }
   }
 
   @override
@@ -584,25 +836,23 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
   @override
   Future<String> create({
     required String clientId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
     DateTime? scheduledFor,
-    required bool open,
+    required String mode,
     required String reason,
   }) async {
     final order = await _orders.create(
       serviceOrderCreateBody(
         clientId: clientId,
-        locationId: locationId,
-        equipmentId: equipmentId,
+        itemId: itemId,
         serviceOrderTypeId: serviceOrderTypeId,
         companyId: companyId,
         assignedUserId: assignedUserId,
         scheduledFor: scheduledFor,
-        open: open,
+        mode: mode,
         reason: reason,
       ),
     );
@@ -613,8 +863,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
   Future<void> update({
     required String id,
     required int? baseVersion,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -627,8 +876,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
   }) async {
     await _orders.update(id, {
       ...serviceOrderUpdateBody(
-        locationId: locationId,
-        equipmentId: equipmentId,
+        itemId: itemId,
         serviceOrderTypeId: serviceOrderTypeId,
         companyId: companyId,
         assignedUserId: assignedUserId,
@@ -662,6 +910,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
     required String unitCost,
     required String unitPrice,
     required String notes,
+    String? serviceOrderItemId,
   }) async {
     await _parts(orderId).create(
       servicePartCreateBody(
@@ -672,6 +921,7 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
         unitCost: unitCost,
         unitPrice: unitPrice,
         notes: notes,
+        serviceOrderItemId: serviceOrderItemId,
       ),
     );
   }
@@ -710,5 +960,96 @@ class RemoteServiceOrderRepository implements ServiceOrderRepository {
     required int? baseVersion,
   }) async {
     await _parts(orderId).remove(partId);
+  }
+
+  final _itemsByOrder = <String, RemoteCollection<LocalServiceOrderItem>>{};
+
+  RemoteCollection<LocalServiceOrderItem> _items(String orderId) =>
+      _itemsByOrder.putIfAbsent(
+        orderId,
+        () => RemoteCollection<LocalServiceOrderItem>(
+          dio: _dio,
+          listPath: '/v1/service-orders/$orderId/items',
+          listKey: 'items',
+          fromJson: (j) => serviceOrderItemFromApiJson(j, organizationId: _orgId),
+          idOf: (i) => i.id,
+        ),
+      );
+
+  @override
+  Stream<List<LocalServiceOrderItem>> watchItems(String orderId) =>
+      _items(orderId).watchList();
+
+  @override
+  Future<String> addItem({
+    required String orderId,
+    String? itemId,
+    String diagnosis = '',
+    String workPerformed = '',
+    String finalCondition = '',
+    String note = '',
+  }) async {
+    final it = await _items(orderId).create(
+      serviceOrderItemBody(
+        itemId: itemId,
+        diagnosis: diagnosis,
+        workPerformed: workPerformed,
+        finalCondition: finalCondition,
+        note: note,
+      ),
+    );
+    return it.id;
+  }
+
+  @override
+  Future<void> updateItem({
+    required String orderId,
+    required String itemId,
+    required int? baseVersion,
+    required String diagnosis,
+    required String workPerformed,
+    required String finalCondition,
+    required String note,
+  }) async {
+    await _items(orderId).update(itemId, {
+      ...serviceOrderItemBody(
+        diagnosis: diagnosis,
+        workPerformed: workPerformed,
+        finalCondition: finalCondition,
+        note: note,
+      ),
+      'version': ?baseVersion,
+    });
+  }
+
+  @override
+  Future<void> deleteItem({
+    required String orderId,
+    required String itemId,
+  }) async {
+    await _items(orderId).remove(itemId);
+  }
+
+  @override
+  Future<void> setItemApproval({
+    required String orderId,
+    required String itemId,
+    required String approval,
+  }) async {
+    await _items(orderId).action(itemId, 'approval', {'approval': approval});
+  }
+
+  @override
+  Future<String> createFollowUp({
+    required String parentOrderId,
+    DateTime? scheduledFor,
+  }) async {
+    final r = await restCall(
+      () => _dio.post(
+        '/v1/service-orders/$parentOrderId/follow-up',
+        data: {'scheduled_for': ?scheduledFor?.toUtc().toIso8601String()},
+      ),
+    );
+    return (r.data as Map<String, dynamic>)['id'] as String;
   }
 }

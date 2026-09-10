@@ -5,11 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/detail_view.dart';
 import '../../reference/data/reference_repository.dart';
 import '../data/company_repository.dart';
 
+const _kindLabels = {'legal': 'Pessoa jurídica', 'individual': 'Profissional'};
+
 /// `companyId == 'new'` é o sentinela de criação. `kind` só é escolhido na
 /// criação — imutável depois. Membros e logo aparecem só depois de salva.
+/// Um registro já salvo abre em **leitura**; o lápis no topo liga a edição.
 class CompanyDetailScreen extends ConsumerStatefulWidget {
   const CompanyDetailScreen({super.key, required this.companyId});
 
@@ -29,18 +33,27 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
   final _taxRegime = TextEditingController();
   final _phone = TextEditingController();
   final _email = TextEditingController();
-  final _address = TextEditingController();
+  final _postalCode = TextEditingController();
+  final _street = TextEditingController();
+  final _number = TextEditingController();
+  final _complement = TextEditingController();
+  final _district = TextEditingController();
+  final _city = TextEditingController();
+  final _state = TextEditingController();
   final _notes = TextEditingController();
+  bool _showAddress = false;
   String _kind = 'legal';
   String? _personUserId;
   int? _version;
   bool _seeded = false;
+  bool _editing = false;
   bool _saving = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _editing = widget.isNew;
     ref.read(referenceDataRepositoryProvider).refresh(ReferenceKind.orgUser);
   }
 
@@ -53,7 +66,13 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       _taxRegime,
       _phone,
       _email,
-      _address,
+      _postalCode,
+      _street,
+      _number,
+      _complement,
+      _district,
+      _city,
+      _state,
       _notes,
     ]) {
       c.dispose();
@@ -69,13 +88,49 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
     _taxRegime.text = c.taxRegime;
     _phone.text = c.phone;
     _email.text = c.email;
-    _address.text = c.address;
+    _postalCode.text = c.postalCode;
+    _street.text = c.street;
+    _number.text = c.number;
+    _complement.text = c.complement;
+    _district.text = c.district;
+    _city.text = c.city;
+    _state.text = c.state;
+    _showAddress = c.hasAddress;
     _notes.text = c.notes;
     _kind = c.kind;
     _personUserId = c.personUserId;
     _version = c.version;
     _seeded = true;
   }
+
+  /// Recarrega do servidor e re-semeia — depois de salvar.
+  void _reloadFromServer() {
+    ref.invalidate(companyByIdProvider(widget.companyId));
+    setState(() {
+      _seeded = false;
+      _error = null;
+    });
+  }
+
+  void _cancelEdit() {
+    setState(() {
+      _editing = false;
+      _seeded = false;
+      _error = null;
+    });
+  }
+
+  CompanyAddress _addr() => _showAddress
+      ? CompanyAddress(
+          postalCode: _postalCode.text.trim(),
+          street: _street.text.trim(),
+          number: _number.text.trim(),
+          complement: _complement.text.trim(),
+          district: _district.text.trim(),
+          city: _city.text.trim(),
+          state: _state.text.trim().toUpperCase(),
+        )
+      : const CompanyAddress();
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
@@ -99,7 +154,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
           taxRegime: _taxRegime.text.trim(),
           phone: _phone.text.trim(),
           email: _email.text.trim(),
-          address: _address.text.trim(),
+          address: _addr(),
           notes: _notes.text.trim(),
         );
       } else {
@@ -114,7 +169,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
           taxRegime: _taxRegime.text.trim(),
           phone: _phone.text.trim(),
           email: _email.text.trim(),
-          address: _address.text.trim(),
+          address: _addr(),
           notes: _notes.text.trim(),
         );
       }
@@ -122,7 +177,13 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
       await ref
           .read(referenceDataRepositoryProvider)
           .refresh(ReferenceKind.company);
-      if (mounted) Navigator.of(context).pop();
+      if (!mounted) return;
+      if (widget.isNew) {
+        Navigator.of(context).pop();
+      } else {
+        setState(() => _editing = false);
+        _reloadFromServer();
+      }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.friendlyMessage);
     } catch (_) {
@@ -136,7 +197,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isNew) return _form(context, title: 'Nova empresa');
+    if (widget.isNew) return _editForm(context, title: 'Nova empresa');
 
     final async = ref.watch(companyByIdProvider(widget.companyId));
     return async.when(
@@ -156,27 +217,81 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
           );
         }
         _seedFrom(company);
-        return _form(context, title: company.name, company: company);
+        return _editing
+            ? _editForm(context, title: company.name)
+            : _viewMode(context, company);
       },
     );
   }
 
-  Widget _form(BuildContext context, {required String title, Company? company}) {
-    final users = ref.watch(referenceListProvider(ReferenceKind.orgUser)).value ??
+  // --- leitura ------------------------------------------------------------
+
+  Widget _viewMode(BuildContext context, Company company) {
+    final users =
+        ref.watch(referenceListProvider(ReferenceKind.orgUser)).value ??
         const [];
+    final personMatch = users.where((u) => u.id == company.personUserId);
+    final personLabel = personMatch.isEmpty ? '' : personMatch.first.label;
+
+    final extras = <Widget>[
+      if (company.legalName.isNotEmpty)
+        DetailRow('Razão social', company.legalName),
+      if (company.taxId.isNotEmpty) DetailRow('CNPJ / CPF', company.taxId),
+      if (company.taxRegime.isNotEmpty) DetailRow('Regime', company.taxRegime),
+      if (company.email.isNotEmpty) DetailRow('E-mail', company.email),
+      if (company.hasAddress) DetailRow('Endereço', company.addressLine),
+      if (company.notes.isNotEmpty) DetailRow('Observações', company.notes),
+    ];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(company.name),
         actions: [
-          if (!widget.isNew)
-            IconButton(
-              tooltip: 'Excluir empresa',
-              icon: const Icon(Icons.delete_outline),
-              onPressed: _confirmDelete,
-            ),
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Editar',
+            onPressed: () => setState(() => _editing = true),
+          ),
+          IconButton(
+            tooltip: 'Excluir empresa',
+            icon: const Icon(Icons.delete_outline),
+            onPressed: _confirmDelete,
+          ),
         ],
       ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            DetailRow('Tipo', _kindLabels[company.kind] ?? company.kind),
+            if (company.kind == 'individual' && personLabel.isNotEmpty)
+              DetailRow('Pessoa vinculada', personLabel),
+            DetailRow('Telefone', company.phone),
+            if (extras.isNotEmpty)
+              DetailExpander(title: 'Outros dados', children: extras),
+            const SizedBox(height: 32),
+            const Divider(),
+            const SizedBox(height: 8),
+            _LogoSection(company: company),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            _MembersSection(companyId: widget.companyId),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- edição -----------------------------------------------------------
+
+  Widget _editForm(BuildContext context, {required String title}) {
+    final users =
+        ref.watch(referenceListProvider(ReferenceKind.orgUser)).value ??
+        const [];
+
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -264,11 +379,112 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
                   decoration: const InputDecoration(labelText: 'E-mail'),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _address,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'Endereço'),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: () =>
+                        setState(() => _showAddress = !_showAddress),
+                    icon: Icon(
+                      _showAddress
+                          ? Icons.location_off_outlined
+                          : Icons.add_location_alt_outlined,
+                    ),
+                    label: Text(
+                      _showAddress ? 'Remover endereço' : 'Adicionar endereço',
+                    ),
+                  ),
                 ),
+                if (_showAddress) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextFormField(
+                          controller: _postalCode,
+                          decoration: const InputDecoration(labelText: 'CEP'),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _street,
+                          decoration: const InputDecoration(
+                            labelText: 'Logradouro',
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _number,
+                                decoration: const InputDecoration(
+                                  labelText: 'Número',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 2,
+                              child: TextFormField(
+                                controller: _complement,
+                                decoration: const InputDecoration(
+                                  labelText: 'Complemento',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _district,
+                          decoration: const InputDecoration(
+                            labelText: 'Bairro',
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: TextFormField(
+                                controller: _city,
+                                decoration: const InputDecoration(
+                                  labelText: 'Cidade',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _state,
+                                maxLength: 2,
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                decoration: const InputDecoration(
+                                  labelText: 'UF',
+                                ),
+                                validator: (v) =>
+                                    (v != null &&
+                                        v.isNotEmpty &&
+                                        v.trim().length != 2)
+                                    ? 'UF tem 2 letras'
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _notes,
@@ -293,16 +509,11 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
                         )
                       : const Text('Salvar'),
                 ),
-                if (!widget.isNew && company != null) ...[
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  _LogoSection(company: company),
-                  const SizedBox(height: 24),
-                  const Divider(),
-                  const SizedBox(height: 8),
-                  _MembersSection(companyId: widget.companyId),
-                ],
+                if (!widget.isNew)
+                  TextButton(
+                    onPressed: _saving ? null : _cancelEdit,
+                    child: const Text('Cancelar'),
+                  ),
               ],
             ),
           ),

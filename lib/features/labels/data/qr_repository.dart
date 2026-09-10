@@ -111,10 +111,7 @@ class _LocalQrRepository extends LocalFirstRepositoryBase
 
   Expression<bool> _targetFilter(LocalQrCodes t, QrTarget target) {
     if (target.clientId != null) return t.clientId.equals(target.clientId!);
-    if (target.locationId != null) {
-      return t.locationId.equals(target.locationId!);
-    }
-    return t.equipmentId.equals(target.equipmentId!);
+    return t.itemId.equals(target.itemId!);
   }
 
   Future<LocalQrCode?> _localCode(String id) =>
@@ -178,8 +175,7 @@ class _LocalQrRepository extends LocalFirstRepositoryBase
         LocalQrCodesCompanion(
           status: const Value('assigned'),
           clientId: Value(target.clientId),
-          locationId: Value(target.locationId),
-          equipmentId: Value(target.equipmentId),
+          itemId: Value(target.itemId),
           assignedAt: Value(DateTime.now()),
           localUpdatedAt: Value(DateTime.now()),
           syncStatus: const Value('pending'),
@@ -240,8 +236,7 @@ class _LocalQrRepository extends LocalFirstRepositoryBase
         LocalQrCodesCompanion(
           status: const Value('assigned'),
           clientId: Value(old?.clientId),
-          locationId: Value(old?.locationId),
-          equipmentId: Value(old?.equipmentId),
+          itemId: Value(old?.itemId),
           assignedAt: Value(DateTime.now()),
           localUpdatedAt: Value(DateTime.now()),
           syncStatus: const Value('pending'),
@@ -308,7 +303,7 @@ class _RemoteQrRepository implements QrRepository {
   final _cache = <String, LocalQrCode?>{};
 
   String _key(QrTarget t) =>
-      '${t.clientId ?? ''}|${t.locationId ?? ''}|${t.equipmentId ?? ''}';
+      '${t.clientId ?? ''}|${t.itemId ?? ''}';
 
   void dispose() {
     for (final c in _controllers.values) {
@@ -401,9 +396,7 @@ class _RemoteQrRepository implements QrRepository {
       await _refresh(
         parts[0].isNotEmpty
             ? QrTarget.client(parts[0])
-            : parts[1].isNotEmpty
-            ? QrTarget.location(parts[1])
-            : QrTarget.equipment(parts[2]),
+            : QrTarget.item(parts[1]),
       );
     }
   }
@@ -416,9 +409,7 @@ class _RemoteQrRepository implements QrRepository {
       await _refresh(
         parts[0].isNotEmpty
             ? QrTarget.client(parts[0])
-            : parts[1].isNotEmpty
-            ? QrTarget.location(parts[1])
-            : QrTarget.equipment(parts[2]),
+            : QrTarget.item(parts[1]),
       );
     }
   }

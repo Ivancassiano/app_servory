@@ -19,3 +19,14 @@ String stringOr(Object? value, [String fallback = '']) =>
 /// Campos mascaráveis (sensíveis): a **ausência** da chave no JSON significa
 /// "sem permissão de leitura", distinto de string vazia — mantém `null`.
 String? maskable(Object? value) => value as String?;
+
+/// Colunas `NUMERIC` do Postgres chegam como **string** no JSON (o backend
+/// serializa via `pgtype.Numeric` para não perder precisão — ex.: `value_number`
+/// de um campo personalizado). Converte para `double`, tolerando `num` cru e
+/// `null`. Um cast direto `as num?` estoura com a string e derruba o cache.
+double? parseApiNumber(Object? value) => switch (value) {
+  null => null,
+  final num n => n.toDouble(),
+  final String s => double.tryParse(s.trim()),
+  _ => null,
+};

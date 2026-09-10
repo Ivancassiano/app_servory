@@ -54,15 +54,28 @@ class ApiException implements Exception {
     'ORGANIZATION_NOT_RESOLVED':
         'Não foi possível determinar a organização ativa.',
     'INVALID_REFRESH_TOKEN': 'Sua sessão expirou. Entre novamente.',
-    'INVALID_RESET_TOKEN': 'Link de redefinição inválido ou expirado.',
+    'INVALID_RESET_TOKEN': 'Código de recuperação inválido ou expirado.',
     'INVALID_INVITATION': 'Convite inválido ou já utilizado.',
-    'WEAK_PASSWORD': 'A senha é muito fraca.',
+    'WEAK_PASSWORD': 'A senha precisa ter pelo menos 8 caracteres.',
+    'EMAIL_EXISTS': 'Já existe uma conta com esse e-mail.',
+    'ORG_NAME_REQUIRED': 'Informe o nome da organização.',
+    'INVALID_EMAIL': 'E-mail inválido.',
+    'EMAIL_NOT_VERIFIED':
+        'Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada.',
+    'INVALID_VERIFICATION_CODE': 'Código inválido ou expirado.',
+    'SYSTEM_ROLE': 'Perfil padrão não pode ser alterado. Duplique-o primeiro.',
+    'ROLE_IN_USE': 'Este perfil ainda tem membros. Mova-os antes de excluir.',
+    'ROLE_KEY_TAKEN': 'Já existe um perfil com esse nome.',
+    'UNKNOWN_PERMISSION': 'Permissão desconhecida — atualize o app.',
+    'INVALID_EFFECT': 'Efeito de permissão inválido.',
     'RATE_LIMITED': 'Muitas tentativas. Aguarde um instante e tente de novo.',
     'FORBIDDEN': 'Você não tem permissão para fazer isso.',
     'UNAUTHORIZED': 'Sua sessão expirou. Entre novamente.',
     'NOT_FOUND': 'Registro não encontrado.',
     'VERSION_CONFLICT':
         'Este registro foi alterado por outra pessoa. Recarregue e tente de novo.',
+    'VERSION_REQUIRED':
+        'Não foi possível enviar essa edição. Descarte-a e refaça.',
     'NETWORK_ERROR':
         'Não foi possível conectar ao servidor. Verifique sua conexão.',
     'INTERNAL': _genericMessage,

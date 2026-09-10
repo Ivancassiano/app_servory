@@ -4,6 +4,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../core/db/app_database.dart';
+import 'report_items.dart';
 import 'service_order_report.dart';
 
 const _statusLabels = {
@@ -24,9 +25,7 @@ const _photoKindLabels = {
 /// Riverpod, dá pra testar direto. As fontes padrão do pacote `pdf`
 /// (Helvetica) cobrem Latin-1, o que basta para português.
 Future<Uint8List> buildServiceOrderPdf(ServiceOrderReportData d) async {
-  final doc = pw.Document(
-    title: 'Ordem de serviço ${_shortId(d.order.id)}',
-  );
+  final doc = pw.Document(title: 'Ordem de serviço ${_shortId(d.order.id)}');
 
   final theme = pw.ThemeData.withFont();
 
@@ -35,14 +34,14 @@ Future<Uint8List> buildServiceOrderPdf(ServiceOrderReportData d) async {
       theme: theme,
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.fromLTRB(32, 32, 32, 48),
-      header: (context) =>
-          context.pageNumber == 1 ? _header(d) : pw.SizedBox(),
+      header: (context) => context.pageNumber == 1 ? _header(d) : pw.SizedBox(),
       footer: (context) => _footer(d, context),
       build: (context) => [
         _entitiesBlock(d),
         _datesBlock(d),
         ..._textSections(d.order),
         if (d.parts.isNotEmpty) ..._partsSection(d.parts),
+        if (d.items.isNotEmpty) ..._itemsSection(d.items),
         if (d.photos.isNotEmpty) ..._photosSection(d.photos),
         if (d.signaturePng != null) ..._signatureSection(d.signaturePng!),
       ],
@@ -149,10 +148,7 @@ pw.Widget _footer(ServiceOrderReportData d, pw.Context context) {
               d.hasPendingUploads
                   ? 'Gerado em ${_fmtDateTime(d.generatedAt)} no dispositivo. Há anexos ainda não sincronizados - a via oficial no servidor pode diferir.'
                   : 'Gerado em ${_fmtDateTime(d.generatedAt)} no dispositivo. A via oficial é gerada no servidor após a sincronização.',
-              style: const pw.TextStyle(
-                fontSize: 7,
-                color: PdfColors.grey600,
-              ),
+              style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey600),
             ),
           ),
           pw.SizedBox(width: 12),
@@ -178,10 +174,11 @@ pw.Widget _entitiesBlock(ServiceOrderReportData d) {
           _kv('CNPJ/CPF', d.client!.taxId),
         if (d.client != null && d.client!.phone.isNotEmpty)
           _kv('Telefone', d.client!.phone),
-        if (d.location != null) _kv('Local', d.location!.name),
+        if (d.item != null) _kv('Item', _itemLine(d.item!, d.itemType)),
         if (address.isNotEmpty) _kv('Endereço', address),
-        if (d.equipment != null) _kv('Equipamento', _equipmentLine(d.equipment!)),
         if (d.technicianName != null) _kv('Técnico', d.technicianName!),
+        if (d.technicianRegistration != null)
+          _kv('Registro', d.technicianRegistration!),
       ],
     ),
   );
@@ -201,13 +198,14 @@ String _addressLine(LocalLocation? l) {
   return parts.join(', ');
 }
 
-String _equipmentLine(LocalEquipment e) {
+String _itemLine(LocalItem i, LocalItemType? type) {
+  final name = type == null ? i.name : '${type.name} — ${i.name}';
   final extras = <String>[
-    if (e.brand.isNotEmpty) e.brand,
-    if (e.model.isNotEmpty) e.model,
-    if ((e.serialNumber ?? '').isNotEmpty) 'nº série ${e.serialNumber}',
+    if (i.brand.isNotEmpty) i.brand,
+    if (i.model.isNotEmpty) i.model,
+    if ((i.serialNumber ?? '').isNotEmpty) 'nº série ${i.serialNumber}',
   ];
-  return extras.isEmpty ? e.name : '${e.name} (${extras.join(' · ')})';
+  return extras.isEmpty ? name : '$name (${extras.join(' · ')})';
 }
 
 pw.Widget _datesBlock(ServiceOrderReportData d) {
@@ -258,6 +256,59 @@ List<pw.Widget> _textSections(LocalServiceOrder o) {
   ];
 }
 
+List<pw.Widget> _itemsSection(List<ReportItem> items) {
+  final approved = items.where((i) => i.row.approval == 'approved').length;
+  return [
+    pw.Container(
+      margin: const pw.EdgeInsets.only(top: 16),
+      child: pw.Text(
+        'ITENS DA VISITA',
+        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+      ),
+    ),
+    for (final ri in items)
+      pw.Container(
+        margin: const pw.EdgeInsets.only(top: 10),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              ri.itemName,
+              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+            ),
+            pw.Text(
+              'Aprovação: ${approvalLabel(ri.row.approval)}',
+              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700),
+            ),
+            for (final s in <List<String>>[
+              ['Diagnóstico', ri.row.diagnosis],
+              ['Serviço realizado', ri.row.workPerformed],
+              ['Condição final', ri.row.finalCondition],
+              ['Observações', ri.row.note],
+            ])
+              if (s[1].trim().isNotEmpty)
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(top: 3),
+                  child: pw.Text(
+                    '${s[0]}: ${s[1].trim()}',
+                    style: const pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+            if (ri.parts.isNotEmpty) ..._partsSection(ri.parts),
+            if (ri.photos.isNotEmpty) ..._photosSection(ri.photos),
+          ],
+        ),
+      ),
+    pw.Container(
+      margin: const pw.EdgeInsets.only(top: 10),
+      child: pw.Text(
+        'Resumo: $approved de ${items.length} itens aprovados',
+        style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+      ),
+    ),
+  ];
+}
+
 List<pw.Widget> _partsSection(List<LocalServiceOrderPart> parts) {
   double? total = 0;
   final rows = <List<String>>[];
@@ -265,7 +316,9 @@ List<pw.Widget> _partsSection(List<LocalServiceOrderPart> parts) {
     final qty = part.quantity.trim().isEmpty ? '1' : part.quantity.trim();
     final unitPrice = _money(part.unitPrice);
     final qtyNum = double.tryParse(qty.replaceAll(',', '.'));
-    final priceNum = double.tryParse((part.unitPrice ?? '').replaceAll(',', '.'));
+    final priceNum = double.tryParse(
+      (part.unitPrice ?? '').replaceAll(',', '.'),
+    );
     String lineTotal = '-';
     if (qtyNum != null && priceNum != null) {
       final t = qtyNum * priceNum;
@@ -275,7 +328,9 @@ List<pw.Widget> _partsSection(List<LocalServiceOrderPart> parts) {
       total = null; // um item sem preço parseável invalida o total
     }
     rows.add([
-      part.description.trim().isEmpty ? '(sem descrição)' : part.description.trim(),
+      part.description.trim().isEmpty
+          ? '(sem descrição)'
+          : part.description.trim(),
       part.partNumber,
       '$qty ${part.unit}'.trim(),
       unitPrice ?? '-',
@@ -299,10 +354,7 @@ List<pw.Widget> _partsSection(List<LocalServiceOrderPart> parts) {
     pw.TableHelper.fromTextArray(
       headers: ['Descrição', 'Código', 'Qtd.', 'Preço un.', 'Total'],
       data: rows,
-      headerStyle: pw.TextStyle(
-        fontSize: 8,
-        fontWeight: pw.FontWeight.bold,
-      ),
+      headerStyle: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
       cellStyle: const pw.TextStyle(fontSize: 8),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
       cellAlignments: {
@@ -403,11 +455,7 @@ List<pw.Widget> _signatureSection(Uint8List png) {
         border: pw.Border.all(color: PdfColors.grey400, width: .5),
       ),
       padding: const pw.EdgeInsets.all(4),
-      child: pw.Image(
-        pw.MemoryImage(png),
-        height: 90,
-        fit: pw.BoxFit.contain,
-      ),
+      child: pw.Image(pw.MemoryImage(png), height: 90, fit: pw.BoxFit.contain),
     ),
   ];
 }

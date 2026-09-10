@@ -13,8 +13,8 @@ LocalServiceOrder serviceOrderFromApiJson(
     id: j['id'] as String,
     organizationId: organizationId,
     clientId: stringOr(j['client_id']),
-    locationId: j['location_id'] as String?,
-    equipmentId: j['equipment_id'] as String?,
+    itemId: j['item_id'] as String?,
+    parentOrderId: j['parent_order_id'] as String?,
     serviceOrderTypeId: j['service_order_type_id'] as String?,
     companyId: j['company_id'] as String?,
     assignedUserId: j['assigned_user_id'] as String?,
@@ -47,6 +47,7 @@ LocalServiceOrderPart servicePartFromApiJson(
     id: j['id'] as String,
     organizationId: organizationId,
     serviceOrderId: stringOr(j['service_order_id']),
+    serviceOrderItemId: j['service_order_item_id'] as String?,
     description: stringOr(j['description']),
     partNumber: stringOr(j['part_number']),
     quantity: j['quantity']?.toString() ?? '1',
@@ -71,23 +72,21 @@ String? _rfc3339(DateTime? d) => d?.toUtc().toIso8601String();
 
 Map<String, dynamic> serviceOrderCreateBody({
   required String clientId,
-  String? locationId,
-  String? equipmentId,
+  String? itemId,
   String? serviceOrderTypeId,
   String? companyId,
   String? assignedUserId,
   DateTime? scheduledFor,
-  required bool open,
+  required String mode,
   required String reason,
 }) => {
   'client_id': clientId,
-  'location_id': ?locationId,
-  'equipment_id': ?equipmentId,
+  'item_id': ?itemId,
   'service_order_type_id': ?serviceOrderTypeId,
   'company_id': ?companyId,
   'assigned_user_id': ?assignedUserId,
   'scheduled_for': ?_rfc3339(scheduledFor),
-  'open': open,
+  'mode': mode,
   'reason': reason,
 };
 
@@ -97,8 +96,7 @@ Map<String, dynamic> serviceOrderCreateBody({
 /// consegue *limpar* um valor já gravado — só trocá-lo (limitação REST/sync
 /// conhecida, documentada nas sobras da Fatia 2).
 Map<String, dynamic> serviceOrderUpdateBody({
-  String? locationId,
-  String? equipmentId,
+  String? itemId,
   String? serviceOrderTypeId,
   String? companyId,
   String? assignedUserId,
@@ -109,8 +107,7 @@ Map<String, dynamic> serviceOrderUpdateBody({
   required String finalCondition,
   required String notes,
 }) => {
-  'location_id': ?locationId,
-  'equipment_id': ?equipmentId,
+  'item_id': ?itemId,
   'service_order_type_id': ?serviceOrderTypeId,
   'company_id': ?companyId,
   'assigned_user_id': ?assignedUserId,
@@ -139,6 +136,7 @@ Map<String, dynamic> servicePartCreateBody({
   required String unitCost,
   required String unitPrice,
   required String notes,
+  String? serviceOrderItemId,
 }) => {
   'description': description,
   'part_number': partNumber,
@@ -147,6 +145,7 @@ Map<String, dynamic> servicePartCreateBody({
   'unit_cost': _money(unitCost),
   'unit_price': _money(unitPrice),
   'notes': notes,
+  'service_order_item_id': ?serviceOrderItemId,
 };
 
 Map<String, dynamic> servicePartUpdateBody({

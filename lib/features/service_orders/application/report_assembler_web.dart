@@ -3,11 +3,14 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/db/app_database.dart';
 import '../../clients/application/clients_provider.dart';
-import '../../equipments/application/equipments_provider.dart';
+import '../../items/application/items_provider.dart';
 import '../../locations/application/locations_provider.dart';
 import '../../me/application/me_provider.dart';
+import '../../me/application/person_provider.dart';
 import '../../attachments/application/service_order_attachments_provider.dart';
+import 'report_items.dart';
 import 'service_order_report.dart';
 import 'service_orders_provider.dart';
 
@@ -23,28 +26,51 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
   }
 
   final client = await ref.watch(clientByIdProvider(order.clientId).future);
-  final location = order.locationId == null
+  final item = order.itemId == null
       ? null
-      : await ref.watch(locationByIdProvider(order.locationId!).future);
-  final equipment = order.equipmentId == null
+      : await ref.watch(itemByIdProvider(order.itemId!).future);
+  final itemType = item?.itemTypeId == null
       ? null
-      : await ref.watch(equipmentByIdProvider(order.equipmentId!).future);
-  final parts = await ref.watch(servicePartsProvider(orderId).future);
-
+      : (ref.watch(itemTypeListProvider).value ?? const [])
+          .where((t) => t.id == item!.itemTypeId)
+          .firstOrNull;
+  final location = item?.locationId == null
+      ? null
+      : await ref.watch(locationByIdProvider(item!.locationId!).future);
+  final allParts = await ref.watch(servicePartsProvider(orderId).future);
+  final itemRows = await ref.watch(serviceItemsProvider(orderId).future);
+  final catalog = {
+    for (final i in ref.watch(itemListProvider).value ?? const <LocalItem>[])
+      i.id: i,
+  };
   final download = Dio(); // sem interceptor de auth — URLs já são assinadas
 
   final orderPhotos = await ref.watch(orderPhotosProvider(orderId).future);
-  final photos = <ReportPhoto>[];
+  final allPhotos = <ReportPhoto>[];
   for (final photo in orderPhotos) {
     try {
       final bytes = await _downloadBytes(download, photo.downloadUrl);
-      photos.add(
-        ReportPhoto(bytes: bytes, kind: photo.kind, caption: photo.caption),
+      allPhotos.add(
+        ReportPhoto(
+          bytes: bytes,
+          kind: photo.kind,
+          caption: photo.caption,
+          serviceOrderItemId: photo.serviceOrderItemId,
+        ),
       );
     } catch (_) {
       // uma foto indisponível não derruba o laudo
     }
   }
+
+  final split = partitionReport(
+    allParts: allParts,
+    itemRows: itemRows,
+    catalogById: catalog,
+    allPhotos: allPhotos,
+  );
+  final parts = split.generalParts;
+  final photos = split.generalPhotos;
 
   final signature = await ref.watch(orderSignatureProvider(orderId).future);
   Uint8List? signaturePng;
@@ -56,16 +82,27 @@ Future<ServiceOrderReportData> assembleServiceOrderReport(
 
   final identity = ref.read(identityProvider).asData?.value;
 
+  String? registration;
+  try {
+    final reg = (await ref.watch(
+      myPersonProvider.future,
+    )).professionalRegistration;
+    registration = reg.isNotEmpty ? reg : null;
+  } catch (_) {}
+
   return ServiceOrderReportData(
     order: order,
     client: client,
+    item: item,
+    itemType: itemType,
     location: location,
-    equipment: equipment,
     parts: parts,
+    items: split.items,
     photos: photos,
     signaturePng: signaturePng,
     generatedAt: DateTime.now(),
     technicianName: identity?.name.isNotEmpty == true ? identity!.name : null,
+    technicianRegistration: registration,
     organizationName: identity?.organizationName.isNotEmpty == true
         ? identity!.organizationName
         : null,

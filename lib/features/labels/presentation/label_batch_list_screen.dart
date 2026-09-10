@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/widgets/form_sheet.dart';
 import '../data/label_batch_repository.dart';
 
 const _batchStatus = {
@@ -75,10 +76,10 @@ class LabelBatchListScreen extends ConsumerWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _createDialog(context, ref),
-        tooltip: 'Novo lote',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Novo lote'),
       ),
     );
   }
@@ -86,34 +87,27 @@ class LabelBatchListScreen extends ConsumerWidget {
   Future<void> _createDialog(BuildContext context, WidgetRef ref) async {
     final labelCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '20');
-    final ok = await showDialog<bool>(
+    final ok = await showModalBottomSheet<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Novo lote de etiquetas'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: labelCtrl,
-              decoration: const InputDecoration(labelText: 'Nome do lote'),
-              autofocus: true,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: qtyCtrl,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
-                labelText: 'Quantidade (1 a 500)',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+      isScrollControlled: true,
+      builder: (ctx) => FormSheet(
+        title: 'Novo lote de etiquetas',
+        children: [
+          TextField(
+            controller: labelCtrl,
+            decoration: const InputDecoration(labelText: 'Nome do lote'),
+            autofocus: true,
           ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: qtyCtrl,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: 'Quantidade (1 a 500)',
+            ),
+          ),
+          const SizedBox(height: 16),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Gerar'),

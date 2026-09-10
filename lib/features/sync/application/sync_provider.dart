@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/painting.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
+import '../../attachments/application/drain_uploads.dart';
+import '../../attachments/application/service_order_attachments_provider.dart';
 import '../../auth/application/session_controller.dart';
 import '../data/sync_api.dart';
 import 'sync_engine.dart';
@@ -35,10 +39,33 @@ final syncEngineProvider = Provider<SyncEngine>((ref) {
   );
 });
 
+/// Estado de sincronização que a UI observa: a fase atual (`phase`) e quando
+/// foi o último sync bem-sucedido (`lastSuccessAt`, pra faixa de status
+/// mostrar "atualizado há X min"). Os getters `isLoading`/`hasError` deixam o
+/// código que só olhava a `AsyncValue` continuar funcionando.
+class SyncStatus {
+  const SyncStatus({
+    this.phase = const AsyncValue<void>.data(null),
+    this.lastSuccessAt,
+  });
+
+  final AsyncValue<void> phase;
+  final DateTime? lastSuccessAt;
+
+  bool get isLoading => phase.isLoading;
+  bool get hasError => phase.hasError;
+
+  SyncStatus _copy({AsyncValue<void>? phase, DateTime? lastSuccessAt}) =>
+      SyncStatus(
+        phase: phase ?? this.phase,
+        lastSuccessAt: lastSuccessAt ?? this.lastSuccessAt,
+      );
+}
+
 /// "Está sincronizando agora?" — a UI usa pra mostrar spinner/erro.
-class SyncRunner extends Notifier<AsyncValue<void>> {
+class SyncRunner extends Notifier<SyncStatus> {
   @override
-  AsyncValue<void> build() => const AsyncValue.data(null);
+  SyncStatus build() => const SyncStatus();
 
   /// Roda o `bootstrap` só se o banco local desta organização ainda
   /// estiver vazio (1ª sincronização do dispositivo, GUIA-FLUTTER.md §8.2).
@@ -52,9 +79,9 @@ class SyncRunner extends Notifier<AsyncValue<void>> {
   }
 
   Future<void> runSync({bool bootstrap = false}) async {
-    state = const AsyncValue.loading();
+    state = state._copy(phase: const AsyncValue<void>.loading());
     final engine = ref.read(syncEngineProvider);
-    state = await AsyncValue.guard(() async {
+    final result = await AsyncValue.guard(() async {
       if (bootstrap) {
         await engine.bootstrap();
         await engine.pushPending();
@@ -70,9 +97,114 @@ class SyncRunner extends Notifier<AsyncValue<void>> {
       await engine.pushPending();
       await engine.pull();
     });
+    state = state._copy(
+      phase: result,
+      lastSuccessAt: result.hasError ? state.lastSuccessAt : DateTime.now(),
+    );
+  }
+
+  /// "Atualizar tudo": sync (push + pull), **envia as fotos/assinatura ainda
+  /// na fila** (senão a barra fica presa em "1 alteração não enviada"),
+  /// recarrega o que é REST puro e fica FORA do protocolo de sync (fotos e
+  /// assinatura, cuja URL de download é assinada e temporária, §26.4) e limpa
+  /// o cache de imagens. É o botão da faixa de status em todas as telas.
+  Future<void> refreshEverything() async {
+    await runSync();
+    await drainUploads(ref);
+    ref.invalidate(entityPhotosProvider);
+    ref.invalidate(orderSignatureProvider);
+    PaintingBinding.instance.imageCache
+      ..clear()
+      ..clearLiveImages();
   }
 }
 
-final syncRunnerProvider = NotifierProvider<SyncRunner, AsyncValue<void>>(
+final syncRunnerProvider = NotifierProvider<SyncRunner, SyncStatus>(
   SyncRunner.new,
+);
+
+/// Total de alterações locais aguardando envio ao servidor: operações na
+/// outbox (create/update/ações nomeadas) + anexos (foto/assinatura) na fila
+/// de upload. `0` = tudo o que foi feito neste aparelho já está no servidor
+/// (seguro atualizar o app). Alimenta o aviso da barra de status.
+final pendingSyncCountStreamProvider = StreamProvider<int>((ref) {
+  if (kIsWeb) return Stream.value(0);
+  final AppDatabase db;
+  try {
+    db = ref.watch(appDatabaseProvider);
+  } catch (_) {
+    return Stream.value(0); // sem sessão autenticada — nada local para contar
+  }
+  return db
+      .customSelect(
+        'SELECT '
+        '(SELECT COUNT(*) FROM sync_outbox) + '
+        '(SELECT COUNT(*) FROM upload_queue) AS n',
+        readsFrom: {db.syncOutbox, db.uploadQueue},
+      )
+      .watchSingle()
+      .map((row) => row.read<int>('n'));
+});
+
+/// Versão "só o número" (0 enquanto o stream não emitiu) para a UI que não
+/// quer lidar com `AsyncValue`.
+final pendingSyncCountProvider = Provider<int>(
+  (ref) => ref.watch(pendingSyncCountStreamProvider).value ?? 0,
+);
+
+/// Operações de escrita ainda na outbox (para a tela "Alterações pendentes").
+final pendingOutboxProvider =
+    StreamProvider.autoDispose<List<SyncOutboxData>>((ref) {
+      if (kIsWeb) return Stream.value(const []);
+      final AppDatabase db;
+      try {
+        db = ref.watch(appDatabaseProvider);
+      } catch (_) {
+        return Stream.value(const []);
+      }
+      return db.select(db.syncOutbox).watch().map(
+        (rows) => rows..sort((a, b) => a.occurredAt.compareTo(b.occurredAt)),
+      );
+    });
+
+/// Anexos (foto/assinatura) ainda na fila de upload.
+final pendingUploadsListProvider =
+    StreamProvider.autoDispose<List<UploadQueueData>>((ref) {
+      if (kIsWeb) return Stream.value(const []);
+      final AppDatabase db;
+      try {
+        db = ref.watch(appDatabaseProvider);
+      } catch (_) {
+        return Stream.value(const []);
+      }
+      return db.select(db.uploadQueue).watch().map(
+        (rows) => rows..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
+      );
+    });
+
+/// Ações da tela "Alterações pendentes": reenviar tudo e descartar item a item.
+class PendingChangesController {
+  PendingChangesController(this._ref);
+  final Ref _ref;
+
+  Future<void> retryAll() =>
+      _ref.read(syncRunnerProvider.notifier).refreshEverything();
+
+  Future<void> discardOutbox(String operationId) async {
+    await _ref.read(syncEngineProvider).discardOperation(operationId);
+    _ref.invalidate(pendingOutboxProvider);
+  }
+
+  /// Descarta um anexo da fila. O arquivo local fica (limpeza é melhor
+  /// esforço e depende de `dart:io`); some sozinho quando o app for
+  /// reinstalado.
+  Future<void> discardUpload(String id) async {
+    final db = _ref.read(appDatabaseProvider);
+    await (db.delete(db.uploadQueue)..where((t) => t.id.equals(id))).go();
+    _ref.invalidate(pendingUploadsListProvider);
+  }
+}
+
+final pendingChangesControllerProvider = Provider(
+  PendingChangesController.new,
 );

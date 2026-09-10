@@ -6,6 +6,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/searchable_list_view.dart';
 import '../../attachments/application/pending_uploads.dart';
+import '../../clients/application/clients_provider.dart';
+import '../../items/application/items_provider.dart';
 import '../application/service_orders_provider.dart';
 
 const _statusLabels = {
@@ -16,7 +18,18 @@ const _statusLabels = {
 };
 
 class ServiceOrderListScreen extends ConsumerStatefulWidget {
-  const ServiceOrderListScreen({super.key});
+  const ServiceOrderListScreen({
+    super.key,
+    this.clientId,
+    this.itemId,
+  });
+
+  /// Quando um deles é setado, a tela vira "Laudos" daquele registro: lista
+  /// só as ordens ligadas a ele, com o nome no cabeçalho e botão de voltar.
+  final String? clientId;
+  final String? itemId;
+
+  bool get scoped => clientId != null || itemId != null;
 
   @override
   ConsumerState<ServiceOrderListScreen> createState() =>
@@ -27,24 +40,50 @@ class _ServiceOrderListScreenState
     extends ConsumerState<ServiceOrderListScreen> {
   String? _status;
 
+  bool _inScope(ServiceOrderWithClient e) {
+    final o = e.order;
+    return (widget.clientId == null || o.clientId == widget.clientId) &&
+        (widget.itemId == null || o.itemId == widget.itemId);
+  }
+
+  String? _scopeName() {
+    if (widget.clientId != null) {
+      return (ref.watch(clientListProvider).value ?? const [])
+          .where((c) => c.id == widget.clientId)
+          .map((c) => c.name)
+          .join();
+    }
+    if (widget.itemId != null) {
+      return (ref.watch(itemListProvider).value ?? const [])
+          .where((i) => i.id == widget.itemId)
+          .map((i) => i.name)
+          .join();
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(serviceOrderListProvider);
-    final total = async.value?.length;
+    final scoped = widget.scoped;
+    final total = scoped
+        ? async.value?.where(_inScope).length
+        : async.value?.length;
+    final scopeName = scoped ? _scopeName() : null;
+    final needsFilter = scoped || _status != null;
 
     return Scaffold(
       appBar: brandAppBar(
-        title: 'Ordens de serviço',
+        title: scoped ? 'Laudos' : 'Ordens de serviço',
         count: total == null
             ? null
+            : scoped
+            ? '$total ${total == 1 ? 'laudo' : 'laudos'}'
             : '$total ${total == 1 ? 'ordem' : 'ordens'}',
-        actions: [
-          IconButton(
-            tooltip: 'Tipos de ordem',
-            icon: const Icon(Icons.category_outlined),
-            onPressed: () => context.push('/type-catalog?kind=service-order'),
-          ),
-        ],
+        subtitle: scoped
+            ? ((scopeName ?? '').isEmpty ? null : scopeName)
+            : null,
+        leading: scoped ? const BackButton() : null,
       ),
       body: SearchableListView<ServiceOrderWithClient>(
         async: async,
@@ -53,12 +92,16 @@ class _ServiceOrderListScreenState
           await drainPendingUploads(ref);
         },
         hintText: 'Buscar por cliente ou motivo',
-        emptyMessage: 'Nenhuma ordem ainda. Puxe pra baixo para sincronizar.',
+        emptyMessage: scoped
+            ? 'Nenhum laudo relacionado.'
+            : 'Nenhuma ordem ainda. Puxe pra baixo para sincronizar.',
         errorMessage: 'Não foi possível carregar as ordens.',
         searchText: (e) => '${e.clientName} ${e.order.reason}',
-        extraFilter: _status == null
-            ? null
-            : (e) => e.order.status == _status,
+        extraFilter: needsFilter
+            ? (e) =>
+                  _inScope(e) &&
+                  (_status == null || e.order.status == _status)
+            : null,
         filterBar: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -107,11 +150,13 @@ class _ServiceOrderListScreenState
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/service-orders/new'),
-        icon: const Icon(Icons.add),
-        label: const Text('Nova ordem'),
-      ),
+      floatingActionButton: scoped
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => context.push('/service-orders/new'),
+              icon: const Icon(Icons.add),
+              label: const Text('Nova ordem'),
+            ),
     );
   }
 }

@@ -10,17 +10,28 @@ import 'attachment_controller_io.dart'
 ///   (`UploadQueueController`);
 /// - web: `POST multipart` direto (sempre online), sem fila nem disco.
 abstract interface class AttachmentController {
+  /// [ownerKind] ∈ {service_order, item, location}; [ownerId] é o dono da foto.
   Future<void> submitPhoto({
-    required String orderId,
+    required String ownerKind,
+    required String ownerId,
     required Uint8List bytes,
     required String filename,
-    required String photoKind,
+    String photoKind = 'other',
     String? caption,
+    String? serviceOrderItemId,
   });
 
   Future<void> submitSignature({
     required String orderId,
     required Uint8List bytes,
+  });
+
+  /// Apaga uma foto já enviada (REST puro, precisa de conexão) e recarrega a
+  /// galeria do dono.
+  Future<void> deletePhoto({
+    required String ownerKind,
+    required String ownerId,
+    required String photoId,
   });
 }
 

@@ -21,14 +21,14 @@ void main() {
         'id': 'q1',
         'public_code': 'SL-8K4P-7M2Q-RT9X-C3NW-A',
         'status': 'assigned',
-        'equipment_id': 'e1',
+        'item_id': 'e1',
         'assigned_at': '2026-03-04T05:06:07Z',
         'version': 2,
       }, organizationId: 'org1');
       expect(c.id, 'q1');
       expect(c.publicCode, 'SL-8K4P-7M2Q-RT9X-C3NW-A');
       expect(c.status, 'assigned');
-      expect(c.equipmentId, 'e1');
+      expect(c.itemId, 'e1');
       expect(c.assignedAt, DateTime.utc(2026, 3, 4, 5, 6, 7));
       expect(c.syncStatus, 'synced');
     });
@@ -46,22 +46,20 @@ void main() {
     final r = QrResolved.fromApiJson(const {
       'code': {'id': 'q1', 'status': 'assigned', 'equipment_id': 'e9'},
       'entity': {
-        'kind': 'equipment',
+        'kind': 'item',
         'id': 'e9',
         'name': 'Forno 3',
-        'location_id': 'l1',
       },
     }, organizationId: 'org1');
     expect(r.code.id, 'q1');
-    expect(r.entity!.kind, 'equipment');
+    expect(r.entity!.kind, 'item');
     expect(r.entity!.name, 'Forno 3');
-    expect(r.entity!.locationId, 'l1');
   });
 
   test('QrTarget: igualdade serve de chave de family', () {
     expect(const QrTarget.client('c1'), const QrTarget.client('c1'));
     expect(
-      const QrTarget.client('c1') == const QrTarget.location('c1'),
+      const QrTarget.client('c1') == const QrTarget.item('c1'),
       isFalse,
     );
   });
@@ -75,7 +73,7 @@ void main() {
             organizationId: 'org1',
             status: 'assigned',
             publicCode: const Value('SL-AAAA-BBBB-CCCC-DDDD-E'),
-            equipmentId: const Value('e1'),
+            itemId: const Value('e1'),
             assignedAt: Value(DateTime.utc(2026, 1, 1)),
             localUpdatedAt: DateTime.now(),
           ),
@@ -86,7 +84,7 @@ void main() {
             id: 'q0',
             organizationId: 'org1',
             status: 'deactivated',
-            equipmentId: const Value('e1'),
+            itemId: const Value('e1'),
             localUpdatedAt: DateTime.now(),
           ),
         );
@@ -103,7 +101,7 @@ void main() {
 
     final active = await c
         .read(qrRepositoryProvider)
-        .watchActive(const QrTarget.equipment('e1'))
+        .watchActive(const QrTarget.item('e1'))
         .first;
     expect(active?.id, 'q1');
     expect(active?.publicCode, 'SL-AAAA-BBBB-CCCC-DDDD-E');
@@ -158,7 +156,7 @@ void main() {
 
       await c.read(qrRepositoryProvider).assign(
             codeId: 'q1',
-            target: const QrTarget.equipment('e9'),
+            target: const QrTarget.item('e9'),
             baseVersion: 1,
           );
 
@@ -166,7 +164,7 @@ void main() {
           await (db.select(db.localQrCodes)..where((t) => t.id.equals('q1')))
               .getSingle();
       expect(row.status, 'assigned');
-      expect(row.equipmentId, 'e9');
+      expect(row.itemId, 'e9');
       expect(row.syncStatus, 'pending');
       final outbox = await db.select(db.syncOutbox).getSingle();
       expect(outbox.entityType, 'qr_code');
@@ -182,7 +180,7 @@ void main() {
               id: 'q2',
               organizationId: 'org1',
               status: 'assigned',
-              equipmentId: const Value('e1'),
+              itemId: const Value('e1'),
               localUpdatedAt: DateTime.now(),
             ),
           );

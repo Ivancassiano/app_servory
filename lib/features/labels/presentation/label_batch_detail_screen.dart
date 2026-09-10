@@ -96,10 +96,10 @@ class _LabelBatchDetailScreenState
                 children: [
                   ListTile(
                     title: const Text('Situação'),
-                    trailing: Chip(
-                      label: Text(
-                        _statusLabel[batch.status] ?? batch.status,
-                      ),
+                    trailing: Text(
+                      _statusLabel[batch.status] ??
+                          (batch.status.isEmpty ? '—' : batch.status),
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
                   ListTile(
@@ -227,7 +227,10 @@ class _LabelBatchDetailScreenState
             left: 16,
             right: 16,
             top: 16,
-            bottom: 16 + MediaQuery.of(ctx).viewInsets.bottom,
+            bottom:
+                16 +
+                MediaQuery.of(ctx).viewInsets.bottom +
+                MediaQuery.of(ctx).viewPadding.bottom,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

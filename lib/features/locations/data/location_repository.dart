@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/data/paged_source.dart';
 import '../../../core/data/remote_collection.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
@@ -15,7 +16,30 @@ import '../../auth/application/session_controller.dart';
 import '../../sync/data/local_first_repository.dart';
 import 'location_mapper.dart';
 
-/// Ver [ClientRepository] para o racional das duas implementações.
+/// Campos editáveis de um local.
+class LocationFields {
+  const LocationFields({
+    required this.name,
+    this.notes = '',
+    this.address = LocationAddressInput.empty,
+    this.isActive = true,
+  });
+
+  final String name;
+  final String notes;
+  final LocationAddressInput address;
+  final bool isActive;
+
+  /// Campos de um local existente (para editar só uma coisa e reenviar o resto).
+  factory LocationFields.of(LocalLocation l) => LocationFields(
+    name: l.name,
+    notes: l.notes,
+    address: LocationAddressInput.of(l),
+    isActive: l.isActive,
+  );
+}
+
+/// Ver [ItemRepository] para o racional das duas implementações.
 abstract interface class LocationRepository {
   Stream<List<LocalLocation>> watchList();
   Stream<LocalLocation?> watchById(String id);
@@ -23,23 +47,17 @@ abstract interface class LocationRepository {
 
   Future<String> create({
     required String clientId,
-    String? parentLocationId,
-    required String name,
-    required String contactPerson,
-    required String phone,
-    required String notes,
-    LocationAddressInput address,
+    required LocationFields fields,
   });
 
   Future<void> update({
     required String id,
     required int? baseVersion,
-    required String name,
-    required String contactPerson,
-    required String phone,
-    required String notes,
-    LocationAddressInput address,
+    required LocationFields fields,
   });
+
+  /// Soft-delete (tombstone via sync).
+  Future<void> delete({required String id, required int? baseVersion});
 }
 
 final locationRepositoryProvider = Provider<LocationRepository>((ref) {
@@ -70,9 +88,9 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
   }
 
   @override
-  Stream<LocalLocation?> watchById(String id) =>
-      (db.select(db.localLocations)..where((t) => t.id.equals(id)))
-          .watchSingleOrNull();
+  Stream<LocalLocation?> watchById(String id) => (db.select(
+    db.localLocations,
+  )..where((t) => t.id.equals(id))).watchSingleOrNull();
 
   @override
   Future<void> refresh() => runSync();
@@ -80,56 +98,47 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
   @override
   Future<String> create({
     required String clientId,
-    String? parentLocationId,
-    required String name,
-    required String contactPerson,
-    required String phone,
-    required String notes,
-    LocationAddressInput address = LocationAddressInput.empty,
+    required LocationFields fields,
   }) async {
     final body = locationCreateBody(
       clientId: clientId,
-      parentLocationId: parentLocationId,
-      name: name,
-      contactPerson: contactPerson,
-      phone: phone,
-      notes: notes,
-      address: address,
+      name: fields.name,
+      notes: fields.notes,
+      address: fields.address,
+      isActive: fields.isActive,
     );
     if (online) {
       try {
-        final r = await restCall(
-          () => dio.post('/v1/locations', data: body),
-        );
-        final loc = locationFromApiJson(
+        final r = await restCall(() => dio.post('/v1/locations', data: body));
+        final l = locationFromApiJson(
           r.data as Map<String, dynamic>,
           organizationId: orgId,
         );
-        await db.into(db.localLocations).insertOnConflictUpdate(loc);
-        return loc.id;
+        await db.into(db.localLocations).insertOnConflictUpdate(l);
+        return l.id;
       } on ApiException catch (e) {
         if (!isOfflineError(e)) rethrow;
       }
     }
     final id = const Uuid().v4();
     await db.transaction(() async {
-      await db.into(db.localLocations).insert(
+      await db
+          .into(db.localLocations)
+          .insert(
             LocalLocationsCompanion.insert(
               id: id,
               organizationId: orgId,
               clientId: clientId,
-              parentLocationId: Value(parentLocationId),
-              name: name,
-              postalCode: Value(address.postalCode),
-              street: Value(address.street),
-              number: Value(address.number),
-              complement: Value(address.complement),
-              district: Value(address.district),
-              city: Value(address.city),
-              state: Value(address.state),
-              contactPerson: Value(contactPerson),
-              phone: Value(phone),
-              notes: Value(notes),
+              name: Value(fields.name),
+              postalCode: Value(fields.address.postalCode),
+              street: Value(fields.address.street),
+              number: Value(fields.address.number),
+              complement: Value(fields.address.complement),
+              district: Value(fields.address.district),
+              city: Value(fields.address.city),
+              state: Value(fields.address.state),
+              notes: Value(fields.notes),
+              isActive: Value(fields.isActive),
               localUpdatedAt: DateTime.now(),
               syncStatus: const Value('pending'),
               lastSyncedAt: const Value(null),
@@ -150,18 +159,13 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
   Future<void> update({
     required String id,
     required int? baseVersion,
-    required String name,
-    required String contactPerson,
-    required String phone,
-    required String notes,
-    LocationAddressInput address = LocationAddressInput.empty,
+    required LocationFields fields,
   }) async {
     final body = locationUpdateBody(
-      name: name,
-      contactPerson: contactPerson,
-      phone: phone,
-      notes: notes,
-      address: address,
+      name: fields.name,
+      notes: fields.notes,
+      address: fields.address,
+      isActive: fields.isActive,
     );
     if (online) {
       try {
@@ -171,7 +175,9 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
             data: {...body, 'version': ?baseVersion},
           ),
         );
-        await db.into(db.localLocations).insertOnConflictUpdate(
+        await db
+            .into(db.localLocations)
+            .insertOnConflictUpdate(
               locationFromApiJson(
                 r.data as Map<String, dynamic>,
                 organizationId: orgId,
@@ -185,17 +191,16 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
     await db.transaction(() async {
       await (db.update(db.localLocations)..where((t) => t.id.equals(id))).write(
         LocalLocationsCompanion(
-          name: Value(name),
-          postalCode: Value(address.postalCode),
-          street: Value(address.street),
-          number: Value(address.number),
-          complement: Value(address.complement),
-          district: Value(address.district),
-          city: Value(address.city),
-          state: Value(address.state),
-          contactPerson: Value(contactPerson),
-          phone: Value(phone),
-          notes: Value(notes),
+          name: Value(fields.name),
+          postalCode: Value(fields.address.postalCode),
+          street: Value(fields.address.street),
+          number: Value(fields.address.number),
+          complement: Value(fields.address.complement),
+          district: Value(fields.address.district),
+          city: Value(fields.address.city),
+          state: Value(fields.address.state),
+          notes: Value(fields.notes),
+          isActive: Value(fields.isActive),
           localUpdatedAt: Value(DateTime.now()),
           syncStatus: const Value('pending'),
         ),
@@ -210,11 +215,43 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
     });
     unawaited(trySyncNow());
   }
+
+  @override
+  Future<void> delete({required String id, required int? baseVersion}) async {
+    if (online) {
+      try {
+        await restCall(() => dio.delete('/v1/locations/$id'));
+        await (db.update(db.localLocations)..where((t) => t.id.equals(id)))
+            .write(const LocalLocationsCompanion(deleted: Value(true)));
+        return;
+      } on ApiException catch (e) {
+        if (!isOfflineError(e)) rethrow;
+      }
+    }
+    await db.transaction(() async {
+      await (db.update(db.localLocations)..where((t) => t.id.equals(id))).write(
+        LocalLocationsCompanion(
+          deleted: const Value(true),
+          localUpdatedAt: Value(DateTime.now()),
+          syncStatus: const Value('pending'),
+        ),
+      );
+      await enqueue(
+        entityType: 'location',
+        entityId: id,
+        operationType: 'delete',
+        payload: const {},
+        baseVersion: baseVersion,
+      );
+    });
+    unawaited(trySyncNow());
+  }
 }
 
 // ---------------------------------------------------------------------------
 
-class RemoteLocationRepository implements LocationRepository {
+class RemoteLocationRepository
+    implements LocationRepository, PagedListRepository {
   RemoteLocationRepository(Dio dio, String orgId)
     : _collection = RemoteCollection<LocalLocation>(
         dio: dio,
@@ -222,9 +259,13 @@ class RemoteLocationRepository implements LocationRepository {
         listKey: 'locations',
         fromJson: (j) => locationFromApiJson(j, organizationId: orgId),
         idOf: (l) => l.id,
+        pageSize: 50,
       );
 
   final RemoteCollection<LocalLocation> _collection;
+
+  @override
+  PagedSource? get listPaging => _collection;
 
   void dispose() => _collection.dispose();
 
@@ -240,46 +281,38 @@ class RemoteLocationRepository implements LocationRepository {
   @override
   Future<String> create({
     required String clientId,
-    String? parentLocationId,
-    required String name,
-    required String contactPerson,
-    required String phone,
-    required String notes,
-    LocationAddressInput address = LocationAddressInput.empty,
+    required LocationFields fields,
   }) async {
-    final loc = await _collection.create(
+    final l = await _collection.create(
       locationCreateBody(
         clientId: clientId,
-        parentLocationId: parentLocationId,
-        name: name,
-        contactPerson: contactPerson,
-        phone: phone,
-        notes: notes,
-        address: address,
+        name: fields.name,
+        notes: fields.notes,
+        address: fields.address,
+        isActive: fields.isActive,
       ),
     );
-    return loc.id;
+    return l.id;
   }
 
   @override
   Future<void> update({
     required String id,
     required int? baseVersion,
-    required String name,
-    required String contactPerson,
-    required String phone,
-    required String notes,
-    LocationAddressInput address = LocationAddressInput.empty,
+    required LocationFields fields,
   }) async {
     await _collection.update(id, {
       ...locationUpdateBody(
-        name: name,
-        contactPerson: contactPerson,
-        phone: phone,
-        notes: notes,
-        address: address,
+        name: fields.name,
+        notes: fields.notes,
+        address: fields.address,
+        isActive: fields.isActive,
       ),
       'version': ?baseVersion,
     });
   }
+
+  @override
+  Future<void> delete({required String id, required int? baseVersion}) =>
+      _collection.remove(id);
 }

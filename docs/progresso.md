@@ -5,6 +5,414 @@ repositórios do produto: `auth_servory` (backend, `~/go/src/auth_servory`) e
 `app_servory` (app Flutter, este repositório). Para retomar o backend:
 `claude --continue` dentro de `/Users/ivancassiano/go/src/auth_servory`.
 
+## `app_servory` — `feature/service-orders`: laudos relacionados no cliente/local/equipamento ✅
+
+As telas de cliente, local e equipamento não tinham como chegar nas ordens de
+serviço ligadas ao registro. Agora cada uma tem uma seção **Laudos (N)**.
+
+- `RelatedServiceOrdersSection` (`clientId` | `locationId` | `equipmentId`):
+  filtra `serviceOrderListProvider` pelo escopo, mostra prévia de 3 (status +
+  motivo, toca → abre a OS) e um "Ver todos (N)" que abre a lista filtrada.
+  Vazio: "Nenhum laudo relacionado."
+- `ServiceOrderListScreen` ganhou `clientId`/`locationId`/`equipmentId`. No modo
+  recortado o título vira **Laudos**, o nome do registro vai no subtítulo do
+  `brandAppBar`, tem botão de voltar e o FAB "Nova ordem" some. Os chips de
+  status continuam funcionando dentro do recorte.
+- Rota `/service-orders` lê os 3 query params.
+- Testes: lista recortada por local (`service_order_list_screen_test`); seção
+  filtra pelo escopo + navega + estado vazio (`related_service_orders_section_test`).
+
+## `app_servory` — `feature/service-orders`: form de criação da ordem (Fase 2) 🚧
+
+- **Backend** (`auth_servory` `6e4ce48`): `equipment_type_id` opcional
+  (migração 00037) p/ cadastro rápido de equipamento; permissão
+  `service_order.assign_company` (00038, admin) — trocar empresa emitente !=
+  primária do usuário exige ela; `/v1/me` ganha `primary_company_id`.
+- **App**: seletor de **cliente** (bottom sheet com busca + OK); seletor de
+  **locais/equipamentos** em árvore com checkbox, busca e cadastro rápido
+  (`order_form_pickers.dart`); form de "Nova ordem" reescrito — cliente por
+  botão, "Locais" (opcional) viram itens ao salvar, empresa emitente
+  padrão = primária do usuário (travada sem permissão), técnico padrão = ele.
+  `equipmentTypeId` opcional no repo/mapper.
+- **Falta:** 2d-b (peças/recs/fotos por item), Fase 3 (ordem-filha), Fase 4 (PDF).
+
+## `app_servory` — `feature/service-orders`: itens da ordem (Fase 2) 🚧
+
+Laudo por equipamento. Plano: `~/.claude/plans/indexed-herding-ripple.md`.
+
+- **Backend** (`auth_servory`, commits `ab5c96c`, `8483cb5`): migração 00036 —
+  `service_order_items` (opcional, 0..N) com laudo próprio + `approval`;
+  `service_order_item_id` NULLABLE em parts/recommendations/photos (sem
+  backfill, cabeçalho intocado = "laudo geral"). Rotas
+  `/v1/service-orders/{id}/items[/{itemId}[/approval]]`. Adaptador de sync do
+  item. Recomendações ganharam trigger de outbox (adaptador fica p/ depois).
+- **App** (commit `b0530e4` + este): drift `LocalServiceOrderItems` (v7),
+  mapper, sync_engine, `ServiceOrderRepository.watchItems/addItem/updateItem/
+  deleteItem/setItemApproval`. Tela da ordem: seção **Itens** (agrupada por
+  local) + folha "Novo item" (local → equipamento opcional). Editor do item
+  (`/service-orders/:id/items/:itemId`): diagnóstico/serviço/condição/obs +
+  aprovação (SegmentedButton) + remover. "Laudo" virou "Laudo geral".
+- **Falta (2d-b):** peças/recomendações/fotos por item (filtro + tag por
+  `item_id`); sync das recomendações; Fase 3 (ordem-filha) e Fase 4 (PDF).
+
+## `app_servory` — `feature/service-orders`: ordem — modo de criação (Fase 1) ✅
+
+Primeira fatia do plano "visita técnica" (`~/.claude/plans/indexed-herding-ripple.md`).
+
+- O switch "Abrir imediatamente" saiu. Na criação, o botão principal alterna:
+  **Iniciar ordem** (sem data → `mode: start`, já em andamento) ↔ **Agendar ordem**
+  (com data → `mode: open`, entra na agenda). Link **Salvar rascunho** (`mode: draft`).
+- `serviceOrderCreateBody` / repos / controller: `open: bool` → `mode: String`.
+  Offline: `_statusForMode` + `startedAt` local quando `start`.
+- Backend (mesma fatia, repo auth_servory): `CreateInput.Mode`, `started_at` no
+  insert, `open` → `mode` no HTTP e no sync.
+
+## `app_servory` — `feature/service-orders`: laudos como histórico (data/hora) ✅
+
+`RelatedServiceOrdersSection` agora mostra a **data/hora de cadastro** como
+título de cada card (`dd/MM/yyyy HH:mm`, hora local) e ordena **mais recente
+primeiro** por `createdAt` (cai pra `updatedAt` em registro antigo). Subtítulo
+virou `status · motivo`. Lê como um histórico.
+
+## `app_servory` — `feature/service-orders`: marca Leiano mais presente ✅
+
+O nome da casa (Leiano) só aparecia na splash e apagadíssimo. Agora:
+
+- Token `BrandText.brandOver` voltou pro manual (11px, ~0,18em, `#4C5057`) —
+  era 9,5px `#8A8F98`.
+- `kBrandEndorsement = 'uma solução leiano'` (constante em `app_theme.dart`),
+  usada abaixo do wordmark na **splash**, no **login** e no **cabeçalho da
+  home** (a AppBar da home virou título de 2 linhas, `toolbarHeight += 10`).
+- Splash: a linha solta "leiano" (rastreada, apagada) saiu; entrou a
+  assinatura abaixo do wordmark, em `#B4B9C1`.
+- **Configurações**: rodapé `ServiceReport · Leiano Sistemas · v1.0.0`
+  (`_BrandFooter`) — marcado `[item 3 — em avaliação]`, fácil de remover
+  (uma linha na ListView + a classe).
+
+## `app_servory` — `feature/service-orders`: tempo mínimo de splash no boot ✅
+
+O splash sumia num flash quando a sessão restaurava na hora, passando a
+sensação de que o app "não carregou nada". Agora fica pelo menos 3s.
+
+- `bootSplashMinDurationProvider` (`session_controller.dart`): padrão
+  `Duration.zero`; `main.dart` sobrescreve com `1s`. Assim os testes de widget
+  não ganham um timer pendente só por encostarem na sessão.
+- `SessionController._restore` roda um `Future.delayed(minSplash)` em paralelo
+  com a leitura do secure store e só resolve o estado depois dos dois.
+- Teste: estado fica em `SessionUnknown` até o tempo mínimo passar.
+
+## `app_servory` — `feature/service-orders`: recorte por cliente no cabeçalho ✅
+
+A lista de Locais/Equipamentos aberta pelo "Ver todos" da tela do cliente
+usava um chip removível (`ClientFilterBar`) — que além de renderizar branco no
+branco, deixava "limpar" o cliente (não faz sentido: você entrou pelo cliente)
+e, ao limpar, sumia com o botão de voltar.
+
+- Chip removido (`client_filter_bar.dart` deletado).
+- `brandAppBar` ganhou `subtitle` (linha abaixo do título, mono). As duas
+  listas passam o nome do cliente ali quando `clientId != null`:
+  `5 LOCAIS / Locais / Padaria Central Web`.
+- `brandAppBar` ganhou `leading`; as listas passam `const BackButton()` no
+  modo recortado (a rota é sempre empilhada e o implícito falhava).
+- Testes (`location_list_screen`, `equipment_list_screen`): cliente no
+  cabeçalho + `BackButton` presente.
+
+## `app_servory` — `feature/service-orders`: empresa abre em leitura ✅
+
+`CompanyDetailScreen` abria já com os campos editáveis, fora do padrão das
+outras telas de cadastro (cliente, equipamento, local, OS). Agora:
+
+- Registro salvo abre em **leitura** (`DetailRow`/`DetailExpander`), com lápis
+  "Editar" + lixeira na AppBar. O form só aparece ao tocar no lápis; botão
+  **Cancelar** volta pra leitura.
+- Seções **Logo** e **Pessoas** passaram pro modo leitura (antes ficavam no
+  fim do form).
+- `_submit` no update deixa de dar `pop()` — volta pra leitura e re-semeia
+  (`_reloadFromServer`, invalida `companyByIdProvider`).
+- Teste novo: `company_detail_screen_test.dart` (leitura → lápis → Cancelar;
+  nova empresa já no form). 139 testes, `flutter analyze` limpo.
+
+## `app_servory` — `feature/service-orders`: catálogos de tipos em Configurações ✅
+
+O cabeçalho de **Ordens de serviço** tinha um botão que abria a `TypeCatalogScreen`
+(tabs "Equipamentos" / "Ordens de serviço") — tipos de equipamento não têm a ver
+com ordens. Movidos para Configurações:
+
+- Removido o `IconButton` "Tipos de..." da AppBar de **Ordens de serviço** e de
+  **Equipamentos**.
+- **`SettingsScreen`**: novo grupo **Catálogos** com **Tipos de ordem de serviço**
+  (`/type-catalog?kind=service-order`) e **Tipos de equipamento**
+  (`/type-catalog?kind=equipment`).
+- **`TypeCatalogScreen`**: deixou de ser tabbed — abre num único catálogo, com
+  `brandAppBar` (título + contagem) igual às demais telas. `kind` obrigatório
+  (era `initial`); novo `TypeCatalog.title` (plural).
+- Testes: `settings_screen_test.dart` cobre os dois itens novos + navegação.
+  `flutter analyze` limpo, 137 testes.
+
+## `app_servory` — `feature/service-orders`: hierarquia nas listas, buscas e cadastro ✅
+
+A associação cliente → local → equipamento já era salva, mas a navegação era
+fraca. Melhorias:
+
+- **Lista de Locais**: subtítulo mostra `cliente · cidade`; busca acha pelo
+  nome do cliente também.
+- **Lista de Equipamentos**: subtítulo `cliente · local` + marca/modelo; busca
+  por equipamento, local ou cliente.
+- **Cadastro de equipamento**: novo seletor **Cliente** que filtra a lista de
+  **Local** (mesmo padrão de `location_detail_screen`: troca de cliente zera o
+  local; `InputDecorator` travado quando vem da tela do cliente). O local
+  continua obrigatório (backend exige) — o cliente não é persistido, é
+  transitivo.
+- **Tela do cliente**: seções **Locais** e **Equipamentos** agora são prévia
+  de 4 + "Ver todos (N)" → abre a lista filtrada (`/locations?clientId=` /
+  `/equipments?clientId=`) com chip do cliente e "carrega tudo" no web
+  (`SearchableListView.loadAllOnInit`). A seção de Equipamentos junta os
+  equipamentos de todos os locais do cliente (dá pra achar um sem abrir local
+  por local).
+- Novos: `ClientEquipmentsSection`, `ClientFilterBar`; `ChildListSection` ganhou
+  `seeAllLabel`/`onSeeAll`; rotas `/locations` e `/equipments` aceitam
+  `?clientId=`.
+- 136 testes (era 125): `location_list_screen`, `equipment_list_screen`,
+  `equipment_detail_screen`, `client_equipments_section`, +
+  `client_locations_section` (prévia/ver todos). `flutter analyze` limpo,
+  `flutter build web` OK. Verificado ao vivo no Android.
+
+## `app_servory` — `feature/service-orders`: bottom sheets acima da barra do Android ✅
+
+O botão "Gerar" da folha de etiquetas (e outros) ficava atrás da barra de
+navegação do Android. Os 6 `showModalBottomSheet` só somavam
+`viewInsets.bottom` (teclado) no padding — agora somam também
+`viewPadding.bottom` (barra do sistema): folha de etiquetas, escanear
+etiqueta, capturar foto, contatos, peças e recomendações da OS.
+
+## `app_servory` — `feature/service-orders`: tela de Configurações ✅
+
+A home estava com itens de "administração" (o card de identidade/organização,
+Etiquetas e Empresas) misturados com o trabalho do dia. Movidos para uma tela
+de Configurações.
+
+- **`SettingsScreen`** (`lib/features/me/presentation/settings_screen.dart`),
+  rota `/settings`: card de identidade (nome/e-mail/organização/perfil, toca →
+  `/me/person`, mostra o estado de sync), grupo **Empresas** (`/companies`) +
+  **Etiquetas** (`/label-batches`), e **Sair** (era ação da AppBar da home).
+- **Home**: o ícone de `logout` na AppBar virou **engrenagem →
+  `/settings`**. Saíram da grade de atalhos: Etiquetas e Empresas. Ficaram
+  Ordens de serviço, Clientes, Locais, Equipamentos. O card de identidade saiu;
+  no lugar, uma faixa fina só quando sync está em andamento/falhou.
+- 125 testes (era 123): `settings_screen_test.dart` (render + navegação).
+  `flutter analyze` limpo.
+
+## `app_servory` — `feature/service-orders`: imprimir / compartilhar a etiqueta ✅
+
+Faltava um jeito de mandar a etiqueta (QR) pra impressão nas telas de
+cliente / local / equipamento — só dava pra gerar e copiar o código.
+
+- **`buildQrLabelPdf({publicCode, title, subtitle})`**
+  (`lib/features/labels/application/qr_label_pdf.dart`): função pura, gera um
+  PDF 100×60 mm com o QR Code (`pw.BarcodeWidget` + `pw.Barcode.qrCode()`, sem
+  dependência nova) + nome do registro + tipo + código legível + "ServiceReport".
+- **`QrLabelPrintScreen`**: `PdfPreview` do `printing` no nativo (imprimir /
+  compartilhar embutidos), botões diretos no web — mesmo padrão do laudo.
+- Botão **"Imprimir / compartilhar"** no card da etiqueta ativa
+  (`QrLabelSection`, escondido só no estado de conflito). As 3 telas de
+  detalhe passam o nome do registro (`entityLabel`).
+- Backend não tem endpoint de PDF por etiqueta única (só o de folha por lote
+  via worker) — por isso o PDF é montado no cliente.
+- O botão no card é **só o ícone de impressora** (sem texto), um **quadrado
+  preto** com a **mesma altura** do botão "Substituir" ao lado (os dois num
+  `IntrinsicHeight` + `Row` com `stretch`; a impressora é um `FilledButton`
+  em `AspectRatio(1)`). O `IconButton.filled` saía círculo, e depois um
+  quadrado mais baixo que o "Substituir".
+- Na tela de preview há um seletor **"Texto da etiqueta (opcional)"** —
+  `— / Empresa: <nome> / Modelo: <nome>` (mesma ideia da folha por lote,
+  ADR-0016/0017). Empresa → nome/endereço/telefone; Modelo → o `body`
+  cadastrado. Trocar o seletor re-renderiza o preview (`ValueKey`).
+- 123 testes (era 121): `qr_label_pdf_test.dart` (PDF válido, com/sem título).
+  `flutter analyze` limpo, `flutter build web` OK.
+- Verificado ao vivo no **Android**: gerar etiqueta → ícone de impressora →
+  preview com QR + nome + código; escolher "Empresa" no seletor adicionou o
+  nome da empresa na etiqueta e o preview atualizou na hora.
+- **Descoberta dos modelos**: os "Modelos de etiqueta" (o texto reutilizável)
+  só eram acessíveis por um ícone no topo da tela "Etiquetas". Agora a tela de
+  preview tem um link **"Criar / gerenciar modelos"** que abre a mesma lista
+  (com o `+` pra criar). A `QrLabelPrintScreen` virou rota go_router
+  (`/qr-label?code=…&title=…&subtitle=…`) pra a navegação compor direito.
+
+## `app_servory` — `feature/service-orders`: ordem de serviço em modo leitura ✅
+
+Estende o modo leitura pra tela de ordem, com a regra pedida: o **lápis
+(editar cabeçalho) só aparece em rascunho**; depois disso o cabeçalho
+(local/equip./tipo/empresa/técnico/agendamento/motivo) fica travado.
+
+- Abre em leitura: botão de transição (Iniciar/Concluir/Reabrir) + `DetailRow`
+  de local/equipamento/motivo + expansor "Mais dados do cabeçalho"
+  (tipo/empresa/técnico/agendamento).
+- **"Laudo"** é uma seção à parte com **"Editar laudo"** (link) — edita só
+  diagnóstico / serviço realizado / condição final / observações, disponível
+  enquanto a ordem **não está concluída**. O `_submit` reenvia o cabeçalho
+  intacto (vem do `_seedFrom`), só troca os campos de laudo.
+- Seções (Peças, Recomendações, Fotos, Assinatura, Gerar PDF) seguem no modo
+  leitura. Salvar volta pra leitura + recarrega (nova `version`).
+- `flutter analyze` limpo, `flutter test` 121, `flutter build web` OK.
+- Verificado ao vivo no **Android**: rascunho → lápis + "Editar laudo";
+  aberta → sem lápis, com "Iniciar" + "Editar laudo"; "Editar laudo" numa
+  ordem aberta salvou o diagnóstico e `curl` confirmou `location_id`/`reason`
+  preservados no backend.
+
+## `app_servory` — `feature/service-orders`: telas de cadastro em modo leitura + expansor ✅
+
+Ajuste de usabilidade pedido pelo usuário. Antes, abrir um cliente/local/
+equipamento já salvo caía direto no formulário editável e despejava todos os
+campos (endereço do local etc.). Agora:
+
+- **Modo leitura por padrão** (registro já salvo): `DetailRow` (rótulo/valor,
+  `lib/core/widgets/detail_view.dart`), lápis no `AppBar` liga a edição.
+  Registro novo (`isNew`) abre direto no formulário.
+- **`DetailExpander`**: bloco recolhível para os dados secundários — no local,
+  "Endereço e observações" (CEP, endereço composto, local-pai, observações);
+  no equipamento, "Detalhes" (marca, modelo, nº de série, observações); no
+  cliente, "Outros dados" (razão social, CNPJ/CPF, e-mail…). Recolhido por
+  padrão.
+- As seções (Locais/Equipamentos, Contatos, Etiqueta) ficam no modo leitura;
+  o formulário de edição mostra só os campos + Salvar/**Cancelar**.
+- **Salvar** num registro existente volta pro modo leitura (não faz `pop`) e
+  recarrega do servidor (pega a nova `version` — evita conflito no próximo
+  salvar). **Cancelar** descarta e volta pra leitura.
+- 121 testes (era 120): +1 em `client_detail_screen_test.dart` (abre em
+  leitura → lápis → form → Cancelar volta); o teste de conflito ajustado
+  para ligar a edição antes.
+- Verificado ao vivo no **Android**: cliente abre em leitura → lápis → edita
+  telefone → Salvar → volta pra leitura com o valor novo; local abre em leitura
+  com "Endereço e observações" recolhido, expande ao tocar. `flutter analyze`
+  limpo, `flutter build web` OK. **Web/iOS**: mesma árvore de widgets
+  (abordagem B); extensão do Chrome caiu no meio, verificação web ao vivo
+  ficou pendente.
+
+## `app_servory` — `feature/service-orders`: navegação por hierarquia (cliente → locais → equipamentos) ✅
+
+O vínculo já era gravado (`location.client_id`, `equipment.location_id`
+obrigatórios na criação), mas não dava pra percorrer a árvore no app. Agora:
+
+- **`ChildListSection`** (`lib/core/widgets/child_list_section.dart`): bloco
+  genérico "filhos de um registro" (título + contagem + lista + botão de criar).
+- **`ClientLocationsSection`** na tela do cliente: lista os locais deste cliente
+  (filtro client-side sobre `locationListProvider`) + "Novo local" que abre a
+  criação com o cliente **fixo**.
+- **`LocationEquipmentsSection`** na tela do local: idem para equipamentos +
+  "Novo equipamento" com o local fixo.
+- Rotas `/locations/new?clientId=…` e `/equipments/new?locationId=…`; os
+  formulários leem o query param, pré-selecionam e mostram o pai como campo
+  travado (`InputDecorator` desabilitado) em vez do dropdown.
+- **Limitação (web):** as seções filtram sobre a 1ª página paginada — um
+  cliente com >50 locais no total truncaria. Nos apps é tudo do drift, correto.
+- Verificado ao vivo nas 3 plataformas (ver abaixo).
+
+## `app_servory` — `feature/service-orders`: paginação real das listas (web) ✅
+
+Item #7 do roadmap de v1. Antes as listas web puxavam `size: 500` numa
+tacada — e o backend **corta em `size` 25** (`maxPageSize` 100, `defaultPageSize`
+25), então o web só mostrava 25 registros por lista, silenciosamente. Agora:
+
+- **`RemoteCollection`** ganha modo paginado opt-in (`pageSize`): `refresh()`
+  busca a página 1 (`page`/`size` + lê `total`), `loadMore()` anexa a próxima,
+  `loadAll()` esgota. Sem `pageSize` o comportamento é o antigo (sub-recursos
+  pequenos — contatos, peças, recomendações, membros — não mudam). Passa a ser
+  `ChangeNotifier` para a UI reagir ao estado de carga.
+- **`PagedSource`** (`lib/core/data/paged_source.dart`): interface que a
+  `SearchableListView` consome (`hasMore` / `isLoadingMore` / `loadMore` /
+  `loadAll`) + marcador `PagedListRepository` + helper `pagingOf(repo)`.
+- **`SearchableListView`** ganha `paging`: rolar até ~400px do fim chama
+  `loadMore` (rodapé com spinner); **começar a digitar uma busca chama
+  `loadAll`** — a busca é client-side e daria resultado parcial sobre uma lista
+  incompleta. Nos apps `paging` é nulo (a lista inteira vem do drift), nada
+  muda.
+- Ligado em **clientes, locais, equipamentos** (web) e **empresas** (REST nos
+  dois alvos — empresas não sincronizam), `pageSize: 50`. A **lista de ordens
+  de serviço fica de fora**: o nome do cliente vem de um segundo provider
+  (`clientListProvider`), que também é paginado — paginar as ordens exigiria um
+  join server-side que não existe. Registrado como follow-up.
+- 120 testes (era 113): `remote_collection_paged_test.dart` (4),
+  `client_locations_section_test.dart` (2), +1 na `searchable_list_view_test.dart`.
+  `flutter analyze` limpo, `flutter build web` OK.
+
+### Verificação ao vivo (Docker + Android + iOS + Chrome)
+
+- **Android** (Pixel9): cliente → "Locais (2)" → "Novo local" (cliente travado
+  = "Padaria Central Web") → criou "Cozinha Teste Android"; local → "Equipamentos
+  (0)" → "Novo equipamento" (local travado) → criou "Forno Teste". `curl`
+  confirmou `client_id`/`location_id` corretos no backend.
+- **Chrome**: cliente → "Locais (3)", "Novo local" com cliente travado; lista de
+  Locais renderiza + busca com acento (`deposito` acha `Depósito`).
+- **iOS** (iPhone 17 Pro): cliente → "Locais (3)", local → "Equipamentos (1)"
+  ("Forno principal"). Layout idêntico às outras plataformas (abordagem B).
+
+## `app_servory` — `feature/service-orders`: testes de widget das telas principais ✅
+
+Item #10 do roadmap de v1. As telas só tinham cobertura de login; o resto era
+verificação ao vivo. Adicionados testes de widget que rodam sem backend, via
+`ProviderScope(overrides:)`:
+
+- `test/features/clients/client_detail_screen_test.dart` — semeadura do
+  formulário + fluxo de `VERSION_CONFLICT` ponta a ponta (edita → salva → vê o
+  `ConflictNotice` → "Recarregar" → re-semeia com o dado do servidor). Cobre o
+  #9. Repositório falso implementando `ClientRepository`; `contactsProvider` e
+  `activeQrCodeProvider` sobrescritos para não puxar sessão/Dio.
+- `test/features/me/person_screen_test.dart` — semeadura + salvar + validação
+  de nome obrigatório. Cobre o #11.
+- `test/features/service_orders/service_order_list_screen_test.dart` — filtro
+  pelo chip de status e busca por nome do cliente (`serviceOrderListProvider`
+  sobrescrito com `AsyncValue.data`).
+- 113 testes (era 108). `flutter analyze` limpo (o `?version` no helper de
+  teste em vez de `if (version != null)` — CI é estrita com infos).
+
+## `app_servory` — `feature/service-orders`: conflito de versão com "recarregar e reeditar" ✅
+
+Item #9 do roadmap de v1. Antes, um `VERSION_CONFLICT` (outra pessoa salvou o
+registro no meio da edição) caía na mensagem genérica de erro — o usuário não
+tinha ação clara. Agora:
+
+- **`ConflictNotice`** (`lib/core/widgets/conflict_notice.dart`): barra
+  vermelha ("Outra pessoa alterou este registro…") com botão **Recarregar do
+  servidor**.
+- Os 4 formulários de detalhe (cliente, local, equipamento, ordem de serviço —
+  inclusive as transições `start/complete/reopen`) passam a distinguir
+  `e.code == 'VERSION_CONFLICT'` do resto: em vez de `_error`, ligam `_conflict`
+  e mostram o `ConflictNotice`. `_reloadFromServer()` invalida o
+  `*ByIdProvider`, zera `_seeded` e re-semeia o formulário com o dado atual do
+  servidor — o usuário refaz as alterações sobre a versão certa.
+- **Limitação assumida**: recarregar descarta o que o usuário tinha digitado
+  (é o comportamento correto pela spec §12, "a primeira confirmação do servidor
+  vence" — não dá pra sobrescrever cegamente a alteração do outro).
+- 108 testes (era 106): `test/core/widgets/conflict_notice_test.dart`.
+  `flutter analyze` limpo, `flutter build web` OK.
+- **Não verificado ao vivo** (backend/emulador fora do ar): dois dispositivos
+  editando a mesma ordem, um salva, o outro vê a barra e recarrega.
+
+## `app_servory` — `feature/service-orders`: dados do técnico no laudo (`/v1/me/person`) ✅
+
+Item #11 do roadmap de v1 ("Pessoa do próprio usuário"). Fecha a lacuna de o
+laudo omitir o técnico quando o `/v1/me` não tinha carregado e adiciona o
+registro profissional (CREA/CFT) que a spec §7.6 pede na via de campo.
+
+- **`PersonApi`** (`lib/features/me/data/person_api.dart`): `Person`
+  (`full_name`, `tax_id`, `phone`, `professional_registration`, `notes` — sem
+  `version`, o backend faz merge campo a campo) + `getMyPerson` /
+  `updateMyPerson` (PATCH manda os cinco campos sempre). REST puro nas duas
+  plataformas — pessoa é global à conta, não sincroniza.
+- **`myPersonProvider`** + `personEditControllerProvider`
+  (`person_provider.dart`); tela `PersonScreen` (`/me/person`), aberta tocando
+  o card de identidade na home (ganhou um chevron).
+- **Laudo**: `ServiceOrderReportData.technicianRegistration`; os dois
+  assemblers (io/web) buscam `myPersonProvider` numa chamada tolerante a falha
+  (offline o laudo sai sem a linha) e o `service_order_pdf.dart` imprime
+  "Registro" logo abaixo de "Técnico".
+- 106 testes (era 103): `test/features/me/person_api_test.dart` (shape, GET,
+  PATCH com os cinco campos); `service_order_pdf_test.dart` ajustado para o
+  novo campo obrigatório. `flutter analyze` limpo, `flutter build web` OK.
+- **Ainda não verificado ao vivo** (Docker/emulador fora do ar nesta sessão):
+  home → card de identidade → preencher nome + registro → salvar → gerar laudo
+  e conferir a linha "Registro".
+
 ## `app_servory` — `feature/service-orders`: PDF do laudo (cópia de campo) ✅
 
 Fecha o item §10 do `GUIA-FLUTTER.md` / ADR-0018 ("PDF: continua fora do

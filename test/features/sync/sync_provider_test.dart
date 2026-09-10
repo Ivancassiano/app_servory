@@ -1,6 +1,8 @@
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:servory/core/db/app_database.dart';
 import 'package:servory/features/sync/application/sync_engine.dart';
 import 'package:servory/features/sync/application/sync_provider.dart';
 
@@ -45,4 +47,58 @@ void main() {
       verifyNever(() => engine.pull());
     },
   );
+
+  group('pendingSyncCountProvider', () {
+    late AppDatabase db;
+    late ProviderContainer c;
+
+    setUp(() {
+      db = AppDatabase.forTesting(NativeDatabase.memory());
+      c = ProviderContainer(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+      );
+      addTearDown(c.dispose);
+      addTearDown(db.close);
+    });
+
+    Future<void> expectCount(int want) async {
+      for (var i = 0; i < 100; i++) {
+        if (c.read(pendingSyncCountProvider) == want) return;
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      fail('pendingSyncCountProvider parou em ${c.read(pendingSyncCountProvider)}, esperava $want');
+    }
+
+    test('soma outbox + fila de anexos; 0 quando tudo sincronizado', () async {
+      c.listen(pendingSyncCountProvider, (_, _) {});
+      await expectCount(0);
+
+      await db.into(db.syncOutbox).insert(
+            SyncOutboxCompanion.insert(
+              operationId: 'op-1',
+              organizationId: 'org-1',
+              entityType: 'client',
+              entityId: 'c-1',
+              operationType: 'create',
+              payload: '{}',
+              occurredAt: DateTime.now(),
+            ),
+          );
+      await db.into(db.uploadQueue).insert(
+            UploadQueueCompanion.insert(
+              id: 'u-1',
+              organizationId: 'org-1',
+              ownerId: 'so-1',
+              kind: 'photo',
+              filePath: '/tmp/x.jpg',
+              sha256: 'abc',
+              createdAt: DateTime.now(),
+            ),
+          );
+      await expectCount(2);
+
+      await (db.delete(db.syncOutbox)).go();
+      await expectCount(1);
+    });
+  });
 }

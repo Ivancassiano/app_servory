@@ -62,10 +62,10 @@ class LabelTemplateListScreen extends ConsumerWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/label-templates/new'),
-        tooltip: 'Novo modelo',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Novo modelo'),
       ),
     );
   }

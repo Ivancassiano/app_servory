@@ -9,8 +9,7 @@ class ServiceOrderPartController {
   ServiceOrderPartController(this._ref);
   final Ref _ref;
 
-  ServiceOrderRepository get _repo =>
-      _ref.read(serviceOrderRepositoryProvider);
+  ServiceOrderRepository get _repo => _ref.read(serviceOrderRepositoryProvider);
 
   Future<void> addPart({
     required String serviceOrderId,
@@ -21,6 +20,7 @@ class ServiceOrderPartController {
     required String unitCost,
     required String unitPrice,
     required String notes,
+    String? serviceOrderItemId,
   }) => _repo.addPart(
     orderId: serviceOrderId,
     description: description,
@@ -30,6 +30,7 @@ class ServiceOrderPartController {
     unitCost: unitCost,
     unitPrice: unitPrice,
     notes: notes,
+    serviceOrderItemId: serviceOrderItemId,
   );
 
   Future<void> updatePart({

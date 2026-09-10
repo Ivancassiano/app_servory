@@ -9,36 +9,32 @@ class ServiceOrderEditController {
   ServiceOrderEditController(this._ref);
   final Ref _ref;
 
-  ServiceOrderRepository get _repo =>
-      _ref.read(serviceOrderRepositoryProvider);
+  ServiceOrderRepository get _repo => _ref.read(serviceOrderRepositoryProvider);
 
   Future<String> create({
     required String clientId,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
     DateTime? scheduledFor,
-    required bool open,
+    required String mode,
     required String reason,
   }) => _repo.create(
     clientId: clientId,
-    locationId: locationId,
-    equipmentId: equipmentId,
+    itemId: itemId,
     serviceOrderTypeId: serviceOrderTypeId,
     companyId: companyId,
     assignedUserId: assignedUserId,
     scheduledFor: scheduledFor,
-    open: open,
+    mode: mode,
     reason: reason,
   );
 
   Future<void> update({
     required String serviceOrderId,
     int? baseVersion,
-    String? locationId,
-    String? equipmentId,
+    String? itemId,
     String? serviceOrderTypeId,
     String? companyId,
     String? assignedUserId,
@@ -51,8 +47,7 @@ class ServiceOrderEditController {
   }) => _repo.update(
     id: serviceOrderId,
     baseVersion: baseVersion,
-    locationId: locationId,
-    equipmentId: equipmentId,
+    itemId: itemId,
     serviceOrderTypeId: serviceOrderTypeId,
     companyId: companyId,
     assignedUserId: assignedUserId,

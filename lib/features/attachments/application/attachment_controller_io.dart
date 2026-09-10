@@ -3,7 +3,10 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
+import '../data/attachment_cache.dart';
 import 'attachment_controller.dart';
+import 'attachments_api_provider.dart';
+import 'service_order_attachments_provider.dart';
 import 'upload_queue_controller.dart';
 
 AttachmentController createAttachmentController(Ref ref) =>
@@ -16,17 +19,21 @@ class _IoAttachmentController implements AttachmentController {
 
   @override
   Future<void> submitPhoto({
-    required String orderId,
+    required String ownerKind,
+    required String ownerId,
     required Uint8List bytes,
     required String filename,
-    required String photoKind,
+    String photoKind = 'other',
     String? caption,
+    String? serviceOrderItemId,
   }) => _ref.read(uploadQueueControllerProvider).enqueuePhoto(
-    serviceOrderId: orderId,
+    ownerKind: ownerKind,
+    ownerId: ownerId,
     bytes: bytes,
     extension: p.extension(filename),
     photoKind: photoKind,
     caption: caption,
+    serviceOrderItemId: serviceOrderItemId,
   );
 
   @override
@@ -37,4 +44,19 @@ class _IoAttachmentController implements AttachmentController {
     serviceOrderId: orderId,
     bytes: bytes,
   );
+
+  @override
+  Future<void> deletePhoto({
+    required String ownerKind,
+    required String ownerId,
+    required String photoId,
+  }) async {
+    await _ref.read(attachmentsApiProvider).deletePhoto(
+      ownerKind: ownerKind,
+      ownerId: ownerId,
+      photoId: photoId,
+    );
+    await _ref.read(attachmentCacheProvider).forget(photoId);
+    _ref.invalidate(entityPhotosProvider((ownerKind, ownerId)));
+  }
 }

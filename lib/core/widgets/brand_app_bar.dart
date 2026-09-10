@@ -4,16 +4,24 @@ import '../theme/app_theme.dart';
 
 /// Cabeçalho preto das telas de lista/detalhe (handoff): título grande em
 /// Space Grotesk, com uma linha de contagem em IBM Plex Mono caixa alta
-/// acima quando faz sentido ("14 ORDENS").
+/// acima quando faz sentido ("14 ORDENS") e, opcionalmente, um subtítulo
+/// abaixo (ex.: o cliente quando a lista está recortada por ele).
 PreferredSizeWidget brandAppBar({
   required String title,
   String? count,
+  String? subtitle,
   List<Widget>? actions,
+  Widget? leading,
   double titleSize = 21,
 }) {
+  var toolbarHeight = kToolbarHeight;
+  if (count != null) toolbarHeight += 18;
+  if (subtitle != null) toolbarHeight += 18;
+
   return AppBar(
-    toolbarHeight: count == null ? kToolbarHeight : 74,
+    toolbarHeight: toolbarHeight,
     titleSpacing: 16,
+    leading: leading,
     title: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,6 +49,19 @@ PreferredSizeWidget brandAppBar({
             color: Colors.white,
           ),
         ),
+        if (subtitle != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 1),
+            child: Text(
+              subtitle,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontFamily: 'IBM Plex Mono',
+                fontSize: 12,
+                color: BrandColor.onDarkSecondary,
+              ),
+            ),
+          ),
       ],
     ),
     actions: actions,

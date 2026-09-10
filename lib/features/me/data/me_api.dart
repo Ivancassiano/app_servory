@@ -13,6 +13,7 @@ class Identity {
     required this.organizationName,
     required this.role,
     required this.permissionVersion,
+    this.primaryCompanyId,
   });
 
   factory Identity.fromJson(Map<String, dynamic> json) {
@@ -24,6 +25,7 @@ class Identity {
       organizationName: json['organization'] as String? ?? '',
       role: json['role'] as String? ?? '',
       permissionVersion: json['permission_version'] as int? ?? 0,
+      primaryCompanyId: json['primary_company_id'] as String?,
     );
   }
 
@@ -34,6 +36,10 @@ class Identity {
   final String organizationName;
   final String role;
   final int permissionVersion;
+
+  /// Empresa emitente padrão (company_members.is_primary). Nula quando o
+  /// usuário não tem vínculo primário.
+  final String? primaryCompanyId;
 }
 
 /// Permissões efetivas do ator — decoração de UI apenas, nunca a fonte de

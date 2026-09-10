@@ -3,28 +3,52 @@
 // ignore_for_file: prefer_initializing_formals
 import 'dart:convert';
 
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show Value, Variable;
 
 import '../../../core/db/app_database.dart';
 import '../../clients/data/client_mapper.dart';
-import '../../equipments/data/equipment_mapper.dart';
-import '../../labels/data/qr_mapper.dart';
+import '../../items/data/item_field_value_mapper.dart';
+import '../../items/data/item_mapper.dart';
 import '../../locations/data/location_mapper.dart';
+import '../../labels/data/qr_mapper.dart';
+import '../../service_orders/data/recommendation_mapper.dart';
+import '../../service_orders/data/service_order_item_mapper.dart';
 import '../../service_orders/data/service_order_mapper.dart';
+import '../../tasks/data/task_mapper.dart';
 import '../data/sync_api.dart';
 
-/// As 7 entidades sincronizáveis (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`
+/// As entidades sincronizáveis (GUIA-FLUTTER.md §8.4) — `bootstrap`/`pull`
 /// leem todas; `push` só as que têm operações de escrita. `qr_batch` é
 /// somente leitura; `qr_code` não usa `version` de verdade (§9.3).
 const _readEntityTypes = [
   'client',
   'location',
-  'equipment',
+  'item',
+  'item_field_value',
   'service_order',
+  'service_order_item',
   'service_order_part',
+  'service_order_recommendation',
+  'task',
   'qr_code',
   'qr_batch',
 ];
+
+/// Tabela local de cada `entity_type` da outbox — para descartar/limpar o
+/// estado pendente de uma operação sem um `switch` gigante.
+const _entityTables = {
+  'client': 'local_clients',
+  'location': 'local_locations',
+  'item': 'local_items',
+  'item_field_value': 'local_item_field_values',
+  'service_order': 'local_service_orders',
+  'service_order_item': 'local_service_order_items',
+  'service_order_part': 'local_service_order_parts',
+  'service_order_recommendation': 'local_service_order_recommendations',
+  'task': 'local_tasks',
+  'qr_code': 'local_qr_codes',
+  'qr_batch': 'local_qr_batches',
+};
 
 /// Orquestra `bootstrap`/`pull`/`push` entre o [SyncApi] e o [AppDatabase]
 /// local. Sem regra de negócio aqui — só tradução de shape (igual
@@ -41,6 +65,48 @@ class SyncEngine {
   final SyncApi _api;
   final AppDatabase _db;
   final String _organizationId;
+
+  /// Versão atual de uma linha local (`null` se a tabela é desconhecida, a
+  /// linha sumiu ou nunca sincronizou). Nome de tabela vem de constante.
+  Future<int?> _entityVersion(String entityType, String entityId) async {
+    final table = _entityTables[entityType];
+    if (table == null) return null;
+    final row = await _db
+        .customSelect(
+          'SELECT version FROM $table WHERE id = ?',
+          variables: [Variable<String>(entityId)],
+        )
+        .getSingleOrNull();
+    return row?.read<int?>('version');
+  }
+
+  /// Descarta uma operação presa na outbox — o que o usuário fez offline é
+  /// perdido. Se for um `create` que nunca chegou ao servidor, apaga também a
+  /// linha local; senão só tira a marca de "pendente/conflito" e deixa o
+  /// próximo `pull` trazer o estado do servidor.
+  Future<void> discardOperation(String operationId) async {
+    final row = await (_db.select(_db.syncOutbox)
+          ..where((t) => t.operationId.equals(operationId)))
+        .getSingleOrNull();
+    if (row == null) return;
+    await (_db.delete(_db.syncOutbox)
+          ..where((t) => t.operationId.equals(operationId)))
+        .go();
+
+    final table = _entityTables[row.entityType];
+    if (table == null) return; // nome de tabela é constante (não é input)
+    if (row.operationType == 'create') {
+      await _db.customStatement('DELETE FROM $table WHERE id = ?', [
+        row.entityId,
+      ]);
+    } else {
+      await _db.customStatement(
+        "UPDATE $table SET sync_status = 'synced', sync_error = NULL "
+        'WHERE id = ?',
+        [row.entityId],
+      );
+    }
+  }
 
   /// Dump completo paginado, uma vez por organização (quando o banco local
   /// ainda não tinha nada) — GUIA-FLUTTER.md §8.2.
@@ -92,18 +158,26 @@ class SyncEngine {
     final pending = await _db.select(_db.syncOutbox).get();
     if (pending.isEmpty) return;
 
-    final operations = pending
-        .map(
-          (row) => SyncOperationRequest(
-            operationId: row.operationId,
-            entityType: row.entityType,
-            entityId: row.entityId,
-            operationType: row.operationType,
-            baseVersion: row.baseVersion,
-            payload: jsonDecode(row.payload) as Map<String, dynamic>,
-          ),
-        )
-        .toList();
+    final operations = <SyncOperationRequest>[];
+    for (final row in pending) {
+      var baseVersion = row.baseVersion;
+      // Operação de update/ação enfileirada quando a linha ainda não tinha
+      // `version` (create sincronizou depois) — pega a versão atual agora,
+      // senão o servidor rejeita com VERSION_REQUIRED e ela trava na fila.
+      if (baseVersion == null && row.operationType != 'create') {
+        baseVersion = await _entityVersion(row.entityType, row.entityId);
+      }
+      operations.add(
+        SyncOperationRequest(
+          operationId: row.operationId,
+          entityType: row.entityType,
+          entityId: row.entityId,
+          operationType: row.operationType,
+          baseVersion: baseVersion,
+          payload: jsonDecode(row.payload) as Map<String, dynamic>,
+        ),
+      );
+    }
 
     final results = await _api.push(operations);
 
@@ -121,12 +195,36 @@ class SyncEngine {
           result.conflict,
           result.errorCode,
         );
-        if (!result.conflict) {
-          continue; // erro transitório: mantém na outbox p/ tentar de novo
+        if (result.conflict) {
+          await (_db.delete(
+            _db.syncOutbox,
+          )..where((t) => t.operationId.equals(op.operationId))).go();
+          // `create` em conflito = o servidor já tem essa linha (mesmo id ou
+          // chave única repetida — costuma ser um reenvio após o PUT online ter
+          // dado certo mas o cache da resposta ter falhado). Verdade é do
+          // servidor: apaga o órfão local e deixa o próximo `pull` trazer a
+          // linha boa. (Mesma regra do "Descartar" em discardOperation.)
+          if (op.operationType == 'create') {
+            final table = _entityTables[op.entityType];
+            if (table != null) {
+              await _db.customStatement('DELETE FROM $table WHERE id = ?', [
+                op.entityId,
+              ]);
+            }
+          }
+          continue;
         }
-        await (_db.delete(
-          _db.syncOutbox,
-        )..where((t) => t.operationId.equals(op.operationId))).go();
+        // Erro não-conflito (validação, permissão, entidade sumiu): mantém na
+        // outbox para tentar de novo, mas registra o motivo/tentativas para a
+        // tela "Alterações pendentes" mostrar e o usuário poder descartar.
+        await (_db.update(_db.syncOutbox)
+              ..where((t) => t.operationId.equals(op.operationId)))
+            .write(
+              SyncOutboxCompanion(
+                attempts: Value(op.attempts + 1),
+                lastError: Value(result.errorCode ?? 'REJECTED'),
+              ),
+            );
       }
     }
   }
@@ -160,11 +258,22 @@ class SyncEngine {
             syncError: const Value(null),
           ),
         );
-      case 'equipment':
+      case 'item':
         await (_db.update(
-          _db.localEquipments,
+          _db.localItems,
         )..where((t) => t.id.equals(entityId))).write(
-          LocalEquipmentsCompanion(
+          LocalItemsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
+      case 'item_field_value':
+        await (_db.update(
+          _db.localItemFieldValues,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalItemFieldValuesCompanion(
             version: Value(version),
             syncStatus: const Value('synced'),
             lastSyncedAt: Value(now),
@@ -182,11 +291,44 @@ class SyncEngine {
             syncError: const Value(null),
           ),
         );
+      case 'service_order_item':
+        await (_db.update(
+          _db.localServiceOrderItems,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrderItemsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
       case 'service_order_part':
         await (_db.update(
           _db.localServiceOrderParts,
         )..where((t) => t.id.equals(entityId))).write(
           LocalServiceOrderPartsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
+      case 'service_order_recommendation':
+        await (_db.update(
+          _db.localServiceOrderRecommendations,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrderRecommendationsCompanion(
+            version: Value(version),
+            syncStatus: const Value('synced'),
+            lastSyncedAt: Value(now),
+            syncError: const Value(null),
+          ),
+        );
+      case 'task':
+        await (_db.update(
+          _db.localTasks,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalTasksCompanion(
             version: Value(version),
             syncStatus: const Value('synced'),
             lastSyncedAt: Value(now),
@@ -223,16 +365,17 @@ class SyncEngine {
               ..where((t) => t.id.equals(entityId)))
             .write(LocalClientsCompanion(syncStatus: status, syncError: error));
       case 'location':
+        await (_db.update(_db.localLocations)
+              ..where((t) => t.id.equals(entityId)))
+            .write(LocalLocationsCompanion(syncStatus: status, syncError: error));
+      case 'item':
+        await (_db.update(_db.localItems)..where((t) => t.id.equals(entityId)))
+            .write(LocalItemsCompanion(syncStatus: status, syncError: error));
+      case 'item_field_value':
         await (_db.update(
-          _db.localLocations,
+          _db.localItemFieldValues,
         )..where((t) => t.id.equals(entityId))).write(
-          LocalLocationsCompanion(syncStatus: status, syncError: error),
-        );
-      case 'equipment':
-        await (_db.update(
-          _db.localEquipments,
-        )..where((t) => t.id.equals(entityId))).write(
-          LocalEquipmentsCompanion(syncStatus: status, syncError: error),
+          LocalItemFieldValuesCompanion(syncStatus: status, syncError: error),
         );
       case 'service_order':
         await (_db.update(
@@ -240,18 +383,35 @@ class SyncEngine {
         )..where((t) => t.id.equals(entityId))).write(
           LocalServiceOrdersCompanion(syncStatus: status, syncError: error),
         );
+      case 'service_order_item':
+        await (_db.update(
+          _db.localServiceOrderItems,
+        )..where((t) => t.id.equals(entityId))).write(
+          LocalServiceOrderItemsCompanion(syncStatus: status, syncError: error),
+        );
       case 'service_order_part':
         await (_db.update(
           _db.localServiceOrderParts,
         )..where((t) => t.id.equals(entityId))).write(
           LocalServiceOrderPartsCompanion(syncStatus: status, syncError: error),
         );
-      case 'qr_code':
+      case 'service_order_recommendation':
         await (_db.update(
-          _db.localQrCodes,
+          _db.localServiceOrderRecommendations,
         )..where((t) => t.id.equals(entityId))).write(
-          LocalQrCodesCompanion(syncStatus: status, syncError: error),
+          LocalServiceOrderRecommendationsCompanion(
+            syncStatus: status,
+            syncError: error,
+          ),
         );
+      case 'task':
+        await (_db.update(_db.localTasks)
+              ..where((t) => t.id.equals(entityId)))
+            .write(LocalTasksCompanion(syncStatus: status, syncError: error));
+      case 'qr_code':
+        await (_db.update(_db.localQrCodes)
+              ..where((t) => t.id.equals(entityId)))
+            .write(LocalQrCodesCompanion(syncStatus: status, syncError: error));
     }
   }
 
@@ -273,17 +433,36 @@ class SyncEngine {
             .insertOnConflictUpdate(
               locationFromApiJson(data, organizationId: org),
             );
-      case 'equipment':
+      case 'item':
+        // `.toCompanion(false)` inclui `Value(null)` p/ colunas nulas — sem
+        // isso o `insertOnConflictUpdate` não limpa `location_id` (desvínculo).
         await _db
-            .into(_db.localEquipments)
+            .into(_db.localItems)
             .insertOnConflictUpdate(
-              equipmentFromApiJson(data, organizationId: org),
+              itemFromApiJson(data, organizationId: org).toCompanion(false),
             );
+      case 'item_field_value':
+        final fv = itemFieldValueFromApiJson(data, organizationId: org);
+        await _db.into(_db.localItemFieldValues).insertOnConflictUpdate(fv);
+        // Limpa um eventual órfão nunca sincronizado do MESMO campo (id de
+        // dispositivo diferente): sobra quando um `create` offline colidiu com
+        // o valor que o servidor já tinha. A linha do servidor manda.
+        await _db.customStatement(
+          'DELETE FROM local_item_field_values '
+          'WHERE item_id = ? AND field_def_id = ? AND id <> ? AND version IS NULL',
+          [fv.itemId, fv.fieldDefId, fv.id],
+        );
       case 'service_order':
         await _db
             .into(_db.localServiceOrders)
             .insertOnConflictUpdate(
               serviceOrderFromApiJson(data, organizationId: org),
+            );
+      case 'service_order_item':
+        await _db
+            .into(_db.localServiceOrderItems)
+            .insertOnConflictUpdate(
+              serviceOrderItemFromApiJson(data, organizationId: org),
             );
       case 'service_order_part':
         await _db
@@ -291,6 +470,27 @@ class SyncEngine {
             .insertOnConflictUpdate(
               servicePartFromApiJson(data, organizationId: org),
             );
+      case 'service_order_recommendation':
+        await _db
+            .into(_db.localServiceOrderRecommendations)
+            .insertOnConflictUpdate(
+              serviceRecommendationFromApiJson(data, organizationId: org),
+            );
+      case 'task':
+        // `.toCompanion(false)` preserva colunas nulas no upsert (senão o
+        // `insertOnConflictUpdate` de data class as omite e não limpa).
+        await _db
+            .into(_db.localTasks)
+            .insertOnConflictUpdate(
+              taskFromApiJson(data, organizationId: org).toCompanion(false),
+            );
+        // Alvos derivam do payload da tarefa (não são entidade de sync).
+        await (_db.delete(_db.localTaskTargets)
+              ..where((t) => t.taskId.equals(data['id'] as String)))
+            .go();
+        for (final c in taskTargetsFromApiJson(data)) {
+          await _db.into(_db.localTaskTargets).insert(c);
+        }
       case 'qr_code':
         await _db
             .into(_db.localQrCodes)
@@ -316,18 +516,40 @@ class SyncEngine {
         await (_db.update(_db.localLocations)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalLocationsCompanion(deleted: Value(true)));
-      case 'equipment':
-        await (_db.update(_db.localEquipments)
+      case 'item':
+        await (_db.update(_db.localItems)..where((t) => t.id.equals(entityId)))
+            .write(const LocalItemsCompanion(deleted: Value(true)));
+      case 'item_field_value':
+        await (_db.update(_db.localItemFieldValues)
               ..where((t) => t.id.equals(entityId)))
-            .write(const LocalEquipmentsCompanion(deleted: Value(true)));
+            .write(const LocalItemFieldValuesCompanion(deleted: Value(true)));
       case 'service_order':
         await (_db.update(_db.localServiceOrders)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalServiceOrdersCompanion(deleted: Value(true)));
+      case 'service_order_item':
+        await (_db.update(_db.localServiceOrderItems)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalServiceOrderItemsCompanion(deleted: Value(true)));
       case 'service_order_part':
         await (_db.update(_db.localServiceOrderParts)
               ..where((t) => t.id.equals(entityId)))
             .write(const LocalServiceOrderPartsCompanion(deleted: Value(true)));
+      case 'task':
+        await (_db.update(_db.localTasks)
+              ..where((t) => t.id.equals(entityId)))
+            .write(const LocalTasksCompanion(deleted: Value(true)));
+        await (_db.delete(_db.localTaskTargets)
+              ..where((t) => t.taskId.equals(entityId)))
+            .go();
+      case 'service_order_recommendation':
+        await (_db.update(_db.localServiceOrderRecommendations)
+              ..where((t) => t.id.equals(entityId)))
+            .write(
+              const LocalServiceOrderRecommendationsCompanion(
+                deleted: Value(true),
+              ),
+            );
       case 'qr_code':
         await (_db.update(_db.localQrCodes)
               ..where((t) => t.id.equals(entityId)))

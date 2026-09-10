@@ -1119,17 +1119,6 @@ class $LocalLocationsTable extends LocalLocations
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _parentLocationIdMeta = const VerificationMeta(
-    'parentLocationId',
-  );
-  @override
-  late final GeneratedColumn<String> parentLocationId = GeneratedColumn<String>(
-    'parent_location_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -1137,7 +1126,8 @@ class $LocalLocationsTable extends LocalLocations
     aliasedName,
     false,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
   );
   static const VerificationMeta _postalCodeMeta = const VerificationMeta(
     'postalCode',
@@ -1215,40 +1205,6 @@ class $LocalLocationsTable extends LocalLocations
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
-  static const VerificationMeta _contactPersonMeta = const VerificationMeta(
-    'contactPerson',
-  );
-  @override
-  late final GeneratedColumn<String> contactPerson = GeneratedColumn<String>(
-    'contact_person',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
-  @override
-  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
-    'phone',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(''),
-  );
-  static const VerificationMeta _accessInstructionsMeta =
-      const VerificationMeta('accessInstructions');
-  @override
-  late final GeneratedColumn<String> accessInstructions =
-      GeneratedColumn<String>(
-        'access_instructions',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-        defaultValue: const Constant(''),
-      );
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
@@ -1258,6 +1214,21 @@ class $LocalLocationsTable extends LocalLocations
     type: DriftSqlType.string,
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -1292,7 +1263,6 @@ class $LocalLocationsTable extends LocalLocations
     deleted,
     id,
     clientId,
-    parentLocationId,
     name,
     postalCode,
     street,
@@ -1301,10 +1271,8 @@ class $LocalLocationsTable extends LocalLocations
     district,
     city,
     state,
-    contactPerson,
-    phone,
-    accessInstructions,
     notes,
+    isActive,
     createdAt,
     updatedAt,
   ];
@@ -1388,22 +1356,11 @@ class $LocalLocationsTable extends LocalLocations
     } else if (isInserting) {
       context.missing(_clientIdMeta);
     }
-    if (data.containsKey('parent_location_id')) {
-      context.handle(
-        _parentLocationIdMeta,
-        parentLocationId.isAcceptableOrUnknown(
-          data['parent_location_id']!,
-          _parentLocationIdMeta,
-        ),
-      );
-    }
     if (data.containsKey('name')) {
       context.handle(
         _nameMeta,
         name.isAcceptableOrUnknown(data['name']!, _nameMeta),
       );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
     }
     if (data.containsKey('postal_code')) {
       context.handle(
@@ -1447,34 +1404,16 @@ class $LocalLocationsTable extends LocalLocations
         state.isAcceptableOrUnknown(data['state']!, _stateMeta),
       );
     }
-    if (data.containsKey('contact_person')) {
-      context.handle(
-        _contactPersonMeta,
-        contactPerson.isAcceptableOrUnknown(
-          data['contact_person']!,
-          _contactPersonMeta,
-        ),
-      );
-    }
-    if (data.containsKey('phone')) {
-      context.handle(
-        _phoneMeta,
-        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
-      );
-    }
-    if (data.containsKey('access_instructions')) {
-      context.handle(
-        _accessInstructionsMeta,
-        accessInstructions.isAcceptableOrUnknown(
-          data['access_instructions']!,
-          _accessInstructionsMeta,
-        ),
-      );
-    }
     if (data.containsKey('notes')) {
       context.handle(
         _notesMeta,
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -1534,10 +1473,6 @@ class $LocalLocationsTable extends LocalLocations
         DriftSqlType.string,
         data['${effectivePrefix}client_id'],
       )!,
-      parentLocationId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}parent_location_id'],
-      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -1570,21 +1505,13 @@ class $LocalLocationsTable extends LocalLocations
         DriftSqlType.string,
         data['${effectivePrefix}state'],
       )!,
-      contactPerson: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}contact_person'],
-      )!,
-      phone: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}phone'],
-      )!,
-      accessInstructions: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}access_instructions'],
-      )!,
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
       )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -1613,7 +1540,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
   final bool deleted;
   final String id;
   final String clientId;
-  final String? parentLocationId;
   final String name;
   final String postalCode;
   final String street;
@@ -1622,10 +1548,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
   final String district;
   final String city;
   final String state;
-  final String contactPerson;
-  final String phone;
-  final String accessInstructions;
   final String notes;
+  final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   const LocalLocation({
@@ -1638,7 +1562,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     required this.deleted,
     required this.id,
     required this.clientId,
-    this.parentLocationId,
     required this.name,
     required this.postalCode,
     required this.street,
@@ -1647,10 +1570,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     required this.district,
     required this.city,
     required this.state,
-    required this.contactPerson,
-    required this.phone,
-    required this.accessInstructions,
     required this.notes,
+    required this.isActive,
     this.createdAt,
     this.updatedAt,
   });
@@ -1672,9 +1593,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     map['deleted'] = Variable<bool>(deleted);
     map['id'] = Variable<String>(id);
     map['client_id'] = Variable<String>(clientId);
-    if (!nullToAbsent || parentLocationId != null) {
-      map['parent_location_id'] = Variable<String>(parentLocationId);
-    }
     map['name'] = Variable<String>(name);
     map['postal_code'] = Variable<String>(postalCode);
     map['street'] = Variable<String>(street);
@@ -1683,10 +1601,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     map['district'] = Variable<String>(district);
     map['city'] = Variable<String>(city);
     map['state'] = Variable<String>(state);
-    map['contact_person'] = Variable<String>(contactPerson);
-    map['phone'] = Variable<String>(phone);
-    map['access_instructions'] = Variable<String>(accessInstructions);
     map['notes'] = Variable<String>(notes);
+    map['is_active'] = Variable<bool>(isActive);
     if (!nullToAbsent || createdAt != null) {
       map['created_at'] = Variable<DateTime>(createdAt);
     }
@@ -1713,9 +1629,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       deleted: Value(deleted),
       id: Value(id),
       clientId: Value(clientId),
-      parentLocationId: parentLocationId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(parentLocationId),
       name: Value(name),
       postalCode: Value(postalCode),
       street: Value(street),
@@ -1724,10 +1637,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       district: Value(district),
       city: Value(city),
       state: Value(state),
-      contactPerson: Value(contactPerson),
-      phone: Value(phone),
-      accessInstructions: Value(accessInstructions),
       notes: Value(notes),
+      isActive: Value(isActive),
       createdAt: createdAt == null && nullToAbsent
           ? const Value.absent()
           : Value(createdAt),
@@ -1752,7 +1663,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       deleted: serializer.fromJson<bool>(json['deleted']),
       id: serializer.fromJson<String>(json['id']),
       clientId: serializer.fromJson<String>(json['clientId']),
-      parentLocationId: serializer.fromJson<String?>(json['parentLocationId']),
       name: serializer.fromJson<String>(json['name']),
       postalCode: serializer.fromJson<String>(json['postalCode']),
       street: serializer.fromJson<String>(json['street']),
@@ -1761,12 +1671,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       district: serializer.fromJson<String>(json['district']),
       city: serializer.fromJson<String>(json['city']),
       state: serializer.fromJson<String>(json['state']),
-      contactPerson: serializer.fromJson<String>(json['contactPerson']),
-      phone: serializer.fromJson<String>(json['phone']),
-      accessInstructions: serializer.fromJson<String>(
-        json['accessInstructions'],
-      ),
       notes: serializer.fromJson<String>(json['notes']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
@@ -1784,7 +1690,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       'deleted': serializer.toJson<bool>(deleted),
       'id': serializer.toJson<String>(id),
       'clientId': serializer.toJson<String>(clientId),
-      'parentLocationId': serializer.toJson<String?>(parentLocationId),
       'name': serializer.toJson<String>(name),
       'postalCode': serializer.toJson<String>(postalCode),
       'street': serializer.toJson<String>(street),
@@ -1793,10 +1698,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       'district': serializer.toJson<String>(district),
       'city': serializer.toJson<String>(city),
       'state': serializer.toJson<String>(state),
-      'contactPerson': serializer.toJson<String>(contactPerson),
-      'phone': serializer.toJson<String>(phone),
-      'accessInstructions': serializer.toJson<String>(accessInstructions),
       'notes': serializer.toJson<String>(notes),
+      'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
@@ -1812,7 +1715,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     bool? deleted,
     String? id,
     String? clientId,
-    Value<String?> parentLocationId = const Value.absent(),
     String? name,
     String? postalCode,
     String? street,
@@ -1821,10 +1723,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     String? district,
     String? city,
     String? state,
-    String? contactPerson,
-    String? phone,
-    String? accessInstructions,
     String? notes,
+    bool? isActive,
     Value<DateTime?> createdAt = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
   }) => LocalLocation(
@@ -1837,9 +1737,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     deleted: deleted ?? this.deleted,
     id: id ?? this.id,
     clientId: clientId ?? this.clientId,
-    parentLocationId: parentLocationId.present
-        ? parentLocationId.value
-        : this.parentLocationId,
     name: name ?? this.name,
     postalCode: postalCode ?? this.postalCode,
     street: street ?? this.street,
@@ -1848,10 +1745,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     district: district ?? this.district,
     city: city ?? this.city,
     state: state ?? this.state,
-    contactPerson: contactPerson ?? this.contactPerson,
-    phone: phone ?? this.phone,
-    accessInstructions: accessInstructions ?? this.accessInstructions,
     notes: notes ?? this.notes,
+    isActive: isActive ?? this.isActive,
     createdAt: createdAt.present ? createdAt.value : this.createdAt,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
@@ -1874,9 +1769,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
       id: data.id.present ? data.id.value : this.id,
       clientId: data.clientId.present ? data.clientId.value : this.clientId,
-      parentLocationId: data.parentLocationId.present
-          ? data.parentLocationId.value
-          : this.parentLocationId,
       name: data.name.present ? data.name.value : this.name,
       postalCode: data.postalCode.present
           ? data.postalCode.value
@@ -1889,14 +1781,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       district: data.district.present ? data.district.value : this.district,
       city: data.city.present ? data.city.value : this.city,
       state: data.state.present ? data.state.value : this.state,
-      contactPerson: data.contactPerson.present
-          ? data.contactPerson.value
-          : this.contactPerson,
-      phone: data.phone.present ? data.phone.value : this.phone,
-      accessInstructions: data.accessInstructions.present
-          ? data.accessInstructions.value
-          : this.accessInstructions,
       notes: data.notes.present ? data.notes.value : this.notes,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1914,7 +1800,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
           ..write('clientId: $clientId, ')
-          ..write('parentLocationId: $parentLocationId, ')
           ..write('name: $name, ')
           ..write('postalCode: $postalCode, ')
           ..write('street: $street, ')
@@ -1923,10 +1808,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
           ..write('district: $district, ')
           ..write('city: $city, ')
           ..write('state: $state, ')
-          ..write('contactPerson: $contactPerson, ')
-          ..write('phone: $phone, ')
-          ..write('accessInstructions: $accessInstructions, ')
           ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1944,7 +1827,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     deleted,
     id,
     clientId,
-    parentLocationId,
     name,
     postalCode,
     street,
@@ -1953,10 +1835,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     district,
     city,
     state,
-    contactPerson,
-    phone,
-    accessInstructions,
     notes,
+    isActive,
     createdAt,
     updatedAt,
   ]);
@@ -1973,7 +1853,6 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
           other.deleted == this.deleted &&
           other.id == this.id &&
           other.clientId == this.clientId &&
-          other.parentLocationId == this.parentLocationId &&
           other.name == this.name &&
           other.postalCode == this.postalCode &&
           other.street == this.street &&
@@ -1982,10 +1861,8 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
           other.district == this.district &&
           other.city == this.city &&
           other.state == this.state &&
-          other.contactPerson == this.contactPerson &&
-          other.phone == this.phone &&
-          other.accessInstructions == this.accessInstructions &&
           other.notes == this.notes &&
+          other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2000,7 +1877,6 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
   final Value<bool> deleted;
   final Value<String> id;
   final Value<String> clientId;
-  final Value<String?> parentLocationId;
   final Value<String> name;
   final Value<String> postalCode;
   final Value<String> street;
@@ -2009,10 +1885,8 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
   final Value<String> district;
   final Value<String> city;
   final Value<String> state;
-  final Value<String> contactPerson;
-  final Value<String> phone;
-  final Value<String> accessInstructions;
   final Value<String> notes;
+  final Value<bool> isActive;
   final Value<DateTime?> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<int> rowid;
@@ -2026,7 +1900,6 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     this.deleted = const Value.absent(),
     this.id = const Value.absent(),
     this.clientId = const Value.absent(),
-    this.parentLocationId = const Value.absent(),
     this.name = const Value.absent(),
     this.postalCode = const Value.absent(),
     this.street = const Value.absent(),
@@ -2035,10 +1908,8 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     this.district = const Value.absent(),
     this.city = const Value.absent(),
     this.state = const Value.absent(),
-    this.contactPerson = const Value.absent(),
-    this.phone = const Value.absent(),
-    this.accessInstructions = const Value.absent(),
     this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2053,8 +1924,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     this.deleted = const Value.absent(),
     required String id,
     required String clientId,
-    this.parentLocationId = const Value.absent(),
-    required String name,
+    this.name = const Value.absent(),
     this.postalCode = const Value.absent(),
     this.street = const Value.absent(),
     this.number = const Value.absent(),
@@ -2062,18 +1932,15 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     this.district = const Value.absent(),
     this.city = const Value.absent(),
     this.state = const Value.absent(),
-    this.contactPerson = const Value.absent(),
-    this.phone = const Value.absent(),
-    this.accessInstructions = const Value.absent(),
     this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : organizationId = Value(organizationId),
        localUpdatedAt = Value(localUpdatedAt),
        id = Value(id),
-       clientId = Value(clientId),
-       name = Value(name);
+       clientId = Value(clientId);
   static Insertable<LocalLocation> custom({
     Expression<String>? organizationId,
     Expression<int>? version,
@@ -2084,7 +1951,6 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     Expression<bool>? deleted,
     Expression<String>? id,
     Expression<String>? clientId,
-    Expression<String>? parentLocationId,
     Expression<String>? name,
     Expression<String>? postalCode,
     Expression<String>? street,
@@ -2093,10 +1959,8 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     Expression<String>? district,
     Expression<String>? city,
     Expression<String>? state,
-    Expression<String>? contactPerson,
-    Expression<String>? phone,
-    Expression<String>? accessInstructions,
     Expression<String>? notes,
+    Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -2111,7 +1975,6 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
       if (deleted != null) 'deleted': deleted,
       if (id != null) 'id': id,
       if (clientId != null) 'client_id': clientId,
-      if (parentLocationId != null) 'parent_location_id': parentLocationId,
       if (name != null) 'name': name,
       if (postalCode != null) 'postal_code': postalCode,
       if (street != null) 'street': street,
@@ -2120,10 +1983,8 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
       if (district != null) 'district': district,
       if (city != null) 'city': city,
       if (state != null) 'state': state,
-      if (contactPerson != null) 'contact_person': contactPerson,
-      if (phone != null) 'phone': phone,
-      if (accessInstructions != null) 'access_instructions': accessInstructions,
       if (notes != null) 'notes': notes,
+      if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2140,7 +2001,6 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     Value<bool>? deleted,
     Value<String>? id,
     Value<String>? clientId,
-    Value<String?>? parentLocationId,
     Value<String>? name,
     Value<String>? postalCode,
     Value<String>? street,
@@ -2149,10 +2009,8 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     Value<String>? district,
     Value<String>? city,
     Value<String>? state,
-    Value<String>? contactPerson,
-    Value<String>? phone,
-    Value<String>? accessInstructions,
     Value<String>? notes,
+    Value<bool>? isActive,
     Value<DateTime?>? createdAt,
     Value<DateTime?>? updatedAt,
     Value<int>? rowid,
@@ -2167,7 +2025,6 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
       deleted: deleted ?? this.deleted,
       id: id ?? this.id,
       clientId: clientId ?? this.clientId,
-      parentLocationId: parentLocationId ?? this.parentLocationId,
       name: name ?? this.name,
       postalCode: postalCode ?? this.postalCode,
       street: street ?? this.street,
@@ -2176,10 +2033,8 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
       district: district ?? this.district,
       city: city ?? this.city,
       state: state ?? this.state,
-      contactPerson: contactPerson ?? this.contactPerson,
-      phone: phone ?? this.phone,
-      accessInstructions: accessInstructions ?? this.accessInstructions,
       notes: notes ?? this.notes,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2216,9 +2071,6 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     if (clientId.present) {
       map['client_id'] = Variable<String>(clientId.value);
     }
-    if (parentLocationId.present) {
-      map['parent_location_id'] = Variable<String>(parentLocationId.value);
-    }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
@@ -2243,17 +2095,11 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     if (state.present) {
       map['state'] = Variable<String>(state.value);
     }
-    if (contactPerson.present) {
-      map['contact_person'] = Variable<String>(contactPerson.value);
-    }
-    if (phone.present) {
-      map['phone'] = Variable<String>(phone.value);
-    }
-    if (accessInstructions.present) {
-      map['access_instructions'] = Variable<String>(accessInstructions.value);
-    }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -2279,7 +2125,6 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
           ..write('clientId: $clientId, ')
-          ..write('parentLocationId: $parentLocationId, ')
           ..write('name: $name, ')
           ..write('postalCode: $postalCode, ')
           ..write('street: $street, ')
@@ -2288,10 +2133,8 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
           ..write('district: $district, ')
           ..write('city: $city, ')
           ..write('state: $state, ')
-          ..write('contactPerson: $contactPerson, ')
-          ..write('phone: $phone, ')
-          ..write('accessInstructions: $accessInstructions, ')
           ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -2300,12 +2143,12 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
   }
 }
 
-class $LocalEquipmentsTable extends LocalEquipments
-    with TableInfo<$LocalEquipmentsTable, LocalEquipment> {
+class $LocalItemsTable extends LocalItems
+    with TableInfo<$LocalItemsTable, LocalItem> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $LocalEquipmentsTable(this.attachedDatabase, [this._alias]);
+  $LocalItemsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _organizationIdMeta = const VerificationMeta(
     'organizationId',
   );
@@ -2398,6 +2241,17 @@ class $LocalEquipmentsTable extends LocalEquipments
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _locationIdMeta = const VerificationMeta(
     'locationId',
   );
@@ -2405,20 +2259,20 @@ class $LocalEquipmentsTable extends LocalEquipments
   late final GeneratedColumn<String> locationId = GeneratedColumn<String>(
     'location_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
-  static const VerificationMeta _equipmentTypeIdMeta = const VerificationMeta(
-    'equipmentTypeId',
+  static const VerificationMeta _itemTypeIdMeta = const VerificationMeta(
+    'itemTypeId',
   );
   @override
-  late final GeneratedColumn<String> equipmentTypeId = GeneratedColumn<String>(
-    'equipment_type_id',
+  late final GeneratedColumn<String> itemTypeId = GeneratedColumn<String>(
+    'item_type_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
@@ -2502,6 +2356,21 @@ class $LocalEquipmentsTable extends LocalEquipments
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -2534,8 +2403,9 @@ class $LocalEquipmentsTable extends LocalEquipments
     syncError,
     deleted,
     id,
+    clientId,
     locationId,
-    equipmentTypeId,
+    itemTypeId,
     name,
     brand,
     model,
@@ -2544,6 +2414,7 @@ class $LocalEquipmentsTable extends LocalEquipments
     installedAt,
     cost,
     notes,
+    isActive,
     createdAt,
     updatedAt,
   ];
@@ -2551,10 +2422,10 @@ class $LocalEquipmentsTable extends LocalEquipments
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'local_equipments';
+  static const String $name = 'local_items';
   @override
   VerificationContext validateIntegrity(
-    Insertable<LocalEquipment> instance, {
+    Insertable<LocalItem> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -2619,24 +2490,28 @@ class $LocalEquipmentsTable extends LocalEquipments
     } else if (isInserting) {
       context.missing(_idMeta);
     }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
     if (data.containsKey('location_id')) {
       context.handle(
         _locationIdMeta,
         locationId.isAcceptableOrUnknown(data['location_id']!, _locationIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_locationIdMeta);
     }
-    if (data.containsKey('equipment_type_id')) {
+    if (data.containsKey('item_type_id')) {
       context.handle(
-        _equipmentTypeIdMeta,
-        equipmentTypeId.isAcceptableOrUnknown(
-          data['equipment_type_id']!,
-          _equipmentTypeIdMeta,
+        _itemTypeIdMeta,
+        itemTypeId.isAcceptableOrUnknown(
+          data['item_type_id']!,
+          _itemTypeIdMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_equipmentTypeIdMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -2697,6 +2572,12 @@ class $LocalEquipmentsTable extends LocalEquipments
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -2715,9 +2596,9 @@ class $LocalEquipmentsTable extends LocalEquipments
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  LocalEquipment map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LocalItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return LocalEquipment(
+    return LocalItem(
       organizationId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}organization_id'],
@@ -2750,14 +2631,18 @@ class $LocalEquipmentsTable extends LocalEquipments
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
       locationId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}location_id'],
-      )!,
-      equipmentTypeId: attachedDatabase.typeMapping.read(
+      ),
+      itemTypeId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}equipment_type_id'],
-      )!,
+        data['${effectivePrefix}item_type_id'],
+      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -2790,6 +2675,10 @@ class $LocalEquipmentsTable extends LocalEquipments
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -2802,12 +2691,12 @@ class $LocalEquipmentsTable extends LocalEquipments
   }
 
   @override
-  $LocalEquipmentsTable createAlias(String alias) {
-    return $LocalEquipmentsTable(attachedDatabase, alias);
+  $LocalItemsTable createAlias(String alias) {
+    return $LocalItemsTable(attachedDatabase, alias);
   }
 }
 
-class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
+class LocalItem extends DataClass implements Insertable<LocalItem> {
   final String organizationId;
   final int? version;
   final String syncStatus;
@@ -2816,8 +2705,9 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
   final String? syncError;
   final bool deleted;
   final String id;
-  final String locationId;
-  final String equipmentTypeId;
+  final String clientId;
+  final String? locationId;
+  final String? itemTypeId;
   final String name;
   final String brand;
   final String model;
@@ -2826,9 +2716,10 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
   final String? installedAt;
   final String? cost;
   final String notes;
+  final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  const LocalEquipment({
+  const LocalItem({
     required this.organizationId,
     this.version,
     required this.syncStatus,
@@ -2837,8 +2728,9 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     this.syncError,
     required this.deleted,
     required this.id,
-    required this.locationId,
-    required this.equipmentTypeId,
+    required this.clientId,
+    this.locationId,
+    this.itemTypeId,
     required this.name,
     required this.brand,
     required this.model,
@@ -2847,6 +2739,7 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     this.installedAt,
     this.cost,
     required this.notes,
+    required this.isActive,
     this.createdAt,
     this.updatedAt,
   });
@@ -2867,8 +2760,13 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     }
     map['deleted'] = Variable<bool>(deleted);
     map['id'] = Variable<String>(id);
-    map['location_id'] = Variable<String>(locationId);
-    map['equipment_type_id'] = Variable<String>(equipmentTypeId);
+    map['client_id'] = Variable<String>(clientId);
+    if (!nullToAbsent || locationId != null) {
+      map['location_id'] = Variable<String>(locationId);
+    }
+    if (!nullToAbsent || itemTypeId != null) {
+      map['item_type_id'] = Variable<String>(itemTypeId);
+    }
     map['name'] = Variable<String>(name);
     map['brand'] = Variable<String>(brand);
     map['model'] = Variable<String>(model);
@@ -2883,6 +2781,7 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
       map['cost'] = Variable<String>(cost);
     }
     map['notes'] = Variable<String>(notes);
+    map['is_active'] = Variable<bool>(isActive);
     if (!nullToAbsent || createdAt != null) {
       map['created_at'] = Variable<DateTime>(createdAt);
     }
@@ -2892,8 +2791,8 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     return map;
   }
 
-  LocalEquipmentsCompanion toCompanion(bool nullToAbsent) {
-    return LocalEquipmentsCompanion(
+  LocalItemsCompanion toCompanion(bool nullToAbsent) {
+    return LocalItemsCompanion(
       organizationId: Value(organizationId),
       version: version == null && nullToAbsent
           ? const Value.absent()
@@ -2908,8 +2807,13 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
           : Value(syncError),
       deleted: Value(deleted),
       id: Value(id),
-      locationId: Value(locationId),
-      equipmentTypeId: Value(equipmentTypeId),
+      clientId: Value(clientId),
+      locationId: locationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(locationId),
+      itemTypeId: itemTypeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemTypeId),
       name: Value(name),
       brand: Value(brand),
       model: Value(model),
@@ -2922,6 +2826,7 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
           : Value(installedAt),
       cost: cost == null && nullToAbsent ? const Value.absent() : Value(cost),
       notes: Value(notes),
+      isActive: Value(isActive),
       createdAt: createdAt == null && nullToAbsent
           ? const Value.absent()
           : Value(createdAt),
@@ -2931,12 +2836,12 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     );
   }
 
-  factory LocalEquipment.fromJson(
+  factory LocalItem.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return LocalEquipment(
+    return LocalItem(
       organizationId: serializer.fromJson<String>(json['organizationId']),
       version: serializer.fromJson<int?>(json['version']),
       syncStatus: serializer.fromJson<String>(json['syncStatus']),
@@ -2945,8 +2850,9 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
       syncError: serializer.fromJson<String?>(json['syncError']),
       deleted: serializer.fromJson<bool>(json['deleted']),
       id: serializer.fromJson<String>(json['id']),
-      locationId: serializer.fromJson<String>(json['locationId']),
-      equipmentTypeId: serializer.fromJson<String>(json['equipmentTypeId']),
+      clientId: serializer.fromJson<String>(json['clientId']),
+      locationId: serializer.fromJson<String?>(json['locationId']),
+      itemTypeId: serializer.fromJson<String?>(json['itemTypeId']),
       name: serializer.fromJson<String>(json['name']),
       brand: serializer.fromJson<String>(json['brand']),
       model: serializer.fromJson<String>(json['model']),
@@ -2955,6 +2861,7 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
       installedAt: serializer.fromJson<String?>(json['installedAt']),
       cost: serializer.fromJson<String?>(json['cost']),
       notes: serializer.fromJson<String>(json['notes']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
@@ -2971,8 +2878,9 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
       'syncError': serializer.toJson<String?>(syncError),
       'deleted': serializer.toJson<bool>(deleted),
       'id': serializer.toJson<String>(id),
-      'locationId': serializer.toJson<String>(locationId),
-      'equipmentTypeId': serializer.toJson<String>(equipmentTypeId),
+      'clientId': serializer.toJson<String>(clientId),
+      'locationId': serializer.toJson<String?>(locationId),
+      'itemTypeId': serializer.toJson<String?>(itemTypeId),
       'name': serializer.toJson<String>(name),
       'brand': serializer.toJson<String>(brand),
       'model': serializer.toJson<String>(model),
@@ -2981,12 +2889,13 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
       'installedAt': serializer.toJson<String?>(installedAt),
       'cost': serializer.toJson<String?>(cost),
       'notes': serializer.toJson<String>(notes),
+      'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
   }
 
-  LocalEquipment copyWith({
+  LocalItem copyWith({
     String? organizationId,
     Value<int?> version = const Value.absent(),
     String? syncStatus,
@@ -2995,8 +2904,9 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     Value<String?> syncError = const Value.absent(),
     bool? deleted,
     String? id,
-    String? locationId,
-    String? equipmentTypeId,
+    String? clientId,
+    Value<String?> locationId = const Value.absent(),
+    Value<String?> itemTypeId = const Value.absent(),
     String? name,
     String? brand,
     String? model,
@@ -3005,9 +2915,10 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     Value<String?> installedAt = const Value.absent(),
     Value<String?> cost = const Value.absent(),
     String? notes,
+    bool? isActive,
     Value<DateTime?> createdAt = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
-  }) => LocalEquipment(
+  }) => LocalItem(
     organizationId: organizationId ?? this.organizationId,
     version: version.present ? version.value : this.version,
     syncStatus: syncStatus ?? this.syncStatus,
@@ -3016,8 +2927,9 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     syncError: syncError.present ? syncError.value : this.syncError,
     deleted: deleted ?? this.deleted,
     id: id ?? this.id,
-    locationId: locationId ?? this.locationId,
-    equipmentTypeId: equipmentTypeId ?? this.equipmentTypeId,
+    clientId: clientId ?? this.clientId,
+    locationId: locationId.present ? locationId.value : this.locationId,
+    itemTypeId: itemTypeId.present ? itemTypeId.value : this.itemTypeId,
     name: name ?? this.name,
     brand: brand ?? this.brand,
     model: model ?? this.model,
@@ -3026,11 +2938,12 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     installedAt: installedAt.present ? installedAt.value : this.installedAt,
     cost: cost.present ? cost.value : this.cost,
     notes: notes ?? this.notes,
+    isActive: isActive ?? this.isActive,
     createdAt: createdAt.present ? createdAt.value : this.createdAt,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
-  LocalEquipment copyWithCompanion(LocalEquipmentsCompanion data) {
-    return LocalEquipment(
+  LocalItem copyWithCompanion(LocalItemsCompanion data) {
+    return LocalItem(
       organizationId: data.organizationId.present
           ? data.organizationId.value
           : this.organizationId,
@@ -3047,12 +2960,13 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
       syncError: data.syncError.present ? data.syncError.value : this.syncError,
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
       id: data.id.present ? data.id.value : this.id,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
       locationId: data.locationId.present
           ? data.locationId.value
           : this.locationId,
-      equipmentTypeId: data.equipmentTypeId.present
-          ? data.equipmentTypeId.value
-          : this.equipmentTypeId,
+      itemTypeId: data.itemTypeId.present
+          ? data.itemTypeId.value
+          : this.itemTypeId,
       name: data.name.present ? data.name.value : this.name,
       brand: data.brand.present ? data.brand.value : this.brand,
       model: data.model.present ? data.model.value : this.model,
@@ -3067,6 +2981,7 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
           : this.installedAt,
       cost: data.cost.present ? data.cost.value : this.cost,
       notes: data.notes.present ? data.notes.value : this.notes,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -3074,7 +2989,7 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
 
   @override
   String toString() {
-    return (StringBuffer('LocalEquipment(')
+    return (StringBuffer('LocalItem(')
           ..write('organizationId: $organizationId, ')
           ..write('version: $version, ')
           ..write('syncStatus: $syncStatus, ')
@@ -3083,8 +2998,9 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
           ..write('syncError: $syncError, ')
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
+          ..write('clientId: $clientId, ')
           ..write('locationId: $locationId, ')
-          ..write('equipmentTypeId: $equipmentTypeId, ')
+          ..write('itemTypeId: $itemTypeId, ')
           ..write('name: $name, ')
           ..write('brand: $brand, ')
           ..write('model: $model, ')
@@ -3093,6 +3009,7 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
           ..write('installedAt: $installedAt, ')
           ..write('cost: $cost, ')
           ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -3100,7 +3017,7 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     organizationId,
     version,
     syncStatus,
@@ -3109,8 +3026,9 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     syncError,
     deleted,
     id,
+    clientId,
     locationId,
-    equipmentTypeId,
+    itemTypeId,
     name,
     brand,
     model,
@@ -3119,13 +3037,14 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
     installedAt,
     cost,
     notes,
+    isActive,
     createdAt,
     updatedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is LocalEquipment &&
+      (other is LocalItem &&
           other.organizationId == this.organizationId &&
           other.version == this.version &&
           other.syncStatus == this.syncStatus &&
@@ -3134,8 +3053,9 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
           other.syncError == this.syncError &&
           other.deleted == this.deleted &&
           other.id == this.id &&
+          other.clientId == this.clientId &&
           other.locationId == this.locationId &&
-          other.equipmentTypeId == this.equipmentTypeId &&
+          other.itemTypeId == this.itemTypeId &&
           other.name == this.name &&
           other.brand == this.brand &&
           other.model == this.model &&
@@ -3144,11 +3064,12 @@ class LocalEquipment extends DataClass implements Insertable<LocalEquipment> {
           other.installedAt == this.installedAt &&
           other.cost == this.cost &&
           other.notes == this.notes &&
+          other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
 
-class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
+class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
   final Value<String> organizationId;
   final Value<int?> version;
   final Value<String> syncStatus;
@@ -3157,8 +3078,9 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
   final Value<String?> syncError;
   final Value<bool> deleted;
   final Value<String> id;
-  final Value<String> locationId;
-  final Value<String> equipmentTypeId;
+  final Value<String> clientId;
+  final Value<String?> locationId;
+  final Value<String?> itemTypeId;
   final Value<String> name;
   final Value<String> brand;
   final Value<String> model;
@@ -3167,10 +3089,11 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
   final Value<String?> installedAt;
   final Value<String?> cost;
   final Value<String> notes;
+  final Value<bool> isActive;
   final Value<DateTime?> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<int> rowid;
-  const LocalEquipmentsCompanion({
+  const LocalItemsCompanion({
     this.organizationId = const Value.absent(),
     this.version = const Value.absent(),
     this.syncStatus = const Value.absent(),
@@ -3179,8 +3102,9 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
     this.syncError = const Value.absent(),
     this.deleted = const Value.absent(),
     this.id = const Value.absent(),
+    this.clientId = const Value.absent(),
     this.locationId = const Value.absent(),
-    this.equipmentTypeId = const Value.absent(),
+    this.itemTypeId = const Value.absent(),
     this.name = const Value.absent(),
     this.brand = const Value.absent(),
     this.model = const Value.absent(),
@@ -3189,11 +3113,12 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
     this.installedAt = const Value.absent(),
     this.cost = const Value.absent(),
     this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  LocalEquipmentsCompanion.insert({
+  LocalItemsCompanion.insert({
     required String organizationId,
     this.version = const Value.absent(),
     this.syncStatus = const Value.absent(),
@@ -3202,8 +3127,9 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
     this.syncError = const Value.absent(),
     this.deleted = const Value.absent(),
     required String id,
-    required String locationId,
-    required String equipmentTypeId,
+    required String clientId,
+    this.locationId = const Value.absent(),
+    this.itemTypeId = const Value.absent(),
     required String name,
     this.brand = const Value.absent(),
     this.model = const Value.absent(),
@@ -3212,16 +3138,16 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
     this.installedAt = const Value.absent(),
     this.cost = const Value.absent(),
     this.notes = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : organizationId = Value(organizationId),
        localUpdatedAt = Value(localUpdatedAt),
        id = Value(id),
-       locationId = Value(locationId),
-       equipmentTypeId = Value(equipmentTypeId),
+       clientId = Value(clientId),
        name = Value(name);
-  static Insertable<LocalEquipment> custom({
+  static Insertable<LocalItem> custom({
     Expression<String>? organizationId,
     Expression<int>? version,
     Expression<String>? syncStatus,
@@ -3230,8 +3156,9 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
     Expression<String>? syncError,
     Expression<bool>? deleted,
     Expression<String>? id,
+    Expression<String>? clientId,
     Expression<String>? locationId,
-    Expression<String>? equipmentTypeId,
+    Expression<String>? itemTypeId,
     Expression<String>? name,
     Expression<String>? brand,
     Expression<String>? model,
@@ -3240,6 +3167,7 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
     Expression<String>? installedAt,
     Expression<String>? cost,
     Expression<String>? notes,
+    Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -3253,8 +3181,9 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
       if (syncError != null) 'sync_error': syncError,
       if (deleted != null) 'deleted': deleted,
       if (id != null) 'id': id,
+      if (clientId != null) 'client_id': clientId,
       if (locationId != null) 'location_id': locationId,
-      if (equipmentTypeId != null) 'equipment_type_id': equipmentTypeId,
+      if (itemTypeId != null) 'item_type_id': itemTypeId,
       if (name != null) 'name': name,
       if (brand != null) 'brand': brand,
       if (model != null) 'model': model,
@@ -3263,13 +3192,14 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
       if (installedAt != null) 'installed_at': installedAt,
       if (cost != null) 'cost': cost,
       if (notes != null) 'notes': notes,
+      if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  LocalEquipmentsCompanion copyWith({
+  LocalItemsCompanion copyWith({
     Value<String>? organizationId,
     Value<int?>? version,
     Value<String>? syncStatus,
@@ -3278,8 +3208,9 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
     Value<String?>? syncError,
     Value<bool>? deleted,
     Value<String>? id,
-    Value<String>? locationId,
-    Value<String>? equipmentTypeId,
+    Value<String>? clientId,
+    Value<String?>? locationId,
+    Value<String?>? itemTypeId,
     Value<String>? name,
     Value<String>? brand,
     Value<String>? model,
@@ -3288,11 +3219,12 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
     Value<String?>? installedAt,
     Value<String?>? cost,
     Value<String>? notes,
+    Value<bool>? isActive,
     Value<DateTime?>? createdAt,
     Value<DateTime?>? updatedAt,
     Value<int>? rowid,
   }) {
-    return LocalEquipmentsCompanion(
+    return LocalItemsCompanion(
       organizationId: organizationId ?? this.organizationId,
       version: version ?? this.version,
       syncStatus: syncStatus ?? this.syncStatus,
@@ -3301,8 +3233,9 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
       syncError: syncError ?? this.syncError,
       deleted: deleted ?? this.deleted,
       id: id ?? this.id,
+      clientId: clientId ?? this.clientId,
       locationId: locationId ?? this.locationId,
-      equipmentTypeId: equipmentTypeId ?? this.equipmentTypeId,
+      itemTypeId: itemTypeId ?? this.itemTypeId,
       name: name ?? this.name,
       brand: brand ?? this.brand,
       model: model ?? this.model,
@@ -3311,6 +3244,7 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
       installedAt: installedAt ?? this.installedAt,
       cost: cost ?? this.cost,
       notes: notes ?? this.notes,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -3344,11 +3278,14 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
     if (locationId.present) {
       map['location_id'] = Variable<String>(locationId.value);
     }
-    if (equipmentTypeId.present) {
-      map['equipment_type_id'] = Variable<String>(equipmentTypeId.value);
+    if (itemTypeId.present) {
+      map['item_type_id'] = Variable<String>(itemTypeId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -3374,6 +3311,9 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -3388,7 +3328,7 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
 
   @override
   String toString() {
-    return (StringBuffer('LocalEquipmentsCompanion(')
+    return (StringBuffer('LocalItemsCompanion(')
           ..write('organizationId: $organizationId, ')
           ..write('version: $version, ')
           ..write('syncStatus: $syncStatus, ')
@@ -3397,8 +3337,9 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
           ..write('syncError: $syncError, ')
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
+          ..write('clientId: $clientId, ')
           ..write('locationId: $locationId, ')
-          ..write('equipmentTypeId: $equipmentTypeId, ')
+          ..write('itemTypeId: $itemTypeId, ')
           ..write('name: $name, ')
           ..write('brand: $brand, ')
           ..write('model: $model, ')
@@ -3407,6 +3348,2460 @@ class LocalEquipmentsCompanion extends UpdateCompanion<LocalEquipment> {
           ..write('installedAt: $installedAt, ')
           ..write('cost: $cost, ')
           ..write('notes: $notes, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalItemTypesTable extends LocalItemTypes
+    with TableInfo<$LocalItemTypesTable, LocalItemType> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalItemTypesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    organizationId,
+    name,
+    description,
+    version,
+    cachedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_item_types';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalItemType> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalItemType map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalItemType(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalItemTypesTable createAlias(String alias) {
+    return $LocalItemTypesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalItemType extends DataClass implements Insertable<LocalItemType> {
+  final String id;
+  final String organizationId;
+  final String name;
+  final String description;
+  final int? version;
+  final DateTime cachedAt;
+  const LocalItemType({
+    required this.id,
+    required this.organizationId,
+    required this.name,
+    required this.description,
+    this.version,
+    required this.cachedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['organization_id'] = Variable<String>(organizationId);
+    map['name'] = Variable<String>(name);
+    map['description'] = Variable<String>(description);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  LocalItemTypesCompanion toCompanion(bool nullToAbsent) {
+    return LocalItemTypesCompanion(
+      id: Value(id),
+      organizationId: Value(organizationId),
+      name: Value(name),
+      description: Value(description),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory LocalItemType.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalItemType(
+      id: serializer.fromJson<String>(json['id']),
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String>(json['description']),
+      version: serializer.fromJson<int?>(json['version']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'organizationId': serializer.toJson<String>(organizationId),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String>(description),
+      'version': serializer.toJson<int?>(version),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  LocalItemType copyWith({
+    String? id,
+    String? organizationId,
+    String? name,
+    String? description,
+    Value<int?> version = const Value.absent(),
+    DateTime? cachedAt,
+  }) => LocalItemType(
+    id: id ?? this.id,
+    organizationId: organizationId ?? this.organizationId,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    version: version.present ? version.value : this.version,
+    cachedAt: cachedAt ?? this.cachedAt,
+  );
+  LocalItemType copyWithCompanion(LocalItemTypesCompanion data) {
+    return LocalItemType(
+      id: data.id.present ? data.id.value : this.id,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      version: data.version.present ? data.version.value : this.version,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalItemType(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('version: $version, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, organizationId, name, description, version, cachedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalItemType &&
+          other.id == this.id &&
+          other.organizationId == this.organizationId &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.version == this.version &&
+          other.cachedAt == this.cachedAt);
+}
+
+class LocalItemTypesCompanion extends UpdateCompanion<LocalItemType> {
+  final Value<String> id;
+  final Value<String> organizationId;
+  final Value<String> name;
+  final Value<String> description;
+  final Value<int?> version;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const LocalItemTypesCompanion({
+    this.id = const Value.absent(),
+    this.organizationId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.version = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalItemTypesCompanion.insert({
+    required String id,
+    required String organizationId,
+    required String name,
+    this.description = const Value.absent(),
+    this.version = const Value.absent(),
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       organizationId = Value(organizationId),
+       name = Value(name),
+       cachedAt = Value(cachedAt);
+  static Insertable<LocalItemType> custom({
+    Expression<String>? id,
+    Expression<String>? organizationId,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<int>? version,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (organizationId != null) 'organization_id': organizationId,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (version != null) 'version': version,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalItemTypesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? organizationId,
+    Value<String>? name,
+    Value<String>? description,
+    Value<int?>? version,
+    Value<DateTime>? cachedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalItemTypesCompanion(
+      id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      version: version ?? this.version,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalItemTypesCompanion(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('version: $version, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalItemFieldDefsTable extends LocalItemFieldDefs
+    with TableInfo<$LocalItemFieldDefsTable, LocalItemFieldDef> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalItemFieldDefsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _itemTypeIdMeta = const VerificationMeta(
+    'itemTypeId',
+  );
+  @override
+  late final GeneratedColumn<String> itemTypeId = GeneratedColumn<String>(
+    'item_type_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fieldKeyMeta = const VerificationMeta(
+    'fieldKey',
+  );
+  @override
+  late final GeneratedColumn<String> fieldKey = GeneratedColumn<String>(
+    'field_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dataTypeMeta = const VerificationMeta(
+    'dataType',
+  );
+  @override
+  late final GeneratedColumn<String> dataType = GeneratedColumn<String>(
+    'data_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _requiredMeta = const VerificationMeta(
+    'required',
+  );
+  @override
+  late final GeneratedColumn<bool> required = GeneratedColumn<bool>(
+    'required',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("required" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    organizationId,
+    itemTypeId,
+    label,
+    fieldKey,
+    dataType,
+    required,
+    position,
+    version,
+    cachedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_item_field_defs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalItemFieldDef> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('item_type_id')) {
+      context.handle(
+        _itemTypeIdMeta,
+        itemTypeId.isAcceptableOrUnknown(
+          data['item_type_id']!,
+          _itemTypeIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_labelMeta);
+    }
+    if (data.containsKey('field_key')) {
+      context.handle(
+        _fieldKeyMeta,
+        fieldKey.isAcceptableOrUnknown(data['field_key']!, _fieldKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fieldKeyMeta);
+    }
+    if (data.containsKey('data_type')) {
+      context.handle(
+        _dataTypeMeta,
+        dataType.isAcceptableOrUnknown(data['data_type']!, _dataTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dataTypeMeta);
+    }
+    if (data.containsKey('required')) {
+      context.handle(
+        _requiredMeta,
+        required.isAcceptableOrUnknown(data['required']!, _requiredMeta),
+      );
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalItemFieldDef map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalItemFieldDef(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      itemTypeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_type_id'],
+      ),
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      )!,
+      fieldKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}field_key'],
+      )!,
+      dataType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}data_type'],
+      )!,
+      required: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}required'],
+      )!,
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalItemFieldDefsTable createAlias(String alias) {
+    return $LocalItemFieldDefsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalItemFieldDef extends DataClass
+    implements Insertable<LocalItemFieldDef> {
+  final String id;
+  final String organizationId;
+  final String? itemTypeId;
+  final String label;
+  final String fieldKey;
+  final String dataType;
+  final bool required;
+  final int position;
+  final int? version;
+  final DateTime cachedAt;
+  const LocalItemFieldDef({
+    required this.id,
+    required this.organizationId,
+    this.itemTypeId,
+    required this.label,
+    required this.fieldKey,
+    required this.dataType,
+    required this.required,
+    required this.position,
+    this.version,
+    required this.cachedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['organization_id'] = Variable<String>(organizationId);
+    if (!nullToAbsent || itemTypeId != null) {
+      map['item_type_id'] = Variable<String>(itemTypeId);
+    }
+    map['label'] = Variable<String>(label);
+    map['field_key'] = Variable<String>(fieldKey);
+    map['data_type'] = Variable<String>(dataType);
+    map['required'] = Variable<bool>(required);
+    map['position'] = Variable<int>(position);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  LocalItemFieldDefsCompanion toCompanion(bool nullToAbsent) {
+    return LocalItemFieldDefsCompanion(
+      id: Value(id),
+      organizationId: Value(organizationId),
+      itemTypeId: itemTypeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemTypeId),
+      label: Value(label),
+      fieldKey: Value(fieldKey),
+      dataType: Value(dataType),
+      required: Value(required),
+      position: Value(position),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory LocalItemFieldDef.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalItemFieldDef(
+      id: serializer.fromJson<String>(json['id']),
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      itemTypeId: serializer.fromJson<String?>(json['itemTypeId']),
+      label: serializer.fromJson<String>(json['label']),
+      fieldKey: serializer.fromJson<String>(json['fieldKey']),
+      dataType: serializer.fromJson<String>(json['dataType']),
+      required: serializer.fromJson<bool>(json['required']),
+      position: serializer.fromJson<int>(json['position']),
+      version: serializer.fromJson<int?>(json['version']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'organizationId': serializer.toJson<String>(organizationId),
+      'itemTypeId': serializer.toJson<String?>(itemTypeId),
+      'label': serializer.toJson<String>(label),
+      'fieldKey': serializer.toJson<String>(fieldKey),
+      'dataType': serializer.toJson<String>(dataType),
+      'required': serializer.toJson<bool>(required),
+      'position': serializer.toJson<int>(position),
+      'version': serializer.toJson<int?>(version),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  LocalItemFieldDef copyWith({
+    String? id,
+    String? organizationId,
+    Value<String?> itemTypeId = const Value.absent(),
+    String? label,
+    String? fieldKey,
+    String? dataType,
+    bool? required,
+    int? position,
+    Value<int?> version = const Value.absent(),
+    DateTime? cachedAt,
+  }) => LocalItemFieldDef(
+    id: id ?? this.id,
+    organizationId: organizationId ?? this.organizationId,
+    itemTypeId: itemTypeId.present ? itemTypeId.value : this.itemTypeId,
+    label: label ?? this.label,
+    fieldKey: fieldKey ?? this.fieldKey,
+    dataType: dataType ?? this.dataType,
+    required: required ?? this.required,
+    position: position ?? this.position,
+    version: version.present ? version.value : this.version,
+    cachedAt: cachedAt ?? this.cachedAt,
+  );
+  LocalItemFieldDef copyWithCompanion(LocalItemFieldDefsCompanion data) {
+    return LocalItemFieldDef(
+      id: data.id.present ? data.id.value : this.id,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      itemTypeId: data.itemTypeId.present
+          ? data.itemTypeId.value
+          : this.itemTypeId,
+      label: data.label.present ? data.label.value : this.label,
+      fieldKey: data.fieldKey.present ? data.fieldKey.value : this.fieldKey,
+      dataType: data.dataType.present ? data.dataType.value : this.dataType,
+      required: data.required.present ? data.required.value : this.required,
+      position: data.position.present ? data.position.value : this.position,
+      version: data.version.present ? data.version.value : this.version,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalItemFieldDef(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('itemTypeId: $itemTypeId, ')
+          ..write('label: $label, ')
+          ..write('fieldKey: $fieldKey, ')
+          ..write('dataType: $dataType, ')
+          ..write('required: $required, ')
+          ..write('position: $position, ')
+          ..write('version: $version, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    organizationId,
+    itemTypeId,
+    label,
+    fieldKey,
+    dataType,
+    required,
+    position,
+    version,
+    cachedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalItemFieldDef &&
+          other.id == this.id &&
+          other.organizationId == this.organizationId &&
+          other.itemTypeId == this.itemTypeId &&
+          other.label == this.label &&
+          other.fieldKey == this.fieldKey &&
+          other.dataType == this.dataType &&
+          other.required == this.required &&
+          other.position == this.position &&
+          other.version == this.version &&
+          other.cachedAt == this.cachedAt);
+}
+
+class LocalItemFieldDefsCompanion extends UpdateCompanion<LocalItemFieldDef> {
+  final Value<String> id;
+  final Value<String> organizationId;
+  final Value<String?> itemTypeId;
+  final Value<String> label;
+  final Value<String> fieldKey;
+  final Value<String> dataType;
+  final Value<bool> required;
+  final Value<int> position;
+  final Value<int?> version;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const LocalItemFieldDefsCompanion({
+    this.id = const Value.absent(),
+    this.organizationId = const Value.absent(),
+    this.itemTypeId = const Value.absent(),
+    this.label = const Value.absent(),
+    this.fieldKey = const Value.absent(),
+    this.dataType = const Value.absent(),
+    this.required = const Value.absent(),
+    this.position = const Value.absent(),
+    this.version = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalItemFieldDefsCompanion.insert({
+    required String id,
+    required String organizationId,
+    this.itemTypeId = const Value.absent(),
+    required String label,
+    required String fieldKey,
+    required String dataType,
+    this.required = const Value.absent(),
+    this.position = const Value.absent(),
+    this.version = const Value.absent(),
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       organizationId = Value(organizationId),
+       label = Value(label),
+       fieldKey = Value(fieldKey),
+       dataType = Value(dataType),
+       cachedAt = Value(cachedAt);
+  static Insertable<LocalItemFieldDef> custom({
+    Expression<String>? id,
+    Expression<String>? organizationId,
+    Expression<String>? itemTypeId,
+    Expression<String>? label,
+    Expression<String>? fieldKey,
+    Expression<String>? dataType,
+    Expression<bool>? required,
+    Expression<int>? position,
+    Expression<int>? version,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (organizationId != null) 'organization_id': organizationId,
+      if (itemTypeId != null) 'item_type_id': itemTypeId,
+      if (label != null) 'label': label,
+      if (fieldKey != null) 'field_key': fieldKey,
+      if (dataType != null) 'data_type': dataType,
+      if (required != null) 'required': required,
+      if (position != null) 'position': position,
+      if (version != null) 'version': version,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalItemFieldDefsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? organizationId,
+    Value<String?>? itemTypeId,
+    Value<String>? label,
+    Value<String>? fieldKey,
+    Value<String>? dataType,
+    Value<bool>? required,
+    Value<int>? position,
+    Value<int?>? version,
+    Value<DateTime>? cachedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalItemFieldDefsCompanion(
+      id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
+      itemTypeId: itemTypeId ?? this.itemTypeId,
+      label: label ?? this.label,
+      fieldKey: fieldKey ?? this.fieldKey,
+      dataType: dataType ?? this.dataType,
+      required: required ?? this.required,
+      position: position ?? this.position,
+      version: version ?? this.version,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (itemTypeId.present) {
+      map['item_type_id'] = Variable<String>(itemTypeId.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (fieldKey.present) {
+      map['field_key'] = Variable<String>(fieldKey.value);
+    }
+    if (dataType.present) {
+      map['data_type'] = Variable<String>(dataType.value);
+    }
+    if (required.present) {
+      map['required'] = Variable<bool>(required.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalItemFieldDefsCompanion(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('itemTypeId: $itemTypeId, ')
+          ..write('label: $label, ')
+          ..write('fieldKey: $fieldKey, ')
+          ..write('dataType: $dataType, ')
+          ..write('required: $required, ')
+          ..write('position: $position, ')
+          ..write('version: $version, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalItemFieldOptionsTable extends LocalItemFieldOptions
+    with TableInfo<$LocalItemFieldOptionsTable, LocalItemFieldOption> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalItemFieldOptionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fieldDefIdMeta = const VerificationMeta(
+    'fieldDefId',
+  );
+  @override
+  late final GeneratedColumn<String> fieldDefId = GeneratedColumn<String>(
+    'field_def_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    organizationId,
+    fieldDefId,
+    label,
+    value,
+    position,
+    cachedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_item_field_options';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalItemFieldOption> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('field_def_id')) {
+      context.handle(
+        _fieldDefIdMeta,
+        fieldDefId.isAcceptableOrUnknown(
+          data['field_def_id']!,
+          _fieldDefIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fieldDefIdMeta);
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_labelMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalItemFieldOption map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalItemFieldOption(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      fieldDefId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}field_def_id'],
+      )!,
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      )!,
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalItemFieldOptionsTable createAlias(String alias) {
+    return $LocalItemFieldOptionsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalItemFieldOption extends DataClass
+    implements Insertable<LocalItemFieldOption> {
+  final String id;
+  final String organizationId;
+  final String fieldDefId;
+  final String label;
+  final String value;
+  final int position;
+  final DateTime cachedAt;
+  const LocalItemFieldOption({
+    required this.id,
+    required this.organizationId,
+    required this.fieldDefId,
+    required this.label,
+    required this.value,
+    required this.position,
+    required this.cachedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['organization_id'] = Variable<String>(organizationId);
+    map['field_def_id'] = Variable<String>(fieldDefId);
+    map['label'] = Variable<String>(label);
+    map['value'] = Variable<String>(value);
+    map['position'] = Variable<int>(position);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  LocalItemFieldOptionsCompanion toCompanion(bool nullToAbsent) {
+    return LocalItemFieldOptionsCompanion(
+      id: Value(id),
+      organizationId: Value(organizationId),
+      fieldDefId: Value(fieldDefId),
+      label: Value(label),
+      value: Value(value),
+      position: Value(position),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory LocalItemFieldOption.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalItemFieldOption(
+      id: serializer.fromJson<String>(json['id']),
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      fieldDefId: serializer.fromJson<String>(json['fieldDefId']),
+      label: serializer.fromJson<String>(json['label']),
+      value: serializer.fromJson<String>(json['value']),
+      position: serializer.fromJson<int>(json['position']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'organizationId': serializer.toJson<String>(organizationId),
+      'fieldDefId': serializer.toJson<String>(fieldDefId),
+      'label': serializer.toJson<String>(label),
+      'value': serializer.toJson<String>(value),
+      'position': serializer.toJson<int>(position),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  LocalItemFieldOption copyWith({
+    String? id,
+    String? organizationId,
+    String? fieldDefId,
+    String? label,
+    String? value,
+    int? position,
+    DateTime? cachedAt,
+  }) => LocalItemFieldOption(
+    id: id ?? this.id,
+    organizationId: organizationId ?? this.organizationId,
+    fieldDefId: fieldDefId ?? this.fieldDefId,
+    label: label ?? this.label,
+    value: value ?? this.value,
+    position: position ?? this.position,
+    cachedAt: cachedAt ?? this.cachedAt,
+  );
+  LocalItemFieldOption copyWithCompanion(LocalItemFieldOptionsCompanion data) {
+    return LocalItemFieldOption(
+      id: data.id.present ? data.id.value : this.id,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      fieldDefId: data.fieldDefId.present
+          ? data.fieldDefId.value
+          : this.fieldDefId,
+      label: data.label.present ? data.label.value : this.label,
+      value: data.value.present ? data.value.value : this.value,
+      position: data.position.present ? data.position.value : this.position,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalItemFieldOption(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('fieldDefId: $fieldDefId, ')
+          ..write('label: $label, ')
+          ..write('value: $value, ')
+          ..write('position: $position, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    organizationId,
+    fieldDefId,
+    label,
+    value,
+    position,
+    cachedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalItemFieldOption &&
+          other.id == this.id &&
+          other.organizationId == this.organizationId &&
+          other.fieldDefId == this.fieldDefId &&
+          other.label == this.label &&
+          other.value == this.value &&
+          other.position == this.position &&
+          other.cachedAt == this.cachedAt);
+}
+
+class LocalItemFieldOptionsCompanion
+    extends UpdateCompanion<LocalItemFieldOption> {
+  final Value<String> id;
+  final Value<String> organizationId;
+  final Value<String> fieldDefId;
+  final Value<String> label;
+  final Value<String> value;
+  final Value<int> position;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const LocalItemFieldOptionsCompanion({
+    this.id = const Value.absent(),
+    this.organizationId = const Value.absent(),
+    this.fieldDefId = const Value.absent(),
+    this.label = const Value.absent(),
+    this.value = const Value.absent(),
+    this.position = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalItemFieldOptionsCompanion.insert({
+    required String id,
+    required String organizationId,
+    required String fieldDefId,
+    required String label,
+    required String value,
+    this.position = const Value.absent(),
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       organizationId = Value(organizationId),
+       fieldDefId = Value(fieldDefId),
+       label = Value(label),
+       value = Value(value),
+       cachedAt = Value(cachedAt);
+  static Insertable<LocalItemFieldOption> custom({
+    Expression<String>? id,
+    Expression<String>? organizationId,
+    Expression<String>? fieldDefId,
+    Expression<String>? label,
+    Expression<String>? value,
+    Expression<int>? position,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (organizationId != null) 'organization_id': organizationId,
+      if (fieldDefId != null) 'field_def_id': fieldDefId,
+      if (label != null) 'label': label,
+      if (value != null) 'value': value,
+      if (position != null) 'position': position,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalItemFieldOptionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? organizationId,
+    Value<String>? fieldDefId,
+    Value<String>? label,
+    Value<String>? value,
+    Value<int>? position,
+    Value<DateTime>? cachedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalItemFieldOptionsCompanion(
+      id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
+      fieldDefId: fieldDefId ?? this.fieldDefId,
+      label: label ?? this.label,
+      value: value ?? this.value,
+      position: position ?? this.position,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (fieldDefId.present) {
+      map['field_def_id'] = Variable<String>(fieldDefId.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalItemFieldOptionsCompanion(')
+          ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('fieldDefId: $fieldDefId, ')
+          ..write('label: $label, ')
+          ..write('value: $value, ')
+          ..write('position: $position, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalItemFieldValuesTable extends LocalItemFieldValues
+    with TableInfo<$LocalItemFieldValuesTable, LocalItemFieldValue> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalItemFieldValuesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('synced'),
+  );
+  static const VerificationMeta _localUpdatedAtMeta = const VerificationMeta(
+    'localUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> localUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'local_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
+  @override
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fieldDefIdMeta = const VerificationMeta(
+    'fieldDefId',
+  );
+  @override
+  late final GeneratedColumn<String> fieldDefId = GeneratedColumn<String>(
+    'field_def_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueTextMeta = const VerificationMeta(
+    'valueText',
+  );
+  @override
+  late final GeneratedColumn<String> valueText = GeneratedColumn<String>(
+    'value_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _valueNumberMeta = const VerificationMeta(
+    'valueNumber',
+  );
+  @override
+  late final GeneratedColumn<double> valueNumber = GeneratedColumn<double>(
+    'value_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _valueDatetimeMeta = const VerificationMeta(
+    'valueDatetime',
+  );
+  @override
+  late final GeneratedColumn<DateTime> valueDatetime =
+      GeneratedColumn<DateTime>(
+        'value_datetime',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _valueBooleanMeta = const VerificationMeta(
+    'valueBoolean',
+  );
+  @override
+  late final GeneratedColumn<bool> valueBoolean = GeneratedColumn<bool>(
+    'value_boolean',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("value_boolean" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    itemId,
+    fieldDefId,
+    valueText,
+    valueNumber,
+    valueDatetime,
+    valueBoolean,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_item_field_values';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalItemFieldValue> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('local_updated_at')) {
+      context.handle(
+        _localUpdatedAtMeta,
+        localUpdatedAt.isAcceptableOrUnknown(
+          data['local_updated_at']!,
+          _localUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_localUpdatedAtMeta);
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_itemIdMeta);
+    }
+    if (data.containsKey('field_def_id')) {
+      context.handle(
+        _fieldDefIdMeta,
+        fieldDefId.isAcceptableOrUnknown(
+          data['field_def_id']!,
+          _fieldDefIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fieldDefIdMeta);
+    }
+    if (data.containsKey('value_text')) {
+      context.handle(
+        _valueTextMeta,
+        valueText.isAcceptableOrUnknown(data['value_text']!, _valueTextMeta),
+      );
+    }
+    if (data.containsKey('value_number')) {
+      context.handle(
+        _valueNumberMeta,
+        valueNumber.isAcceptableOrUnknown(
+          data['value_number']!,
+          _valueNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('value_datetime')) {
+      context.handle(
+        _valueDatetimeMeta,
+        valueDatetime.isAcceptableOrUnknown(
+          data['value_datetime']!,
+          _valueDatetimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('value_boolean')) {
+      context.handle(
+        _valueBooleanMeta,
+        valueBoolean.isAcceptableOrUnknown(
+          data['value_boolean']!,
+          _valueBooleanMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalItemFieldValue map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalItemFieldValue(
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      localUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}local_updated_at'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      ),
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      itemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_id'],
+      )!,
+      fieldDefId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}field_def_id'],
+      )!,
+      valueText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value_text'],
+      ),
+      valueNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}value_number'],
+      ),
+      valueDatetime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}value_datetime'],
+      ),
+      valueBoolean: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}value_boolean'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $LocalItemFieldValuesTable createAlias(String alias) {
+    return $LocalItemFieldValuesTable(attachedDatabase, alias);
+  }
+}
+
+class LocalItemFieldValue extends DataClass
+    implements Insertable<LocalItemFieldValue> {
+  final String organizationId;
+  final int? version;
+  final String syncStatus;
+  final DateTime localUpdatedAt;
+  final DateTime? lastSyncedAt;
+  final String? syncError;
+  final bool deleted;
+  final String id;
+  final String itemId;
+  final String fieldDefId;
+  final String? valueText;
+  final double? valueNumber;
+  final DateTime? valueDatetime;
+  final bool? valueBoolean;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  const LocalItemFieldValue({
+    required this.organizationId,
+    this.version,
+    required this.syncStatus,
+    required this.localUpdatedAt,
+    this.lastSyncedAt,
+    this.syncError,
+    required this.deleted,
+    required this.id,
+    required this.itemId,
+    required this.fieldDefId,
+    this.valueText,
+    this.valueNumber,
+    this.valueDatetime,
+    this.valueBoolean,
+    this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['organization_id'] = Variable<String>(organizationId);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['local_updated_at'] = Variable<DateTime>(localUpdatedAt);
+    if (!nullToAbsent || lastSyncedAt != null) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    }
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['deleted'] = Variable<bool>(deleted);
+    map['id'] = Variable<String>(id);
+    map['item_id'] = Variable<String>(itemId);
+    map['field_def_id'] = Variable<String>(fieldDefId);
+    if (!nullToAbsent || valueText != null) {
+      map['value_text'] = Variable<String>(valueText);
+    }
+    if (!nullToAbsent || valueNumber != null) {
+      map['value_number'] = Variable<double>(valueNumber);
+    }
+    if (!nullToAbsent || valueDatetime != null) {
+      map['value_datetime'] = Variable<DateTime>(valueDatetime);
+    }
+    if (!nullToAbsent || valueBoolean != null) {
+      map['value_boolean'] = Variable<bool>(valueBoolean);
+    }
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  LocalItemFieldValuesCompanion toCompanion(bool nullToAbsent) {
+    return LocalItemFieldValuesCompanion(
+      organizationId: Value(organizationId),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      syncStatus: Value(syncStatus),
+      localUpdatedAt: Value(localUpdatedAt),
+      lastSyncedAt: lastSyncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncedAt),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      deleted: Value(deleted),
+      id: Value(id),
+      itemId: Value(itemId),
+      fieldDefId: Value(fieldDefId),
+      valueText: valueText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(valueText),
+      valueNumber: valueNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(valueNumber),
+      valueDatetime: valueDatetime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(valueDatetime),
+      valueBoolean: valueBoolean == null && nullToAbsent
+          ? const Value.absent()
+          : Value(valueBoolean),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory LocalItemFieldValue.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalItemFieldValue(
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      version: serializer.fromJson<int?>(json['version']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      localUpdatedAt: serializer.fromJson<DateTime>(json['localUpdatedAt']),
+      lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      id: serializer.fromJson<String>(json['id']),
+      itemId: serializer.fromJson<String>(json['itemId']),
+      fieldDefId: serializer.fromJson<String>(json['fieldDefId']),
+      valueText: serializer.fromJson<String?>(json['valueText']),
+      valueNumber: serializer.fromJson<double?>(json['valueNumber']),
+      valueDatetime: serializer.fromJson<DateTime?>(json['valueDatetime']),
+      valueBoolean: serializer.fromJson<bool?>(json['valueBoolean']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'organizationId': serializer.toJson<String>(organizationId),
+      'version': serializer.toJson<int?>(version),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'localUpdatedAt': serializer.toJson<DateTime>(localUpdatedAt),
+      'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'syncError': serializer.toJson<String?>(syncError),
+      'deleted': serializer.toJson<bool>(deleted),
+      'id': serializer.toJson<String>(id),
+      'itemId': serializer.toJson<String>(itemId),
+      'fieldDefId': serializer.toJson<String>(fieldDefId),
+      'valueText': serializer.toJson<String?>(valueText),
+      'valueNumber': serializer.toJson<double?>(valueNumber),
+      'valueDatetime': serializer.toJson<DateTime?>(valueDatetime),
+      'valueBoolean': serializer.toJson<bool?>(valueBoolean),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  LocalItemFieldValue copyWith({
+    String? organizationId,
+    Value<int?> version = const Value.absent(),
+    String? syncStatus,
+    DateTime? localUpdatedAt,
+    Value<DateTime?> lastSyncedAt = const Value.absent(),
+    Value<String?> syncError = const Value.absent(),
+    bool? deleted,
+    String? id,
+    String? itemId,
+    String? fieldDefId,
+    Value<String?> valueText = const Value.absent(),
+    Value<double?> valueNumber = const Value.absent(),
+    Value<DateTime?> valueDatetime = const Value.absent(),
+    Value<bool?> valueBoolean = const Value.absent(),
+    Value<DateTime?> createdAt = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+  }) => LocalItemFieldValue(
+    organizationId: organizationId ?? this.organizationId,
+    version: version.present ? version.value : this.version,
+    syncStatus: syncStatus ?? this.syncStatus,
+    localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+    lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    deleted: deleted ?? this.deleted,
+    id: id ?? this.id,
+    itemId: itemId ?? this.itemId,
+    fieldDefId: fieldDefId ?? this.fieldDefId,
+    valueText: valueText.present ? valueText.value : this.valueText,
+    valueNumber: valueNumber.present ? valueNumber.value : this.valueNumber,
+    valueDatetime: valueDatetime.present
+        ? valueDatetime.value
+        : this.valueDatetime,
+    valueBoolean: valueBoolean.present ? valueBoolean.value : this.valueBoolean,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  LocalItemFieldValue copyWithCompanion(LocalItemFieldValuesCompanion data) {
+    return LocalItemFieldValue(
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      version: data.version.present ? data.version.value : this.version,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      localUpdatedAt: data.localUpdatedAt.present
+          ? data.localUpdatedAt.value
+          : this.localUpdatedAt,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      id: data.id.present ? data.id.value : this.id,
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      fieldDefId: data.fieldDefId.present
+          ? data.fieldDefId.value
+          : this.fieldDefId,
+      valueText: data.valueText.present ? data.valueText.value : this.valueText,
+      valueNumber: data.valueNumber.present
+          ? data.valueNumber.value
+          : this.valueNumber,
+      valueDatetime: data.valueDatetime.present
+          ? data.valueDatetime.value
+          : this.valueDatetime,
+      valueBoolean: data.valueBoolean.present
+          ? data.valueBoolean.value
+          : this.valueBoolean,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalItemFieldValue(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('itemId: $itemId, ')
+          ..write('fieldDefId: $fieldDefId, ')
+          ..write('valueText: $valueText, ')
+          ..write('valueNumber: $valueNumber, ')
+          ..write('valueDatetime: $valueDatetime, ')
+          ..write('valueBoolean: $valueBoolean, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    itemId,
+    fieldDefId,
+    valueText,
+    valueNumber,
+    valueDatetime,
+    valueBoolean,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalItemFieldValue &&
+          other.organizationId == this.organizationId &&
+          other.version == this.version &&
+          other.syncStatus == this.syncStatus &&
+          other.localUpdatedAt == this.localUpdatedAt &&
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.syncError == this.syncError &&
+          other.deleted == this.deleted &&
+          other.id == this.id &&
+          other.itemId == this.itemId &&
+          other.fieldDefId == this.fieldDefId &&
+          other.valueText == this.valueText &&
+          other.valueNumber == this.valueNumber &&
+          other.valueDatetime == this.valueDatetime &&
+          other.valueBoolean == this.valueBoolean &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalItemFieldValuesCompanion
+    extends UpdateCompanion<LocalItemFieldValue> {
+  final Value<String> organizationId;
+  final Value<int?> version;
+  final Value<String> syncStatus;
+  final Value<DateTime> localUpdatedAt;
+  final Value<DateTime?> lastSyncedAt;
+  final Value<String?> syncError;
+  final Value<bool> deleted;
+  final Value<String> id;
+  final Value<String> itemId;
+  final Value<String> fieldDefId;
+  final Value<String?> valueText;
+  final Value<double?> valueNumber;
+  final Value<DateTime?> valueDatetime;
+  final Value<bool?> valueBoolean;
+  final Value<DateTime?> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int> rowid;
+  const LocalItemFieldValuesCompanion({
+    this.organizationId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.id = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.fieldDefId = const Value.absent(),
+    this.valueText = const Value.absent(),
+    this.valueNumber = const Value.absent(),
+    this.valueDatetime = const Value.absent(),
+    this.valueBoolean = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalItemFieldValuesCompanion.insert({
+    required String organizationId,
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required DateTime localUpdatedAt,
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String id,
+    required String itemId,
+    required String fieldDefId,
+    this.valueText = const Value.absent(),
+    this.valueNumber = const Value.absent(),
+    this.valueDatetime = const Value.absent(),
+    this.valueBoolean = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : organizationId = Value(organizationId),
+       localUpdatedAt = Value(localUpdatedAt),
+       id = Value(id),
+       itemId = Value(itemId),
+       fieldDefId = Value(fieldDefId);
+  static Insertable<LocalItemFieldValue> custom({
+    Expression<String>? organizationId,
+    Expression<int>? version,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? localUpdatedAt,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<String>? syncError,
+    Expression<bool>? deleted,
+    Expression<String>? id,
+    Expression<String>? itemId,
+    Expression<String>? fieldDefId,
+    Expression<String>? valueText,
+    Expression<double>? valueNumber,
+    Expression<DateTime>? valueDatetime,
+    Expression<bool>? valueBoolean,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (organizationId != null) 'organization_id': organizationId,
+      if (version != null) 'version': version,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (localUpdatedAt != null) 'local_updated_at': localUpdatedAt,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (syncError != null) 'sync_error': syncError,
+      if (deleted != null) 'deleted': deleted,
+      if (id != null) 'id': id,
+      if (itemId != null) 'item_id': itemId,
+      if (fieldDefId != null) 'field_def_id': fieldDefId,
+      if (valueText != null) 'value_text': valueText,
+      if (valueNumber != null) 'value_number': valueNumber,
+      if (valueDatetime != null) 'value_datetime': valueDatetime,
+      if (valueBoolean != null) 'value_boolean': valueBoolean,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalItemFieldValuesCompanion copyWith({
+    Value<String>? organizationId,
+    Value<int?>? version,
+    Value<String>? syncStatus,
+    Value<DateTime>? localUpdatedAt,
+    Value<DateTime?>? lastSyncedAt,
+    Value<String?>? syncError,
+    Value<bool>? deleted,
+    Value<String>? id,
+    Value<String>? itemId,
+    Value<String>? fieldDefId,
+    Value<String?>? valueText,
+    Value<double?>? valueNumber,
+    Value<DateTime?>? valueDatetime,
+    Value<bool?>? valueBoolean,
+    Value<DateTime?>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalItemFieldValuesCompanion(
+      organizationId: organizationId ?? this.organizationId,
+      version: version ?? this.version,
+      syncStatus: syncStatus ?? this.syncStatus,
+      localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      syncError: syncError ?? this.syncError,
+      deleted: deleted ?? this.deleted,
+      id: id ?? this.id,
+      itemId: itemId ?? this.itemId,
+      fieldDefId: fieldDefId ?? this.fieldDefId,
+      valueText: valueText ?? this.valueText,
+      valueNumber: valueNumber ?? this.valueNumber,
+      valueDatetime: valueDatetime ?? this.valueDatetime,
+      valueBoolean: valueBoolean ?? this.valueBoolean,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (localUpdatedAt.present) {
+      map['local_updated_at'] = Variable<DateTime>(localUpdatedAt.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
+    }
+    if (fieldDefId.present) {
+      map['field_def_id'] = Variable<String>(fieldDefId.value);
+    }
+    if (valueText.present) {
+      map['value_text'] = Variable<String>(valueText.value);
+    }
+    if (valueNumber.present) {
+      map['value_number'] = Variable<double>(valueNumber.value);
+    }
+    if (valueDatetime.present) {
+      map['value_datetime'] = Variable<DateTime>(valueDatetime.value);
+    }
+    if (valueBoolean.present) {
+      map['value_boolean'] = Variable<bool>(valueBoolean.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalItemFieldValuesCompanion(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('itemId: $itemId, ')
+          ..write('fieldDefId: $fieldDefId, ')
+          ..write('valueText: $valueText, ')
+          ..write('valueNumber: $valueNumber, ')
+          ..write('valueDatetime: $valueDatetime, ')
+          ..write('valueBoolean: $valueBoolean, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -3524,23 +5919,21 @@ class $LocalServiceOrdersTable extends LocalServiceOrders
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _locationIdMeta = const VerificationMeta(
-    'locationId',
-  );
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
   @override
-  late final GeneratedColumn<String> locationId = GeneratedColumn<String>(
-    'location_id',
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
     aliasedName,
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _equipmentIdMeta = const VerificationMeta(
-    'equipmentId',
+  static const VerificationMeta _parentOrderIdMeta = const VerificationMeta(
+    'parentOrderId',
   );
   @override
-  late final GeneratedColumn<String> equipmentId = GeneratedColumn<String>(
-    'equipment_id',
+  late final GeneratedColumn<String> parentOrderId = GeneratedColumn<String>(
+    'parent_order_id',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -3723,8 +6116,8 @@ class $LocalServiceOrdersTable extends LocalServiceOrders
     deleted,
     id,
     clientId,
-    locationId,
-    equipmentId,
+    itemId,
+    parentOrderId,
     serviceOrderTypeId,
     companyId,
     assignedUserId,
@@ -3821,18 +6214,18 @@ class $LocalServiceOrdersTable extends LocalServiceOrders
     } else if (isInserting) {
       context.missing(_clientIdMeta);
     }
-    if (data.containsKey('location_id')) {
+    if (data.containsKey('item_id')) {
       context.handle(
-        _locationIdMeta,
-        locationId.isAcceptableOrUnknown(data['location_id']!, _locationIdMeta),
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
       );
     }
-    if (data.containsKey('equipment_id')) {
+    if (data.containsKey('parent_order_id')) {
       context.handle(
-        _equipmentIdMeta,
-        equipmentId.isAcceptableOrUnknown(
-          data['equipment_id']!,
-          _equipmentIdMeta,
+        _parentOrderIdMeta,
+        parentOrderId.isAcceptableOrUnknown(
+          data['parent_order_id']!,
+          _parentOrderIdMeta,
         ),
       );
     }
@@ -3992,13 +6385,13 @@ class $LocalServiceOrdersTable extends LocalServiceOrders
         DriftSqlType.string,
         data['${effectivePrefix}client_id'],
       )!,
-      locationId: attachedDatabase.typeMapping.read(
+      itemId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}location_id'],
+        data['${effectivePrefix}item_id'],
       ),
-      equipmentId: attachedDatabase.typeMapping.read(
+      parentOrderId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}equipment_id'],
+        data['${effectivePrefix}parent_order_id'],
       ),
       serviceOrderTypeId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -4080,8 +6473,8 @@ class LocalServiceOrder extends DataClass
   final bool deleted;
   final String id;
   final String clientId;
-  final String? locationId;
-  final String? equipmentId;
+  final String? itemId;
+  final String? parentOrderId;
   final String? serviceOrderTypeId;
   final String? companyId;
   final String? assignedUserId;
@@ -4107,8 +6500,8 @@ class LocalServiceOrder extends DataClass
     required this.deleted,
     required this.id,
     required this.clientId,
-    this.locationId,
-    this.equipmentId,
+    this.itemId,
+    this.parentOrderId,
     this.serviceOrderTypeId,
     this.companyId,
     this.assignedUserId,
@@ -4143,11 +6536,11 @@ class LocalServiceOrder extends DataClass
     map['deleted'] = Variable<bool>(deleted);
     map['id'] = Variable<String>(id);
     map['client_id'] = Variable<String>(clientId);
-    if (!nullToAbsent || locationId != null) {
-      map['location_id'] = Variable<String>(locationId);
+    if (!nullToAbsent || itemId != null) {
+      map['item_id'] = Variable<String>(itemId);
     }
-    if (!nullToAbsent || equipmentId != null) {
-      map['equipment_id'] = Variable<String>(equipmentId);
+    if (!nullToAbsent || parentOrderId != null) {
+      map['parent_order_id'] = Variable<String>(parentOrderId);
     }
     if (!nullToAbsent || serviceOrderTypeId != null) {
       map['service_order_type_id'] = Variable<String>(serviceOrderTypeId);
@@ -4200,12 +6593,12 @@ class LocalServiceOrder extends DataClass
       deleted: Value(deleted),
       id: Value(id),
       clientId: Value(clientId),
-      locationId: locationId == null && nullToAbsent
+      itemId: itemId == null && nullToAbsent
           ? const Value.absent()
-          : Value(locationId),
-      equipmentId: equipmentId == null && nullToAbsent
+          : Value(itemId),
+      parentOrderId: parentOrderId == null && nullToAbsent
           ? const Value.absent()
-          : Value(equipmentId),
+          : Value(parentOrderId),
       serviceOrderTypeId: serviceOrderTypeId == null && nullToAbsent
           ? const Value.absent()
           : Value(serviceOrderTypeId),
@@ -4255,8 +6648,8 @@ class LocalServiceOrder extends DataClass
       deleted: serializer.fromJson<bool>(json['deleted']),
       id: serializer.fromJson<String>(json['id']),
       clientId: serializer.fromJson<String>(json['clientId']),
-      locationId: serializer.fromJson<String?>(json['locationId']),
-      equipmentId: serializer.fromJson<String?>(json['equipmentId']),
+      itemId: serializer.fromJson<String?>(json['itemId']),
+      parentOrderId: serializer.fromJson<String?>(json['parentOrderId']),
       serviceOrderTypeId: serializer.fromJson<String?>(
         json['serviceOrderTypeId'],
       ),
@@ -4289,8 +6682,8 @@ class LocalServiceOrder extends DataClass
       'deleted': serializer.toJson<bool>(deleted),
       'id': serializer.toJson<String>(id),
       'clientId': serializer.toJson<String>(clientId),
-      'locationId': serializer.toJson<String?>(locationId),
-      'equipmentId': serializer.toJson<String?>(equipmentId),
+      'itemId': serializer.toJson<String?>(itemId),
+      'parentOrderId': serializer.toJson<String?>(parentOrderId),
       'serviceOrderTypeId': serializer.toJson<String?>(serviceOrderTypeId),
       'companyId': serializer.toJson<String?>(companyId),
       'assignedUserId': serializer.toJson<String?>(assignedUserId),
@@ -4319,8 +6712,8 @@ class LocalServiceOrder extends DataClass
     bool? deleted,
     String? id,
     String? clientId,
-    Value<String?> locationId = const Value.absent(),
-    Value<String?> equipmentId = const Value.absent(),
+    Value<String?> itemId = const Value.absent(),
+    Value<String?> parentOrderId = const Value.absent(),
     Value<String?> serviceOrderTypeId = const Value.absent(),
     Value<String?> companyId = const Value.absent(),
     Value<String?> assignedUserId = const Value.absent(),
@@ -4346,8 +6739,10 @@ class LocalServiceOrder extends DataClass
     deleted: deleted ?? this.deleted,
     id: id ?? this.id,
     clientId: clientId ?? this.clientId,
-    locationId: locationId.present ? locationId.value : this.locationId,
-    equipmentId: equipmentId.present ? equipmentId.value : this.equipmentId,
+    itemId: itemId.present ? itemId.value : this.itemId,
+    parentOrderId: parentOrderId.present
+        ? parentOrderId.value
+        : this.parentOrderId,
     serviceOrderTypeId: serviceOrderTypeId.present
         ? serviceOrderTypeId.value
         : this.serviceOrderTypeId,
@@ -4387,12 +6782,10 @@ class LocalServiceOrder extends DataClass
       deleted: data.deleted.present ? data.deleted.value : this.deleted,
       id: data.id.present ? data.id.value : this.id,
       clientId: data.clientId.present ? data.clientId.value : this.clientId,
-      locationId: data.locationId.present
-          ? data.locationId.value
-          : this.locationId,
-      equipmentId: data.equipmentId.present
-          ? data.equipmentId.value
-          : this.equipmentId,
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      parentOrderId: data.parentOrderId.present
+          ? data.parentOrderId.value
+          : this.parentOrderId,
       serviceOrderTypeId: data.serviceOrderTypeId.present
           ? data.serviceOrderTypeId.value
           : this.serviceOrderTypeId,
@@ -4437,8 +6830,8 @@ class LocalServiceOrder extends DataClass
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
           ..write('clientId: $clientId, ')
-          ..write('locationId: $locationId, ')
-          ..write('equipmentId: $equipmentId, ')
+          ..write('itemId: $itemId, ')
+          ..write('parentOrderId: $parentOrderId, ')
           ..write('serviceOrderTypeId: $serviceOrderTypeId, ')
           ..write('companyId: $companyId, ')
           ..write('assignedUserId: $assignedUserId, ')
@@ -4469,8 +6862,8 @@ class LocalServiceOrder extends DataClass
     deleted,
     id,
     clientId,
-    locationId,
-    equipmentId,
+    itemId,
+    parentOrderId,
     serviceOrderTypeId,
     companyId,
     assignedUserId,
@@ -4500,8 +6893,8 @@ class LocalServiceOrder extends DataClass
           other.deleted == this.deleted &&
           other.id == this.id &&
           other.clientId == this.clientId &&
-          other.locationId == this.locationId &&
-          other.equipmentId == this.equipmentId &&
+          other.itemId == this.itemId &&
+          other.parentOrderId == this.parentOrderId &&
           other.serviceOrderTypeId == this.serviceOrderTypeId &&
           other.companyId == this.companyId &&
           other.assignedUserId == this.assignedUserId &&
@@ -4529,8 +6922,8 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
   final Value<bool> deleted;
   final Value<String> id;
   final Value<String> clientId;
-  final Value<String?> locationId;
-  final Value<String?> equipmentId;
+  final Value<String?> itemId;
+  final Value<String?> parentOrderId;
   final Value<String?> serviceOrderTypeId;
   final Value<String?> companyId;
   final Value<String?> assignedUserId;
@@ -4557,8 +6950,8 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
     this.deleted = const Value.absent(),
     this.id = const Value.absent(),
     this.clientId = const Value.absent(),
-    this.locationId = const Value.absent(),
-    this.equipmentId = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.parentOrderId = const Value.absent(),
     this.serviceOrderTypeId = const Value.absent(),
     this.companyId = const Value.absent(),
     this.assignedUserId = const Value.absent(),
@@ -4586,8 +6979,8 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
     this.deleted = const Value.absent(),
     required String id,
     required String clientId,
-    this.locationId = const Value.absent(),
-    this.equipmentId = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.parentOrderId = const Value.absent(),
     this.serviceOrderTypeId = const Value.absent(),
     this.companyId = const Value.absent(),
     this.assignedUserId = const Value.absent(),
@@ -4618,8 +7011,8 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
     Expression<bool>? deleted,
     Expression<String>? id,
     Expression<String>? clientId,
-    Expression<String>? locationId,
-    Expression<String>? equipmentId,
+    Expression<String>? itemId,
+    Expression<String>? parentOrderId,
     Expression<String>? serviceOrderTypeId,
     Expression<String>? companyId,
     Expression<String>? assignedUserId,
@@ -4647,8 +7040,8 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
       if (deleted != null) 'deleted': deleted,
       if (id != null) 'id': id,
       if (clientId != null) 'client_id': clientId,
-      if (locationId != null) 'location_id': locationId,
-      if (equipmentId != null) 'equipment_id': equipmentId,
+      if (itemId != null) 'item_id': itemId,
+      if (parentOrderId != null) 'parent_order_id': parentOrderId,
       if (serviceOrderTypeId != null)
         'service_order_type_id': serviceOrderTypeId,
       if (companyId != null) 'company_id': companyId,
@@ -4679,8 +7072,8 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
     Value<bool>? deleted,
     Value<String>? id,
     Value<String>? clientId,
-    Value<String?>? locationId,
-    Value<String?>? equipmentId,
+    Value<String?>? itemId,
+    Value<String?>? parentOrderId,
     Value<String?>? serviceOrderTypeId,
     Value<String?>? companyId,
     Value<String?>? assignedUserId,
@@ -4708,8 +7101,8 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
       deleted: deleted ?? this.deleted,
       id: id ?? this.id,
       clientId: clientId ?? this.clientId,
-      locationId: locationId ?? this.locationId,
-      equipmentId: equipmentId ?? this.equipmentId,
+      itemId: itemId ?? this.itemId,
+      parentOrderId: parentOrderId ?? this.parentOrderId,
       serviceOrderTypeId: serviceOrderTypeId ?? this.serviceOrderTypeId,
       companyId: companyId ?? this.companyId,
       assignedUserId: assignedUserId ?? this.assignedUserId,
@@ -4759,11 +7152,11 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
     if (clientId.present) {
       map['client_id'] = Variable<String>(clientId.value);
     }
-    if (locationId.present) {
-      map['location_id'] = Variable<String>(locationId.value);
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
     }
-    if (equipmentId.present) {
-      map['equipment_id'] = Variable<String>(equipmentId.value);
+    if (parentOrderId.present) {
+      map['parent_order_id'] = Variable<String>(parentOrderId.value);
     }
     if (serviceOrderTypeId.present) {
       map['service_order_type_id'] = Variable<String>(serviceOrderTypeId.value);
@@ -4828,8 +7221,8 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
           ..write('clientId: $clientId, ')
-          ..write('locationId: $locationId, ')
-          ..write('equipmentId: $equipmentId, ')
+          ..write('itemId: $itemId, ')
+          ..write('parentOrderId: $parentOrderId, ')
           ..write('serviceOrderTypeId: $serviceOrderTypeId, ')
           ..write('companyId: $companyId, ')
           ..write('assignedUserId: $assignedUserId, ')
@@ -4843,6 +7236,1074 @@ class LocalServiceOrdersCompanion extends UpdateCompanion<LocalServiceOrder> {
           ..write('scheduledFor: $scheduledFor, ')
           ..write('startedAt: $startedAt, ')
           ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalServiceOrderItemsTable extends LocalServiceOrderItems
+    with TableInfo<$LocalServiceOrderItemsTable, LocalServiceOrderItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalServiceOrderItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('synced'),
+  );
+  static const VerificationMeta _localUpdatedAtMeta = const VerificationMeta(
+    'localUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> localUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'local_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serviceOrderIdMeta = const VerificationMeta(
+    'serviceOrderId',
+  );
+  @override
+  late final GeneratedColumn<String> serviceOrderId = GeneratedColumn<String>(
+    'service_order_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
+  @override
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _diagnosisMeta = const VerificationMeta(
+    'diagnosis',
+  );
+  @override
+  late final GeneratedColumn<String> diagnosis = GeneratedColumn<String>(
+    'diagnosis',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _workPerformedMeta = const VerificationMeta(
+    'workPerformed',
+  );
+  @override
+  late final GeneratedColumn<String> workPerformed = GeneratedColumn<String>(
+    'work_performed',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _finalConditionMeta = const VerificationMeta(
+    'finalCondition',
+  );
+  @override
+  late final GeneratedColumn<String> finalCondition = GeneratedColumn<String>(
+    'final_condition',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _approvalMeta = const VerificationMeta(
+    'approval',
+  );
+  @override
+  late final GeneratedColumn<String> approval = GeneratedColumn<String>(
+    'approval',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _approvedAtMeta = const VerificationMeta(
+    'approvedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> approvedAt = GeneratedColumn<DateTime>(
+    'approved_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    serviceOrderId,
+    itemId,
+    position,
+    diagnosis,
+    workPerformed,
+    finalCondition,
+    note,
+    approval,
+    approvedAt,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_service_order_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalServiceOrderItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('local_updated_at')) {
+      context.handle(
+        _localUpdatedAtMeta,
+        localUpdatedAt.isAcceptableOrUnknown(
+          data['local_updated_at']!,
+          _localUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_localUpdatedAtMeta);
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('service_order_id')) {
+      context.handle(
+        _serviceOrderIdMeta,
+        serviceOrderId.isAcceptableOrUnknown(
+          data['service_order_id']!,
+          _serviceOrderIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_serviceOrderIdMeta);
+    }
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_itemIdMeta);
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('diagnosis')) {
+      context.handle(
+        _diagnosisMeta,
+        diagnosis.isAcceptableOrUnknown(data['diagnosis']!, _diagnosisMeta),
+      );
+    }
+    if (data.containsKey('work_performed')) {
+      context.handle(
+        _workPerformedMeta,
+        workPerformed.isAcceptableOrUnknown(
+          data['work_performed']!,
+          _workPerformedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('final_condition')) {
+      context.handle(
+        _finalConditionMeta,
+        finalCondition.isAcceptableOrUnknown(
+          data['final_condition']!,
+          _finalConditionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('approval')) {
+      context.handle(
+        _approvalMeta,
+        approval.isAcceptableOrUnknown(data['approval']!, _approvalMeta),
+      );
+    }
+    if (data.containsKey('approved_at')) {
+      context.handle(
+        _approvedAtMeta,
+        approvedAt.isAcceptableOrUnknown(data['approved_at']!, _approvedAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalServiceOrderItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalServiceOrderItem(
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      localUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}local_updated_at'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      ),
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      serviceOrderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_order_id'],
+      )!,
+      itemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_id'],
+      )!,
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      diagnosis: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}diagnosis'],
+      )!,
+      workPerformed: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}work_performed'],
+      )!,
+      finalCondition: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}final_condition'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+      approval: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}approval'],
+      )!,
+      approvedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}approved_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $LocalServiceOrderItemsTable createAlias(String alias) {
+    return $LocalServiceOrderItemsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalServiceOrderItem extends DataClass
+    implements Insertable<LocalServiceOrderItem> {
+  final String organizationId;
+  final int? version;
+  final String syncStatus;
+  final DateTime localUpdatedAt;
+  final DateTime? lastSyncedAt;
+  final String? syncError;
+  final bool deleted;
+  final String id;
+  final String serviceOrderId;
+  final String itemId;
+  final int position;
+  final String diagnosis;
+  final String workPerformed;
+  final String finalCondition;
+  final String note;
+  final String approval;
+  final DateTime? approvedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  const LocalServiceOrderItem({
+    required this.organizationId,
+    this.version,
+    required this.syncStatus,
+    required this.localUpdatedAt,
+    this.lastSyncedAt,
+    this.syncError,
+    required this.deleted,
+    required this.id,
+    required this.serviceOrderId,
+    required this.itemId,
+    required this.position,
+    required this.diagnosis,
+    required this.workPerformed,
+    required this.finalCondition,
+    required this.note,
+    required this.approval,
+    this.approvedAt,
+    this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['organization_id'] = Variable<String>(organizationId);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['local_updated_at'] = Variable<DateTime>(localUpdatedAt);
+    if (!nullToAbsent || lastSyncedAt != null) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    }
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['deleted'] = Variable<bool>(deleted);
+    map['id'] = Variable<String>(id);
+    map['service_order_id'] = Variable<String>(serviceOrderId);
+    map['item_id'] = Variable<String>(itemId);
+    map['position'] = Variable<int>(position);
+    map['diagnosis'] = Variable<String>(diagnosis);
+    map['work_performed'] = Variable<String>(workPerformed);
+    map['final_condition'] = Variable<String>(finalCondition);
+    map['note'] = Variable<String>(note);
+    map['approval'] = Variable<String>(approval);
+    if (!nullToAbsent || approvedAt != null) {
+      map['approved_at'] = Variable<DateTime>(approvedAt);
+    }
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  LocalServiceOrderItemsCompanion toCompanion(bool nullToAbsent) {
+    return LocalServiceOrderItemsCompanion(
+      organizationId: Value(organizationId),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      syncStatus: Value(syncStatus),
+      localUpdatedAt: Value(localUpdatedAt),
+      lastSyncedAt: lastSyncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncedAt),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      deleted: Value(deleted),
+      id: Value(id),
+      serviceOrderId: Value(serviceOrderId),
+      itemId: Value(itemId),
+      position: Value(position),
+      diagnosis: Value(diagnosis),
+      workPerformed: Value(workPerformed),
+      finalCondition: Value(finalCondition),
+      note: Value(note),
+      approval: Value(approval),
+      approvedAt: approvedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(approvedAt),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory LocalServiceOrderItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalServiceOrderItem(
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      version: serializer.fromJson<int?>(json['version']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      localUpdatedAt: serializer.fromJson<DateTime>(json['localUpdatedAt']),
+      lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      id: serializer.fromJson<String>(json['id']),
+      serviceOrderId: serializer.fromJson<String>(json['serviceOrderId']),
+      itemId: serializer.fromJson<String>(json['itemId']),
+      position: serializer.fromJson<int>(json['position']),
+      diagnosis: serializer.fromJson<String>(json['diagnosis']),
+      workPerformed: serializer.fromJson<String>(json['workPerformed']),
+      finalCondition: serializer.fromJson<String>(json['finalCondition']),
+      note: serializer.fromJson<String>(json['note']),
+      approval: serializer.fromJson<String>(json['approval']),
+      approvedAt: serializer.fromJson<DateTime?>(json['approvedAt']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'organizationId': serializer.toJson<String>(organizationId),
+      'version': serializer.toJson<int?>(version),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'localUpdatedAt': serializer.toJson<DateTime>(localUpdatedAt),
+      'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'syncError': serializer.toJson<String?>(syncError),
+      'deleted': serializer.toJson<bool>(deleted),
+      'id': serializer.toJson<String>(id),
+      'serviceOrderId': serializer.toJson<String>(serviceOrderId),
+      'itemId': serializer.toJson<String>(itemId),
+      'position': serializer.toJson<int>(position),
+      'diagnosis': serializer.toJson<String>(diagnosis),
+      'workPerformed': serializer.toJson<String>(workPerformed),
+      'finalCondition': serializer.toJson<String>(finalCondition),
+      'note': serializer.toJson<String>(note),
+      'approval': serializer.toJson<String>(approval),
+      'approvedAt': serializer.toJson<DateTime?>(approvedAt),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  LocalServiceOrderItem copyWith({
+    String? organizationId,
+    Value<int?> version = const Value.absent(),
+    String? syncStatus,
+    DateTime? localUpdatedAt,
+    Value<DateTime?> lastSyncedAt = const Value.absent(),
+    Value<String?> syncError = const Value.absent(),
+    bool? deleted,
+    String? id,
+    String? serviceOrderId,
+    String? itemId,
+    int? position,
+    String? diagnosis,
+    String? workPerformed,
+    String? finalCondition,
+    String? note,
+    String? approval,
+    Value<DateTime?> approvedAt = const Value.absent(),
+    Value<DateTime?> createdAt = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+  }) => LocalServiceOrderItem(
+    organizationId: organizationId ?? this.organizationId,
+    version: version.present ? version.value : this.version,
+    syncStatus: syncStatus ?? this.syncStatus,
+    localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+    lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    deleted: deleted ?? this.deleted,
+    id: id ?? this.id,
+    serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+    itemId: itemId ?? this.itemId,
+    position: position ?? this.position,
+    diagnosis: diagnosis ?? this.diagnosis,
+    workPerformed: workPerformed ?? this.workPerformed,
+    finalCondition: finalCondition ?? this.finalCondition,
+    note: note ?? this.note,
+    approval: approval ?? this.approval,
+    approvedAt: approvedAt.present ? approvedAt.value : this.approvedAt,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  LocalServiceOrderItem copyWithCompanion(
+    LocalServiceOrderItemsCompanion data,
+  ) {
+    return LocalServiceOrderItem(
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      version: data.version.present ? data.version.value : this.version,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      localUpdatedAt: data.localUpdatedAt.present
+          ? data.localUpdatedAt.value
+          : this.localUpdatedAt,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      id: data.id.present ? data.id.value : this.id,
+      serviceOrderId: data.serviceOrderId.present
+          ? data.serviceOrderId.value
+          : this.serviceOrderId,
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      position: data.position.present ? data.position.value : this.position,
+      diagnosis: data.diagnosis.present ? data.diagnosis.value : this.diagnosis,
+      workPerformed: data.workPerformed.present
+          ? data.workPerformed.value
+          : this.workPerformed,
+      finalCondition: data.finalCondition.present
+          ? data.finalCondition.value
+          : this.finalCondition,
+      note: data.note.present ? data.note.value : this.note,
+      approval: data.approval.present ? data.approval.value : this.approval,
+      approvedAt: data.approvedAt.present
+          ? data.approvedAt.value
+          : this.approvedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalServiceOrderItem(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('itemId: $itemId, ')
+          ..write('position: $position, ')
+          ..write('diagnosis: $diagnosis, ')
+          ..write('workPerformed: $workPerformed, ')
+          ..write('finalCondition: $finalCondition, ')
+          ..write('note: $note, ')
+          ..write('approval: $approval, ')
+          ..write('approvedAt: $approvedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    serviceOrderId,
+    itemId,
+    position,
+    diagnosis,
+    workPerformed,
+    finalCondition,
+    note,
+    approval,
+    approvedAt,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalServiceOrderItem &&
+          other.organizationId == this.organizationId &&
+          other.version == this.version &&
+          other.syncStatus == this.syncStatus &&
+          other.localUpdatedAt == this.localUpdatedAt &&
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.syncError == this.syncError &&
+          other.deleted == this.deleted &&
+          other.id == this.id &&
+          other.serviceOrderId == this.serviceOrderId &&
+          other.itemId == this.itemId &&
+          other.position == this.position &&
+          other.diagnosis == this.diagnosis &&
+          other.workPerformed == this.workPerformed &&
+          other.finalCondition == this.finalCondition &&
+          other.note == this.note &&
+          other.approval == this.approval &&
+          other.approvedAt == this.approvedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalServiceOrderItemsCompanion
+    extends UpdateCompanion<LocalServiceOrderItem> {
+  final Value<String> organizationId;
+  final Value<int?> version;
+  final Value<String> syncStatus;
+  final Value<DateTime> localUpdatedAt;
+  final Value<DateTime?> lastSyncedAt;
+  final Value<String?> syncError;
+  final Value<bool> deleted;
+  final Value<String> id;
+  final Value<String> serviceOrderId;
+  final Value<String> itemId;
+  final Value<int> position;
+  final Value<String> diagnosis;
+  final Value<String> workPerformed;
+  final Value<String> finalCondition;
+  final Value<String> note;
+  final Value<String> approval;
+  final Value<DateTime?> approvedAt;
+  final Value<DateTime?> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int> rowid;
+  const LocalServiceOrderItemsCompanion({
+    this.organizationId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.id = const Value.absent(),
+    this.serviceOrderId = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.diagnosis = const Value.absent(),
+    this.workPerformed = const Value.absent(),
+    this.finalCondition = const Value.absent(),
+    this.note = const Value.absent(),
+    this.approval = const Value.absent(),
+    this.approvedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalServiceOrderItemsCompanion.insert({
+    required String organizationId,
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required DateTime localUpdatedAt,
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String id,
+    required String serviceOrderId,
+    required String itemId,
+    this.position = const Value.absent(),
+    this.diagnosis = const Value.absent(),
+    this.workPerformed = const Value.absent(),
+    this.finalCondition = const Value.absent(),
+    this.note = const Value.absent(),
+    this.approval = const Value.absent(),
+    this.approvedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : organizationId = Value(organizationId),
+       localUpdatedAt = Value(localUpdatedAt),
+       id = Value(id),
+       serviceOrderId = Value(serviceOrderId),
+       itemId = Value(itemId);
+  static Insertable<LocalServiceOrderItem> custom({
+    Expression<String>? organizationId,
+    Expression<int>? version,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? localUpdatedAt,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<String>? syncError,
+    Expression<bool>? deleted,
+    Expression<String>? id,
+    Expression<String>? serviceOrderId,
+    Expression<String>? itemId,
+    Expression<int>? position,
+    Expression<String>? diagnosis,
+    Expression<String>? workPerformed,
+    Expression<String>? finalCondition,
+    Expression<String>? note,
+    Expression<String>? approval,
+    Expression<DateTime>? approvedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (organizationId != null) 'organization_id': organizationId,
+      if (version != null) 'version': version,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (localUpdatedAt != null) 'local_updated_at': localUpdatedAt,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (syncError != null) 'sync_error': syncError,
+      if (deleted != null) 'deleted': deleted,
+      if (id != null) 'id': id,
+      if (serviceOrderId != null) 'service_order_id': serviceOrderId,
+      if (itemId != null) 'item_id': itemId,
+      if (position != null) 'position': position,
+      if (diagnosis != null) 'diagnosis': diagnosis,
+      if (workPerformed != null) 'work_performed': workPerformed,
+      if (finalCondition != null) 'final_condition': finalCondition,
+      if (note != null) 'note': note,
+      if (approval != null) 'approval': approval,
+      if (approvedAt != null) 'approved_at': approvedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalServiceOrderItemsCompanion copyWith({
+    Value<String>? organizationId,
+    Value<int?>? version,
+    Value<String>? syncStatus,
+    Value<DateTime>? localUpdatedAt,
+    Value<DateTime?>? lastSyncedAt,
+    Value<String?>? syncError,
+    Value<bool>? deleted,
+    Value<String>? id,
+    Value<String>? serviceOrderId,
+    Value<String>? itemId,
+    Value<int>? position,
+    Value<String>? diagnosis,
+    Value<String>? workPerformed,
+    Value<String>? finalCondition,
+    Value<String>? note,
+    Value<String>? approval,
+    Value<DateTime?>? approvedAt,
+    Value<DateTime?>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalServiceOrderItemsCompanion(
+      organizationId: organizationId ?? this.organizationId,
+      version: version ?? this.version,
+      syncStatus: syncStatus ?? this.syncStatus,
+      localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      syncError: syncError ?? this.syncError,
+      deleted: deleted ?? this.deleted,
+      id: id ?? this.id,
+      serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+      itemId: itemId ?? this.itemId,
+      position: position ?? this.position,
+      diagnosis: diagnosis ?? this.diagnosis,
+      workPerformed: workPerformed ?? this.workPerformed,
+      finalCondition: finalCondition ?? this.finalCondition,
+      note: note ?? this.note,
+      approval: approval ?? this.approval,
+      approvedAt: approvedAt ?? this.approvedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (localUpdatedAt.present) {
+      map['local_updated_at'] = Variable<DateTime>(localUpdatedAt.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (serviceOrderId.present) {
+      map['service_order_id'] = Variable<String>(serviceOrderId.value);
+    }
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (diagnosis.present) {
+      map['diagnosis'] = Variable<String>(diagnosis.value);
+    }
+    if (workPerformed.present) {
+      map['work_performed'] = Variable<String>(workPerformed.value);
+    }
+    if (finalCondition.present) {
+      map['final_condition'] = Variable<String>(finalCondition.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (approval.present) {
+      map['approval'] = Variable<String>(approval.value);
+    }
+    if (approvedAt.present) {
+      map['approved_at'] = Variable<DateTime>(approvedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalServiceOrderItemsCompanion(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('itemId: $itemId, ')
+          ..write('position: $position, ')
+          ..write('diagnosis: $diagnosis, ')
+          ..write('workPerformed: $workPerformed, ')
+          ..write('finalCondition: $finalCondition, ')
+          ..write('note: $note, ')
+          ..write('approval: $approval, ')
+          ..write('approvedAt: $approvedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -4960,6 +8421,17 @@ class $LocalServiceOrderPartsTable extends LocalServiceOrderParts
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _serviceOrderItemIdMeta =
+      const VerificationMeta('serviceOrderItemId');
+  @override
+  late final GeneratedColumn<String> serviceOrderItemId =
+      GeneratedColumn<String>(
+        'service_order_item_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _descriptionMeta = const VerificationMeta(
     'description',
   );
@@ -5071,6 +8543,7 @@ class $LocalServiceOrderPartsTable extends LocalServiceOrderParts
     deleted,
     id,
     serviceOrderId,
+    serviceOrderItemId,
     description,
     partNumber,
     quantity,
@@ -5163,6 +8636,15 @@ class $LocalServiceOrderPartsTable extends LocalServiceOrderParts
       );
     } else if (isInserting) {
       context.missing(_serviceOrderIdMeta);
+    }
+    if (data.containsKey('service_order_item_id')) {
+      context.handle(
+        _serviceOrderItemIdMeta,
+        serviceOrderItemId.isAcceptableOrUnknown(
+          data['service_order_item_id']!,
+          _serviceOrderItemIdMeta,
+        ),
+      );
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -5266,6 +8748,10 @@ class $LocalServiceOrderPartsTable extends LocalServiceOrderParts
         DriftSqlType.string,
         data['${effectivePrefix}service_order_id'],
       )!,
+      serviceOrderItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_order_item_id'],
+      ),
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}description'],
@@ -5322,6 +8808,7 @@ class LocalServiceOrderPart extends DataClass
   final bool deleted;
   final String id;
   final String serviceOrderId;
+  final String? serviceOrderItemId;
   final String description;
   final String partNumber;
   final String quantity;
@@ -5341,6 +8828,7 @@ class LocalServiceOrderPart extends DataClass
     required this.deleted,
     required this.id,
     required this.serviceOrderId,
+    this.serviceOrderItemId,
     required this.description,
     required this.partNumber,
     required this.quantity,
@@ -5369,6 +8857,9 @@ class LocalServiceOrderPart extends DataClass
     map['deleted'] = Variable<bool>(deleted);
     map['id'] = Variable<String>(id);
     map['service_order_id'] = Variable<String>(serviceOrderId);
+    if (!nullToAbsent || serviceOrderItemId != null) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId);
+    }
     map['description'] = Variable<String>(description);
     map['part_number'] = Variable<String>(partNumber);
     map['quantity'] = Variable<String>(quantity);
@@ -5406,6 +8897,9 @@ class LocalServiceOrderPart extends DataClass
       deleted: Value(deleted),
       id: Value(id),
       serviceOrderId: Value(serviceOrderId),
+      serviceOrderItemId: serviceOrderItemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serviceOrderItemId),
       description: Value(description),
       partNumber: Value(partNumber),
       quantity: Value(quantity),
@@ -5441,6 +8935,9 @@ class LocalServiceOrderPart extends DataClass
       deleted: serializer.fromJson<bool>(json['deleted']),
       id: serializer.fromJson<String>(json['id']),
       serviceOrderId: serializer.fromJson<String>(json['serviceOrderId']),
+      serviceOrderItemId: serializer.fromJson<String?>(
+        json['serviceOrderItemId'],
+      ),
       description: serializer.fromJson<String>(json['description']),
       partNumber: serializer.fromJson<String>(json['partNumber']),
       quantity: serializer.fromJson<String>(json['quantity']),
@@ -5465,6 +8962,7 @@ class LocalServiceOrderPart extends DataClass
       'deleted': serializer.toJson<bool>(deleted),
       'id': serializer.toJson<String>(id),
       'serviceOrderId': serializer.toJson<String>(serviceOrderId),
+      'serviceOrderItemId': serializer.toJson<String?>(serviceOrderItemId),
       'description': serializer.toJson<String>(description),
       'partNumber': serializer.toJson<String>(partNumber),
       'quantity': serializer.toJson<String>(quantity),
@@ -5487,6 +8985,7 @@ class LocalServiceOrderPart extends DataClass
     bool? deleted,
     String? id,
     String? serviceOrderId,
+    Value<String?> serviceOrderItemId = const Value.absent(),
     String? description,
     String? partNumber,
     String? quantity,
@@ -5506,6 +9005,9 @@ class LocalServiceOrderPart extends DataClass
     deleted: deleted ?? this.deleted,
     id: id ?? this.id,
     serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+    serviceOrderItemId: serviceOrderItemId.present
+        ? serviceOrderItemId.value
+        : this.serviceOrderItemId,
     description: description ?? this.description,
     partNumber: partNumber ?? this.partNumber,
     quantity: quantity ?? this.quantity,
@@ -5539,6 +9041,9 @@ class LocalServiceOrderPart extends DataClass
       serviceOrderId: data.serviceOrderId.present
           ? data.serviceOrderId.value
           : this.serviceOrderId,
+      serviceOrderItemId: data.serviceOrderItemId.present
+          ? data.serviceOrderItemId.value
+          : this.serviceOrderItemId,
       description: data.description.present
           ? data.description.value
           : this.description,
@@ -5567,6 +9072,7 @@ class LocalServiceOrderPart extends DataClass
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
           ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
           ..write('description: $description, ')
           ..write('partNumber: $partNumber, ')
           ..write('quantity: $quantity, ')
@@ -5591,6 +9097,7 @@ class LocalServiceOrderPart extends DataClass
     deleted,
     id,
     serviceOrderId,
+    serviceOrderItemId,
     description,
     partNumber,
     quantity,
@@ -5614,6 +9121,7 @@ class LocalServiceOrderPart extends DataClass
           other.deleted == this.deleted &&
           other.id == this.id &&
           other.serviceOrderId == this.serviceOrderId &&
+          other.serviceOrderItemId == this.serviceOrderItemId &&
           other.description == this.description &&
           other.partNumber == this.partNumber &&
           other.quantity == this.quantity &&
@@ -5636,6 +9144,7 @@ class LocalServiceOrderPartsCompanion
   final Value<bool> deleted;
   final Value<String> id;
   final Value<String> serviceOrderId;
+  final Value<String?> serviceOrderItemId;
   final Value<String> description;
   final Value<String> partNumber;
   final Value<String> quantity;
@@ -5656,6 +9165,7 @@ class LocalServiceOrderPartsCompanion
     this.deleted = const Value.absent(),
     this.id = const Value.absent(),
     this.serviceOrderId = const Value.absent(),
+    this.serviceOrderItemId = const Value.absent(),
     this.description = const Value.absent(),
     this.partNumber = const Value.absent(),
     this.quantity = const Value.absent(),
@@ -5677,6 +9187,7 @@ class LocalServiceOrderPartsCompanion
     this.deleted = const Value.absent(),
     required String id,
     required String serviceOrderId,
+    this.serviceOrderItemId = const Value.absent(),
     this.description = const Value.absent(),
     this.partNumber = const Value.absent(),
     this.quantity = const Value.absent(),
@@ -5701,6 +9212,7 @@ class LocalServiceOrderPartsCompanion
     Expression<bool>? deleted,
     Expression<String>? id,
     Expression<String>? serviceOrderId,
+    Expression<String>? serviceOrderItemId,
     Expression<String>? description,
     Expression<String>? partNumber,
     Expression<String>? quantity,
@@ -5722,6 +9234,8 @@ class LocalServiceOrderPartsCompanion
       if (deleted != null) 'deleted': deleted,
       if (id != null) 'id': id,
       if (serviceOrderId != null) 'service_order_id': serviceOrderId,
+      if (serviceOrderItemId != null)
+        'service_order_item_id': serviceOrderItemId,
       if (description != null) 'description': description,
       if (partNumber != null) 'part_number': partNumber,
       if (quantity != null) 'quantity': quantity,
@@ -5745,6 +9259,7 @@ class LocalServiceOrderPartsCompanion
     Value<bool>? deleted,
     Value<String>? id,
     Value<String>? serviceOrderId,
+    Value<String?>? serviceOrderItemId,
     Value<String>? description,
     Value<String>? partNumber,
     Value<String>? quantity,
@@ -5766,6 +9281,7 @@ class LocalServiceOrderPartsCompanion
       deleted: deleted ?? this.deleted,
       id: id ?? this.id,
       serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+      serviceOrderItemId: serviceOrderItemId ?? this.serviceOrderItemId,
       description: description ?? this.description,
       partNumber: partNumber ?? this.partNumber,
       quantity: quantity ?? this.quantity,
@@ -5808,6 +9324,9 @@ class LocalServiceOrderPartsCompanion
     }
     if (serviceOrderId.present) {
       map['service_order_id'] = Variable<String>(serviceOrderId.value);
+    }
+    if (serviceOrderItemId.present) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -5854,6 +9373,7 @@ class LocalServiceOrderPartsCompanion
           ..write('deleted: $deleted, ')
           ..write('id: $id, ')
           ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
           ..write('description: $description, ')
           ..write('partNumber: $partNumber, ')
           ..write('quantity: $quantity, ')
@@ -5869,21 +9389,17 @@ class LocalServiceOrderPartsCompanion
   }
 }
 
-class $LocalEquipmentTypesTable extends LocalEquipmentTypes
-    with TableInfo<$LocalEquipmentTypesTable, LocalEquipmentType> {
+class $LocalServiceOrderRecommendationsTable
+    extends LocalServiceOrderRecommendations
+    with
+        TableInfo<
+          $LocalServiceOrderRecommendationsTable,
+          LocalServiceOrderRecommendation
+        > {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $LocalEquipmentTypesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+  $LocalServiceOrderRecommendationsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _organizationIdMeta = const VerificationMeta(
     'organizationId',
   );
@@ -5895,14 +9411,1064 @@ class $LocalEquipmentTypesTable extends LocalEquipmentTypes
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('synced'),
+  );
+  static const VerificationMeta _localUpdatedAtMeta = const VerificationMeta(
+    'localUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> localUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'local_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serviceOrderIdMeta = const VerificationMeta(
+    'serviceOrderId',
+  );
+  @override
+  late final GeneratedColumn<String> serviceOrderId = GeneratedColumn<String>(
+    'service_order_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serviceOrderItemIdMeta =
+      const VerificationMeta('serviceOrderItemId');
+  @override
+  late final GeneratedColumn<String> serviceOrderItemId =
+      GeneratedColumn<String>(
+        'service_order_item_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<String> priority = GeneratedColumn<String>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('medium'),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('open'),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    serviceOrderId,
+    serviceOrderItemId,
+    description,
+    priority,
+    status,
+    notes,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_service_order_recommendations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalServiceOrderRecommendation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('local_updated_at')) {
+      context.handle(
+        _localUpdatedAtMeta,
+        localUpdatedAt.isAcceptableOrUnknown(
+          data['local_updated_at']!,
+          _localUpdatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_localUpdatedAtMeta);
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('service_order_id')) {
+      context.handle(
+        _serviceOrderIdMeta,
+        serviceOrderId.isAcceptableOrUnknown(
+          data['service_order_id']!,
+          _serviceOrderIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_serviceOrderIdMeta);
+    }
+    if (data.containsKey('service_order_item_id')) {
+      context.handle(
+        _serviceOrderItemIdMeta,
+        serviceOrderItemId.isAcceptableOrUnknown(
+          data['service_order_item_id']!,
+          _serviceOrderItemIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalServiceOrderRecommendation map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalServiceOrderRecommendation(
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      ),
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      localUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}local_updated_at'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      ),
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      serviceOrderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_order_id'],
+      )!,
+      serviceOrderItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_order_item_id'],
+      ),
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}priority'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $LocalServiceOrderRecommendationsTable createAlias(String alias) {
+    return $LocalServiceOrderRecommendationsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalServiceOrderRecommendation extends DataClass
+    implements Insertable<LocalServiceOrderRecommendation> {
+  final String organizationId;
+  final int? version;
+  final String syncStatus;
+  final DateTime localUpdatedAt;
+  final DateTime? lastSyncedAt;
+  final String? syncError;
+  final bool deleted;
+  final String id;
+  final String serviceOrderId;
+  final String? serviceOrderItemId;
+  final String description;
+  final String priority;
+  final String status;
+  final String notes;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  const LocalServiceOrderRecommendation({
+    required this.organizationId,
+    this.version,
+    required this.syncStatus,
+    required this.localUpdatedAt,
+    this.lastSyncedAt,
+    this.syncError,
+    required this.deleted,
+    required this.id,
+    required this.serviceOrderId,
+    this.serviceOrderItemId,
+    required this.description,
+    required this.priority,
+    required this.status,
+    required this.notes,
+    this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['organization_id'] = Variable<String>(organizationId);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['local_updated_at'] = Variable<DateTime>(localUpdatedAt);
+    if (!nullToAbsent || lastSyncedAt != null) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    }
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['deleted'] = Variable<bool>(deleted);
+    map['id'] = Variable<String>(id);
+    map['service_order_id'] = Variable<String>(serviceOrderId);
+    if (!nullToAbsent || serviceOrderItemId != null) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId);
+    }
+    map['description'] = Variable<String>(description);
+    map['priority'] = Variable<String>(priority);
+    map['status'] = Variable<String>(status);
+    map['notes'] = Variable<String>(notes);
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  LocalServiceOrderRecommendationsCompanion toCompanion(bool nullToAbsent) {
+    return LocalServiceOrderRecommendationsCompanion(
+      organizationId: Value(organizationId),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      syncStatus: Value(syncStatus),
+      localUpdatedAt: Value(localUpdatedAt),
+      lastSyncedAt: lastSyncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncedAt),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      deleted: Value(deleted),
+      id: Value(id),
+      serviceOrderId: Value(serviceOrderId),
+      serviceOrderItemId: serviceOrderItemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serviceOrderItemId),
+      description: Value(description),
+      priority: Value(priority),
+      status: Value(status),
+      notes: Value(notes),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory LocalServiceOrderRecommendation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalServiceOrderRecommendation(
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      version: serializer.fromJson<int?>(json['version']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      localUpdatedAt: serializer.fromJson<DateTime>(json['localUpdatedAt']),
+      lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      id: serializer.fromJson<String>(json['id']),
+      serviceOrderId: serializer.fromJson<String>(json['serviceOrderId']),
+      serviceOrderItemId: serializer.fromJson<String?>(
+        json['serviceOrderItemId'],
+      ),
+      description: serializer.fromJson<String>(json['description']),
+      priority: serializer.fromJson<String>(json['priority']),
+      status: serializer.fromJson<String>(json['status']),
+      notes: serializer.fromJson<String>(json['notes']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'organizationId': serializer.toJson<String>(organizationId),
+      'version': serializer.toJson<int?>(version),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'localUpdatedAt': serializer.toJson<DateTime>(localUpdatedAt),
+      'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'syncError': serializer.toJson<String?>(syncError),
+      'deleted': serializer.toJson<bool>(deleted),
+      'id': serializer.toJson<String>(id),
+      'serviceOrderId': serializer.toJson<String>(serviceOrderId),
+      'serviceOrderItemId': serializer.toJson<String?>(serviceOrderItemId),
+      'description': serializer.toJson<String>(description),
+      'priority': serializer.toJson<String>(priority),
+      'status': serializer.toJson<String>(status),
+      'notes': serializer.toJson<String>(notes),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  LocalServiceOrderRecommendation copyWith({
+    String? organizationId,
+    Value<int?> version = const Value.absent(),
+    String? syncStatus,
+    DateTime? localUpdatedAt,
+    Value<DateTime?> lastSyncedAt = const Value.absent(),
+    Value<String?> syncError = const Value.absent(),
+    bool? deleted,
+    String? id,
+    String? serviceOrderId,
+    Value<String?> serviceOrderItemId = const Value.absent(),
+    String? description,
+    String? priority,
+    String? status,
+    String? notes,
+    Value<DateTime?> createdAt = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+  }) => LocalServiceOrderRecommendation(
+    organizationId: organizationId ?? this.organizationId,
+    version: version.present ? version.value : this.version,
+    syncStatus: syncStatus ?? this.syncStatus,
+    localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+    lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    deleted: deleted ?? this.deleted,
+    id: id ?? this.id,
+    serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+    serviceOrderItemId: serviceOrderItemId.present
+        ? serviceOrderItemId.value
+        : this.serviceOrderItemId,
+    description: description ?? this.description,
+    priority: priority ?? this.priority,
+    status: status ?? this.status,
+    notes: notes ?? this.notes,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  LocalServiceOrderRecommendation copyWithCompanion(
+    LocalServiceOrderRecommendationsCompanion data,
+  ) {
+    return LocalServiceOrderRecommendation(
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      version: data.version.present ? data.version.value : this.version,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      localUpdatedAt: data.localUpdatedAt.present
+          ? data.localUpdatedAt.value
+          : this.localUpdatedAt,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      id: data.id.present ? data.id.value : this.id,
+      serviceOrderId: data.serviceOrderId.present
+          ? data.serviceOrderId.value
+          : this.serviceOrderId,
+      serviceOrderItemId: data.serviceOrderItemId.present
+          ? data.serviceOrderItemId.value
+          : this.serviceOrderItemId,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      status: data.status.present ? data.status.value : this.status,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalServiceOrderRecommendation(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
+          ..write('description: $description, ')
+          ..write('priority: $priority, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    serviceOrderId,
+    serviceOrderItemId,
+    description,
+    priority,
+    status,
+    notes,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalServiceOrderRecommendation &&
+          other.organizationId == this.organizationId &&
+          other.version == this.version &&
+          other.syncStatus == this.syncStatus &&
+          other.localUpdatedAt == this.localUpdatedAt &&
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.syncError == this.syncError &&
+          other.deleted == this.deleted &&
+          other.id == this.id &&
+          other.serviceOrderId == this.serviceOrderId &&
+          other.serviceOrderItemId == this.serviceOrderItemId &&
+          other.description == this.description &&
+          other.priority == this.priority &&
+          other.status == this.status &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalServiceOrderRecommendationsCompanion
+    extends UpdateCompanion<LocalServiceOrderRecommendation> {
+  final Value<String> organizationId;
+  final Value<int?> version;
+  final Value<String> syncStatus;
+  final Value<DateTime> localUpdatedAt;
+  final Value<DateTime?> lastSyncedAt;
+  final Value<String?> syncError;
+  final Value<bool> deleted;
+  final Value<String> id;
+  final Value<String> serviceOrderId;
+  final Value<String?> serviceOrderItemId;
+  final Value<String> description;
+  final Value<String> priority;
+  final Value<String> status;
+  final Value<String> notes;
+  final Value<DateTime?> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int> rowid;
+  const LocalServiceOrderRecommendationsCompanion({
+    this.organizationId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.id = const Value.absent(),
+    this.serviceOrderId = const Value.absent(),
+    this.serviceOrderItemId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalServiceOrderRecommendationsCompanion.insert({
+    required String organizationId,
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required DateTime localUpdatedAt,
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String id,
+    required String serviceOrderId,
+    this.serviceOrderItemId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : organizationId = Value(organizationId),
+       localUpdatedAt = Value(localUpdatedAt),
+       id = Value(id),
+       serviceOrderId = Value(serviceOrderId);
+  static Insertable<LocalServiceOrderRecommendation> custom({
+    Expression<String>? organizationId,
+    Expression<int>? version,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? localUpdatedAt,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<String>? syncError,
+    Expression<bool>? deleted,
+    Expression<String>? id,
+    Expression<String>? serviceOrderId,
+    Expression<String>? serviceOrderItemId,
+    Expression<String>? description,
+    Expression<String>? priority,
+    Expression<String>? status,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (organizationId != null) 'organization_id': organizationId,
+      if (version != null) 'version': version,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (localUpdatedAt != null) 'local_updated_at': localUpdatedAt,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (syncError != null) 'sync_error': syncError,
+      if (deleted != null) 'deleted': deleted,
+      if (id != null) 'id': id,
+      if (serviceOrderId != null) 'service_order_id': serviceOrderId,
+      if (serviceOrderItemId != null)
+        'service_order_item_id': serviceOrderItemId,
+      if (description != null) 'description': description,
+      if (priority != null) 'priority': priority,
+      if (status != null) 'status': status,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalServiceOrderRecommendationsCompanion copyWith({
+    Value<String>? organizationId,
+    Value<int?>? version,
+    Value<String>? syncStatus,
+    Value<DateTime>? localUpdatedAt,
+    Value<DateTime?>? lastSyncedAt,
+    Value<String?>? syncError,
+    Value<bool>? deleted,
+    Value<String>? id,
+    Value<String>? serviceOrderId,
+    Value<String?>? serviceOrderItemId,
+    Value<String>? description,
+    Value<String>? priority,
+    Value<String>? status,
+    Value<String>? notes,
+    Value<DateTime?>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalServiceOrderRecommendationsCompanion(
+      organizationId: organizationId ?? this.organizationId,
+      version: version ?? this.version,
+      syncStatus: syncStatus ?? this.syncStatus,
+      localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      syncError: syncError ?? this.syncError,
+      deleted: deleted ?? this.deleted,
+      id: id ?? this.id,
+      serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+      serviceOrderItemId: serviceOrderItemId ?? this.serviceOrderItemId,
+      description: description ?? this.description,
+      priority: priority ?? this.priority,
+      status: status ?? this.status,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (localUpdatedAt.present) {
+      map['local_updated_at'] = Variable<DateTime>(localUpdatedAt.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (serviceOrderId.present) {
+      map['service_order_id'] = Variable<String>(serviceOrderId.value);
+    }
+    if (serviceOrderItemId.present) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<String>(priority.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalServiceOrderRecommendationsCompanion(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
+          ..write('description: $description, ')
+          ..write('priority: $priority, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalTasksTable extends LocalTasks
+    with TableInfo<$LocalTasksTable, LocalTask> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalTasksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('synced'),
+  );
+  static const VerificationMeta _localUpdatedAtMeta = const VerificationMeta(
+    'localUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> localUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'local_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastSyncedAtMeta = const VerificationMeta(
+    'lastSyncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSyncedAt = GeneratedColumn<DateTime>(
+    'last_synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncErrorMeta = const VerificationMeta(
+    'syncError',
+  );
+  @override
+  late final GeneratedColumn<String> syncError = GeneratedColumn<String>(
+    'sync_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _taskTypeIdMeta = const VerificationMeta(
+    'taskTypeId',
+  );
+  @override
+  late final GeneratedColumn<String> taskTypeId = GeneratedColumn<String>(
+    'task_type_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _assignedUserIdMeta = const VerificationMeta(
+    'assignedUserId',
+  );
+  @override
+  late final GeneratedColumn<String> assignedUserId = GeneratedColumn<String>(
+    'assigned_user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _companyIdMeta = const VerificationMeta(
+    'companyId',
+  );
+  @override
+  late final GeneratedColumn<String> companyId = GeneratedColumn<String>(
+    'company_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _descriptionMeta = const VerificationMeta(
     'description',
@@ -5916,54 +10482,157 @@ class $LocalEquipmentTypesTable extends LocalEquipmentTypes
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
-  static const VerificationMeta _versionMeta = const VerificationMeta(
-    'version',
-  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
-  late final GeneratedColumn<int> version = GeneratedColumn<int>(
-    'version',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
-    'cachedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
-    'cached_at',
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
     aliasedName,
     false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('open'),
+  );
+  static const VerificationMeta _scheduledForMeta = const VerificationMeta(
+    'scheduledFor',
+  );
+  @override
+  late final GeneratedColumn<DateTime> scheduledFor = GeneratedColumn<DateTime>(
+    'scheduled_for',
+    aliasedName,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _scheduledAllDayMeta = const VerificationMeta(
+    'scheduledAllDay',
+  );
+  @override
+  late final GeneratedColumn<bool> scheduledAllDay = GeneratedColumn<bool>(
+    'scheduled_all_day',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("scheduled_all_day" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _recurrenceRuleMeta = const VerificationMeta(
+    'recurrenceRule',
+  );
+  @override
+  late final GeneratedColumn<String> recurrenceRule = GeneratedColumn<String>(
+    'recurrence_rule',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _generatedOrderIdMeta = const VerificationMeta(
+    'generatedOrderId',
+  );
+  @override
+  late final GeneratedColumn<String> generatedOrderId = GeneratedColumn<String>(
+    'generated_order_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _canceledAtMeta = const VerificationMeta(
+    'canceledAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> canceledAt = GeneratedColumn<DateTime>(
+    'canceled_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
   );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
     organizationId,
-    name,
-    description,
     version,
-    cachedAt,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    clientId,
+    taskTypeId,
+    assignedUserId,
+    companyId,
+    description,
+    notes,
+    status,
+    scheduledFor,
+    scheduledAllDay,
+    recurrenceRule,
+    generatedOrderId,
+    completedAt,
+    canceledAt,
+    createdAt,
+    updatedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'local_equipment_types';
+  static const String $name = 'local_tasks';
   @override
   VerificationContext validateIntegrity(
-    Insertable<LocalEquipmentType> instance, {
+    Insertable<LocalTask> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
     if (data.containsKey('organization_id')) {
       context.handle(
         _organizationIdMeta,
@@ -5975,13 +10644,86 @@ class $LocalEquipmentTypesTable extends LocalEquipmentTypes
     } else if (isInserting) {
       context.missing(_organizationIdMeta);
     }
-    if (data.containsKey('name')) {
+    if (data.containsKey('version')) {
       context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('local_updated_at')) {
+      context.handle(
+        _localUpdatedAtMeta,
+        localUpdatedAt.isAcceptableOrUnknown(
+          data['local_updated_at']!,
+          _localUpdatedAtMeta,
+        ),
       );
     } else if (isInserting) {
-      context.missing(_nameMeta);
+      context.missing(_localUpdatedAtMeta);
+    }
+    if (data.containsKey('last_synced_at')) {
+      context.handle(
+        _lastSyncedAtMeta,
+        lastSyncedAt.isAcceptableOrUnknown(
+          data['last_synced_at']!,
+          _lastSyncedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_error')) {
+      context.handle(
+        _syncErrorMeta,
+        syncError.isAcceptableOrUnknown(data['sync_error']!, _syncErrorMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
+    if (data.containsKey('task_type_id')) {
+      context.handle(
+        _taskTypeIdMeta,
+        taskTypeId.isAcceptableOrUnknown(
+          data['task_type_id']!,
+          _taskTypeIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('assigned_user_id')) {
+      context.handle(
+        _assignedUserIdMeta,
+        assignedUserId.isAcceptableOrUnknown(
+          data['assigned_user_id']!,
+          _assignedUserIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('company_id')) {
+      context.handle(
+        _companyIdMeta,
+        companyId.isAcceptableOrUnknown(data['company_id']!, _companyIdMeta),
+      );
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -5992,19 +10734,80 @@ class $LocalEquipmentTypesTable extends LocalEquipmentTypes
         ),
       );
     }
-    if (data.containsKey('version')) {
+    if (data.containsKey('notes')) {
       context.handle(
-        _versionMeta,
-        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
-    if (data.containsKey('cached_at')) {
+    if (data.containsKey('status')) {
       context.handle(
-        _cachedAtMeta,
-        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
-    } else if (isInserting) {
-      context.missing(_cachedAtMeta);
+    }
+    if (data.containsKey('scheduled_for')) {
+      context.handle(
+        _scheduledForMeta,
+        scheduledFor.isAcceptableOrUnknown(
+          data['scheduled_for']!,
+          _scheduledForMeta,
+        ),
+      );
+    }
+    if (data.containsKey('scheduled_all_day')) {
+      context.handle(
+        _scheduledAllDayMeta,
+        scheduledAllDay.isAcceptableOrUnknown(
+          data['scheduled_all_day']!,
+          _scheduledAllDayMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_rule')) {
+      context.handle(
+        _recurrenceRuleMeta,
+        recurrenceRule.isAcceptableOrUnknown(
+          data['recurrence_rule']!,
+          _recurrenceRuleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('generated_order_id')) {
+      context.handle(
+        _generatedOrderIdMeta,
+        generatedOrderId.isAcceptableOrUnknown(
+          data['generated_order_id']!,
+          _generatedOrderIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('canceled_at')) {
+      context.handle(
+        _canceledAtMeta,
+        canceledAt.isAcceptableOrUnknown(data['canceled_at']!, _canceledAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
     }
     return context;
   }
@@ -6012,97 +10815,1013 @@ class $LocalEquipmentTypesTable extends LocalEquipmentTypes
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  LocalEquipmentType map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LocalTask map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return LocalEquipmentType(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
+    return LocalTask(
       organizationId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}organization_id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      description: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}description'],
       )!,
       version: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}version'],
       ),
-      cachedAt: attachedDatabase.typeMapping.read(
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      localUpdatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
-        data['${effectivePrefix}cached_at'],
+        data['${effectivePrefix}local_updated_at'],
+      )!,
+      lastSyncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_synced_at'],
+      ),
+      syncError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_error'],
+      ),
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
+      taskTypeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}task_type_id'],
+      ),
+      assignedUserId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}assigned_user_id'],
+      ),
+      companyId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}company_id'],
+      ),
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      scheduledFor: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}scheduled_for'],
+      ),
+      scheduledAllDay: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}scheduled_all_day'],
+      )!,
+      recurrenceRule: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_rule'],
+      )!,
+      generatedOrderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}generated_order_id'],
+      ),
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
+      canceledAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}canceled_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $LocalTasksTable createAlias(String alias) {
+    return $LocalTasksTable(attachedDatabase, alias);
+  }
+}
+
+class LocalTask extends DataClass implements Insertable<LocalTask> {
+  final String organizationId;
+  final int? version;
+  final String syncStatus;
+  final DateTime localUpdatedAt;
+  final DateTime? lastSyncedAt;
+  final String? syncError;
+  final bool deleted;
+  final String id;
+  final String clientId;
+  final String? taskTypeId;
+  final String? assignedUserId;
+  final String? companyId;
+  final String description;
+  final String notes;
+  final String status;
+  final DateTime? scheduledFor;
+  final bool scheduledAllDay;
+  final String recurrenceRule;
+  final String? generatedOrderId;
+  final DateTime? completedAt;
+  final DateTime? canceledAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  const LocalTask({
+    required this.organizationId,
+    this.version,
+    required this.syncStatus,
+    required this.localUpdatedAt,
+    this.lastSyncedAt,
+    this.syncError,
+    required this.deleted,
+    required this.id,
+    required this.clientId,
+    this.taskTypeId,
+    this.assignedUserId,
+    this.companyId,
+    required this.description,
+    required this.notes,
+    required this.status,
+    this.scheduledFor,
+    required this.scheduledAllDay,
+    required this.recurrenceRule,
+    this.generatedOrderId,
+    this.completedAt,
+    this.canceledAt,
+    this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['organization_id'] = Variable<String>(organizationId);
+    if (!nullToAbsent || version != null) {
+      map['version'] = Variable<int>(version);
+    }
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['local_updated_at'] = Variable<DateTime>(localUpdatedAt);
+    if (!nullToAbsent || lastSyncedAt != null) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt);
+    }
+    if (!nullToAbsent || syncError != null) {
+      map['sync_error'] = Variable<String>(syncError);
+    }
+    map['deleted'] = Variable<bool>(deleted);
+    map['id'] = Variable<String>(id);
+    map['client_id'] = Variable<String>(clientId);
+    if (!nullToAbsent || taskTypeId != null) {
+      map['task_type_id'] = Variable<String>(taskTypeId);
+    }
+    if (!nullToAbsent || assignedUserId != null) {
+      map['assigned_user_id'] = Variable<String>(assignedUserId);
+    }
+    if (!nullToAbsent || companyId != null) {
+      map['company_id'] = Variable<String>(companyId);
+    }
+    map['description'] = Variable<String>(description);
+    map['notes'] = Variable<String>(notes);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || scheduledFor != null) {
+      map['scheduled_for'] = Variable<DateTime>(scheduledFor);
+    }
+    map['scheduled_all_day'] = Variable<bool>(scheduledAllDay);
+    map['recurrence_rule'] = Variable<String>(recurrenceRule);
+    if (!nullToAbsent || generatedOrderId != null) {
+      map['generated_order_id'] = Variable<String>(generatedOrderId);
+    }
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    if (!nullToAbsent || canceledAt != null) {
+      map['canceled_at'] = Variable<DateTime>(canceledAt);
+    }
+    if (!nullToAbsent || createdAt != null) {
+      map['created_at'] = Variable<DateTime>(createdAt);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  LocalTasksCompanion toCompanion(bool nullToAbsent) {
+    return LocalTasksCompanion(
+      organizationId: Value(organizationId),
+      version: version == null && nullToAbsent
+          ? const Value.absent()
+          : Value(version),
+      syncStatus: Value(syncStatus),
+      localUpdatedAt: Value(localUpdatedAt),
+      lastSyncedAt: lastSyncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncedAt),
+      syncError: syncError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncError),
+      deleted: Value(deleted),
+      id: Value(id),
+      clientId: Value(clientId),
+      taskTypeId: taskTypeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(taskTypeId),
+      assignedUserId: assignedUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assignedUserId),
+      companyId: companyId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(companyId),
+      description: Value(description),
+      notes: Value(notes),
+      status: Value(status),
+      scheduledFor: scheduledFor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scheduledFor),
+      scheduledAllDay: Value(scheduledAllDay),
+      recurrenceRule: Value(recurrenceRule),
+      generatedOrderId: generatedOrderId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(generatedOrderId),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      canceledAt: canceledAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(canceledAt),
+      createdAt: createdAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory LocalTask.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalTask(
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      version: serializer.fromJson<int?>(json['version']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      localUpdatedAt: serializer.fromJson<DateTime>(json['localUpdatedAt']),
+      lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
+      syncError: serializer.fromJson<String?>(json['syncError']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
+      id: serializer.fromJson<String>(json['id']),
+      clientId: serializer.fromJson<String>(json['clientId']),
+      taskTypeId: serializer.fromJson<String?>(json['taskTypeId']),
+      assignedUserId: serializer.fromJson<String?>(json['assignedUserId']),
+      companyId: serializer.fromJson<String?>(json['companyId']),
+      description: serializer.fromJson<String>(json['description']),
+      notes: serializer.fromJson<String>(json['notes']),
+      status: serializer.fromJson<String>(json['status']),
+      scheduledFor: serializer.fromJson<DateTime?>(json['scheduledFor']),
+      scheduledAllDay: serializer.fromJson<bool>(json['scheduledAllDay']),
+      recurrenceRule: serializer.fromJson<String>(json['recurrenceRule']),
+      generatedOrderId: serializer.fromJson<String?>(json['generatedOrderId']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      canceledAt: serializer.fromJson<DateTime?>(json['canceledAt']),
+      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'organizationId': serializer.toJson<String>(organizationId),
+      'version': serializer.toJson<int?>(version),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'localUpdatedAt': serializer.toJson<DateTime>(localUpdatedAt),
+      'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
+      'syncError': serializer.toJson<String?>(syncError),
+      'deleted': serializer.toJson<bool>(deleted),
+      'id': serializer.toJson<String>(id),
+      'clientId': serializer.toJson<String>(clientId),
+      'taskTypeId': serializer.toJson<String?>(taskTypeId),
+      'assignedUserId': serializer.toJson<String?>(assignedUserId),
+      'companyId': serializer.toJson<String?>(companyId),
+      'description': serializer.toJson<String>(description),
+      'notes': serializer.toJson<String>(notes),
+      'status': serializer.toJson<String>(status),
+      'scheduledFor': serializer.toJson<DateTime?>(scheduledFor),
+      'scheduledAllDay': serializer.toJson<bool>(scheduledAllDay),
+      'recurrenceRule': serializer.toJson<String>(recurrenceRule),
+      'generatedOrderId': serializer.toJson<String?>(generatedOrderId),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'canceledAt': serializer.toJson<DateTime?>(canceledAt),
+      'createdAt': serializer.toJson<DateTime?>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  LocalTask copyWith({
+    String? organizationId,
+    Value<int?> version = const Value.absent(),
+    String? syncStatus,
+    DateTime? localUpdatedAt,
+    Value<DateTime?> lastSyncedAt = const Value.absent(),
+    Value<String?> syncError = const Value.absent(),
+    bool? deleted,
+    String? id,
+    String? clientId,
+    Value<String?> taskTypeId = const Value.absent(),
+    Value<String?> assignedUserId = const Value.absent(),
+    Value<String?> companyId = const Value.absent(),
+    String? description,
+    String? notes,
+    String? status,
+    Value<DateTime?> scheduledFor = const Value.absent(),
+    bool? scheduledAllDay,
+    String? recurrenceRule,
+    Value<String?> generatedOrderId = const Value.absent(),
+    Value<DateTime?> completedAt = const Value.absent(),
+    Value<DateTime?> canceledAt = const Value.absent(),
+    Value<DateTime?> createdAt = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+  }) => LocalTask(
+    organizationId: organizationId ?? this.organizationId,
+    version: version.present ? version.value : this.version,
+    syncStatus: syncStatus ?? this.syncStatus,
+    localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+    lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
+    syncError: syncError.present ? syncError.value : this.syncError,
+    deleted: deleted ?? this.deleted,
+    id: id ?? this.id,
+    clientId: clientId ?? this.clientId,
+    taskTypeId: taskTypeId.present ? taskTypeId.value : this.taskTypeId,
+    assignedUserId: assignedUserId.present
+        ? assignedUserId.value
+        : this.assignedUserId,
+    companyId: companyId.present ? companyId.value : this.companyId,
+    description: description ?? this.description,
+    notes: notes ?? this.notes,
+    status: status ?? this.status,
+    scheduledFor: scheduledFor.present ? scheduledFor.value : this.scheduledFor,
+    scheduledAllDay: scheduledAllDay ?? this.scheduledAllDay,
+    recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+    generatedOrderId: generatedOrderId.present
+        ? generatedOrderId.value
+        : this.generatedOrderId,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    canceledAt: canceledAt.present ? canceledAt.value : this.canceledAt,
+    createdAt: createdAt.present ? createdAt.value : this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  LocalTask copyWithCompanion(LocalTasksCompanion data) {
+    return LocalTask(
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      version: data.version.present ? data.version.value : this.version,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      localUpdatedAt: data.localUpdatedAt.present
+          ? data.localUpdatedAt.value
+          : this.localUpdatedAt,
+      lastSyncedAt: data.lastSyncedAt.present
+          ? data.lastSyncedAt.value
+          : this.lastSyncedAt,
+      syncError: data.syncError.present ? data.syncError.value : this.syncError,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
+      id: data.id.present ? data.id.value : this.id,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      taskTypeId: data.taskTypeId.present
+          ? data.taskTypeId.value
+          : this.taskTypeId,
+      assignedUserId: data.assignedUserId.present
+          ? data.assignedUserId.value
+          : this.assignedUserId,
+      companyId: data.companyId.present ? data.companyId.value : this.companyId,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      status: data.status.present ? data.status.value : this.status,
+      scheduledFor: data.scheduledFor.present
+          ? data.scheduledFor.value
+          : this.scheduledFor,
+      scheduledAllDay: data.scheduledAllDay.present
+          ? data.scheduledAllDay.value
+          : this.scheduledAllDay,
+      recurrenceRule: data.recurrenceRule.present
+          ? data.recurrenceRule.value
+          : this.recurrenceRule,
+      generatedOrderId: data.generatedOrderId.present
+          ? data.generatedOrderId.value
+          : this.generatedOrderId,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      canceledAt: data.canceledAt.present
+          ? data.canceledAt.value
+          : this.canceledAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalTask(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('clientId: $clientId, ')
+          ..write('taskTypeId: $taskTypeId, ')
+          ..write('assignedUserId: $assignedUserId, ')
+          ..write('companyId: $companyId, ')
+          ..write('description: $description, ')
+          ..write('notes: $notes, ')
+          ..write('status: $status, ')
+          ..write('scheduledFor: $scheduledFor, ')
+          ..write('scheduledAllDay: $scheduledAllDay, ')
+          ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('generatedOrderId: $generatedOrderId, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('canceledAt: $canceledAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    organizationId,
+    version,
+    syncStatus,
+    localUpdatedAt,
+    lastSyncedAt,
+    syncError,
+    deleted,
+    id,
+    clientId,
+    taskTypeId,
+    assignedUserId,
+    companyId,
+    description,
+    notes,
+    status,
+    scheduledFor,
+    scheduledAllDay,
+    recurrenceRule,
+    generatedOrderId,
+    completedAt,
+    canceledAt,
+    createdAt,
+    updatedAt,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalTask &&
+          other.organizationId == this.organizationId &&
+          other.version == this.version &&
+          other.syncStatus == this.syncStatus &&
+          other.localUpdatedAt == this.localUpdatedAt &&
+          other.lastSyncedAt == this.lastSyncedAt &&
+          other.syncError == this.syncError &&
+          other.deleted == this.deleted &&
+          other.id == this.id &&
+          other.clientId == this.clientId &&
+          other.taskTypeId == this.taskTypeId &&
+          other.assignedUserId == this.assignedUserId &&
+          other.companyId == this.companyId &&
+          other.description == this.description &&
+          other.notes == this.notes &&
+          other.status == this.status &&
+          other.scheduledFor == this.scheduledFor &&
+          other.scheduledAllDay == this.scheduledAllDay &&
+          other.recurrenceRule == this.recurrenceRule &&
+          other.generatedOrderId == this.generatedOrderId &&
+          other.completedAt == this.completedAt &&
+          other.canceledAt == this.canceledAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LocalTasksCompanion extends UpdateCompanion<LocalTask> {
+  final Value<String> organizationId;
+  final Value<int?> version;
+  final Value<String> syncStatus;
+  final Value<DateTime> localUpdatedAt;
+  final Value<DateTime?> lastSyncedAt;
+  final Value<String?> syncError;
+  final Value<bool> deleted;
+  final Value<String> id;
+  final Value<String> clientId;
+  final Value<String?> taskTypeId;
+  final Value<String?> assignedUserId;
+  final Value<String?> companyId;
+  final Value<String> description;
+  final Value<String> notes;
+  final Value<String> status;
+  final Value<DateTime?> scheduledFor;
+  final Value<bool> scheduledAllDay;
+  final Value<String> recurrenceRule;
+  final Value<String?> generatedOrderId;
+  final Value<DateTime?> completedAt;
+  final Value<DateTime?> canceledAt;
+  final Value<DateTime?> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<int> rowid;
+  const LocalTasksCompanion({
+    this.organizationId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.localUpdatedAt = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.id = const Value.absent(),
+    this.clientId = const Value.absent(),
+    this.taskTypeId = const Value.absent(),
+    this.assignedUserId = const Value.absent(),
+    this.companyId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.status = const Value.absent(),
+    this.scheduledFor = const Value.absent(),
+    this.scheduledAllDay = const Value.absent(),
+    this.recurrenceRule = const Value.absent(),
+    this.generatedOrderId = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.canceledAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalTasksCompanion.insert({
+    required String organizationId,
+    this.version = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required DateTime localUpdatedAt,
+    this.lastSyncedAt = const Value.absent(),
+    this.syncError = const Value.absent(),
+    this.deleted = const Value.absent(),
+    required String id,
+    required String clientId,
+    this.taskTypeId = const Value.absent(),
+    this.assignedUserId = const Value.absent(),
+    this.companyId = const Value.absent(),
+    this.description = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.status = const Value.absent(),
+    this.scheduledFor = const Value.absent(),
+    this.scheduledAllDay = const Value.absent(),
+    this.recurrenceRule = const Value.absent(),
+    this.generatedOrderId = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.canceledAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : organizationId = Value(organizationId),
+       localUpdatedAt = Value(localUpdatedAt),
+       id = Value(id),
+       clientId = Value(clientId);
+  static Insertable<LocalTask> custom({
+    Expression<String>? organizationId,
+    Expression<int>? version,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? localUpdatedAt,
+    Expression<DateTime>? lastSyncedAt,
+    Expression<String>? syncError,
+    Expression<bool>? deleted,
+    Expression<String>? id,
+    Expression<String>? clientId,
+    Expression<String>? taskTypeId,
+    Expression<String>? assignedUserId,
+    Expression<String>? companyId,
+    Expression<String>? description,
+    Expression<String>? notes,
+    Expression<String>? status,
+    Expression<DateTime>? scheduledFor,
+    Expression<bool>? scheduledAllDay,
+    Expression<String>? recurrenceRule,
+    Expression<String>? generatedOrderId,
+    Expression<DateTime>? completedAt,
+    Expression<DateTime>? canceledAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (organizationId != null) 'organization_id': organizationId,
+      if (version != null) 'version': version,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (localUpdatedAt != null) 'local_updated_at': localUpdatedAt,
+      if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
+      if (syncError != null) 'sync_error': syncError,
+      if (deleted != null) 'deleted': deleted,
+      if (id != null) 'id': id,
+      if (clientId != null) 'client_id': clientId,
+      if (taskTypeId != null) 'task_type_id': taskTypeId,
+      if (assignedUserId != null) 'assigned_user_id': assignedUserId,
+      if (companyId != null) 'company_id': companyId,
+      if (description != null) 'description': description,
+      if (notes != null) 'notes': notes,
+      if (status != null) 'status': status,
+      if (scheduledFor != null) 'scheduled_for': scheduledFor,
+      if (scheduledAllDay != null) 'scheduled_all_day': scheduledAllDay,
+      if (recurrenceRule != null) 'recurrence_rule': recurrenceRule,
+      if (generatedOrderId != null) 'generated_order_id': generatedOrderId,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (canceledAt != null) 'canceled_at': canceledAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalTasksCompanion copyWith({
+    Value<String>? organizationId,
+    Value<int?>? version,
+    Value<String>? syncStatus,
+    Value<DateTime>? localUpdatedAt,
+    Value<DateTime?>? lastSyncedAt,
+    Value<String?>? syncError,
+    Value<bool>? deleted,
+    Value<String>? id,
+    Value<String>? clientId,
+    Value<String?>? taskTypeId,
+    Value<String?>? assignedUserId,
+    Value<String?>? companyId,
+    Value<String>? description,
+    Value<String>? notes,
+    Value<String>? status,
+    Value<DateTime?>? scheduledFor,
+    Value<bool>? scheduledAllDay,
+    Value<String>? recurrenceRule,
+    Value<String?>? generatedOrderId,
+    Value<DateTime?>? completedAt,
+    Value<DateTime?>? canceledAt,
+    Value<DateTime?>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalTasksCompanion(
+      organizationId: organizationId ?? this.organizationId,
+      version: version ?? this.version,
+      syncStatus: syncStatus ?? this.syncStatus,
+      localUpdatedAt: localUpdatedAt ?? this.localUpdatedAt,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      syncError: syncError ?? this.syncError,
+      deleted: deleted ?? this.deleted,
+      id: id ?? this.id,
+      clientId: clientId ?? this.clientId,
+      taskTypeId: taskTypeId ?? this.taskTypeId,
+      assignedUserId: assignedUserId ?? this.assignedUserId,
+      companyId: companyId ?? this.companyId,
+      description: description ?? this.description,
+      notes: notes ?? this.notes,
+      status: status ?? this.status,
+      scheduledFor: scheduledFor ?? this.scheduledFor,
+      scheduledAllDay: scheduledAllDay ?? this.scheduledAllDay,
+      recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+      generatedOrderId: generatedOrderId ?? this.generatedOrderId,
+      completedAt: completedAt ?? this.completedAt,
+      canceledAt: canceledAt ?? this.canceledAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (localUpdatedAt.present) {
+      map['local_updated_at'] = Variable<DateTime>(localUpdatedAt.value);
+    }
+    if (lastSyncedAt.present) {
+      map['last_synced_at'] = Variable<DateTime>(lastSyncedAt.value);
+    }
+    if (syncError.present) {
+      map['sync_error'] = Variable<String>(syncError.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (taskTypeId.present) {
+      map['task_type_id'] = Variable<String>(taskTypeId.value);
+    }
+    if (assignedUserId.present) {
+      map['assigned_user_id'] = Variable<String>(assignedUserId.value);
+    }
+    if (companyId.present) {
+      map['company_id'] = Variable<String>(companyId.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (scheduledFor.present) {
+      map['scheduled_for'] = Variable<DateTime>(scheduledFor.value);
+    }
+    if (scheduledAllDay.present) {
+      map['scheduled_all_day'] = Variable<bool>(scheduledAllDay.value);
+    }
+    if (recurrenceRule.present) {
+      map['recurrence_rule'] = Variable<String>(recurrenceRule.value);
+    }
+    if (generatedOrderId.present) {
+      map['generated_order_id'] = Variable<String>(generatedOrderId.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (canceledAt.present) {
+      map['canceled_at'] = Variable<DateTime>(canceledAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalTasksCompanion(')
+          ..write('organizationId: $organizationId, ')
+          ..write('version: $version, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('localUpdatedAt: $localUpdatedAt, ')
+          ..write('lastSyncedAt: $lastSyncedAt, ')
+          ..write('syncError: $syncError, ')
+          ..write('deleted: $deleted, ')
+          ..write('id: $id, ')
+          ..write('clientId: $clientId, ')
+          ..write('taskTypeId: $taskTypeId, ')
+          ..write('assignedUserId: $assignedUserId, ')
+          ..write('companyId: $companyId, ')
+          ..write('description: $description, ')
+          ..write('notes: $notes, ')
+          ..write('status: $status, ')
+          ..write('scheduledFor: $scheduledFor, ')
+          ..write('scheduledAllDay: $scheduledAllDay, ')
+          ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('generatedOrderId: $generatedOrderId, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('canceledAt: $canceledAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalTaskTargetsTable extends LocalTaskTargets
+    with TableInfo<$LocalTaskTargetsTable, LocalTaskTarget> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalTaskTargetsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
+  @override
+  late final GeneratedColumn<String> taskId = GeneratedColumn<String>(
+    'task_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _locationIdMeta = const VerificationMeta(
+    'locationId',
+  );
+  @override
+  late final GeneratedColumn<String> locationId = GeneratedColumn<String>(
+    'location_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
+  @override
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    taskId,
+    locationId,
+    itemId,
+    position,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_task_targets';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalTaskTarget> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('task_id')) {
+      context.handle(
+        _taskIdMeta,
+        taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_taskIdMeta);
+    }
+    if (data.containsKey('location_id')) {
+      context.handle(
+        _locationIdMeta,
+        locationId.isAcceptableOrUnknown(data['location_id']!, _locationIdMeta),
+      );
+    }
+    if (data.containsKey('item_id')) {
+      context.handle(
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
+      );
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LocalTaskTarget map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalTaskTarget(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      taskId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}task_id'],
+      )!,
+      locationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location_id'],
+      ),
+      itemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}item_id'],
+      ),
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
       )!,
     );
   }
 
   @override
-  $LocalEquipmentTypesTable createAlias(String alias) {
-    return $LocalEquipmentTypesTable(attachedDatabase, alias);
+  $LocalTaskTargetsTable createAlias(String alias) {
+    return $LocalTaskTargetsTable(attachedDatabase, alias);
   }
 }
 
-class LocalEquipmentType extends DataClass
-    implements Insertable<LocalEquipmentType> {
+class LocalTaskTarget extends DataClass implements Insertable<LocalTaskTarget> {
   final String id;
-  final String organizationId;
-  final String name;
-  final String description;
-  final int? version;
-  final DateTime cachedAt;
-  const LocalEquipmentType({
+  final String taskId;
+  final String? locationId;
+  final String? itemId;
+  final int position;
+  const LocalTaskTarget({
     required this.id,
-    required this.organizationId,
-    required this.name,
-    required this.description,
-    this.version,
-    required this.cachedAt,
+    required this.taskId,
+    this.locationId,
+    this.itemId,
+    required this.position,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['organization_id'] = Variable<String>(organizationId);
-    map['name'] = Variable<String>(name);
-    map['description'] = Variable<String>(description);
-    if (!nullToAbsent || version != null) {
-      map['version'] = Variable<int>(version);
+    map['task_id'] = Variable<String>(taskId);
+    if (!nullToAbsent || locationId != null) {
+      map['location_id'] = Variable<String>(locationId);
     }
-    map['cached_at'] = Variable<DateTime>(cachedAt);
+    if (!nullToAbsent || itemId != null) {
+      map['item_id'] = Variable<String>(itemId);
+    }
+    map['position'] = Variable<int>(position);
     return map;
   }
 
-  LocalEquipmentTypesCompanion toCompanion(bool nullToAbsent) {
-    return LocalEquipmentTypesCompanion(
+  LocalTaskTargetsCompanion toCompanion(bool nullToAbsent) {
+    return LocalTaskTargetsCompanion(
       id: Value(id),
-      organizationId: Value(organizationId),
-      name: Value(name),
-      description: Value(description),
-      version: version == null && nullToAbsent
+      taskId: Value(taskId),
+      locationId: locationId == null && nullToAbsent
           ? const Value.absent()
-          : Value(version),
-      cachedAt: Value(cachedAt),
+          : Value(locationId),
+      itemId: itemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemId),
+      position: Value(position),
     );
   }
 
-  factory LocalEquipmentType.fromJson(
+  factory LocalTaskTarget.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return LocalEquipmentType(
+    return LocalTaskTarget(
       id: serializer.fromJson<String>(json['id']),
-      organizationId: serializer.fromJson<String>(json['organizationId']),
-      name: serializer.fromJson<String>(json['name']),
-      description: serializer.fromJson<String>(json['description']),
-      version: serializer.fromJson<int?>(json['version']),
-      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+      taskId: serializer.fromJson<String>(json['taskId']),
+      locationId: serializer.fromJson<String?>(json['locationId']),
+      itemId: serializer.fromJson<String?>(json['itemId']),
+      position: serializer.fromJson<int>(json['position']),
     );
   }
   @override
@@ -6110,137 +11829,119 @@ class LocalEquipmentType extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'organizationId': serializer.toJson<String>(organizationId),
-      'name': serializer.toJson<String>(name),
-      'description': serializer.toJson<String>(description),
-      'version': serializer.toJson<int?>(version),
-      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+      'taskId': serializer.toJson<String>(taskId),
+      'locationId': serializer.toJson<String?>(locationId),
+      'itemId': serializer.toJson<String?>(itemId),
+      'position': serializer.toJson<int>(position),
     };
   }
 
-  LocalEquipmentType copyWith({
+  LocalTaskTarget copyWith({
     String? id,
-    String? organizationId,
-    String? name,
-    String? description,
-    Value<int?> version = const Value.absent(),
-    DateTime? cachedAt,
-  }) => LocalEquipmentType(
+    String? taskId,
+    Value<String?> locationId = const Value.absent(),
+    Value<String?> itemId = const Value.absent(),
+    int? position,
+  }) => LocalTaskTarget(
     id: id ?? this.id,
-    organizationId: organizationId ?? this.organizationId,
-    name: name ?? this.name,
-    description: description ?? this.description,
-    version: version.present ? version.value : this.version,
-    cachedAt: cachedAt ?? this.cachedAt,
+    taskId: taskId ?? this.taskId,
+    locationId: locationId.present ? locationId.value : this.locationId,
+    itemId: itemId.present ? itemId.value : this.itemId,
+    position: position ?? this.position,
   );
-  LocalEquipmentType copyWithCompanion(LocalEquipmentTypesCompanion data) {
-    return LocalEquipmentType(
+  LocalTaskTarget copyWithCompanion(LocalTaskTargetsCompanion data) {
+    return LocalTaskTarget(
       id: data.id.present ? data.id.value : this.id,
-      organizationId: data.organizationId.present
-          ? data.organizationId.value
-          : this.organizationId,
-      name: data.name.present ? data.name.value : this.name,
-      description: data.description.present
-          ? data.description.value
-          : this.description,
-      version: data.version.present ? data.version.value : this.version,
-      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+      taskId: data.taskId.present ? data.taskId.value : this.taskId,
+      locationId: data.locationId.present
+          ? data.locationId.value
+          : this.locationId,
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
+      position: data.position.present ? data.position.value : this.position,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('LocalEquipmentType(')
+    return (StringBuffer('LocalTaskTarget(')
           ..write('id: $id, ')
-          ..write('organizationId: $organizationId, ')
-          ..write('name: $name, ')
-          ..write('description: $description, ')
-          ..write('version: $version, ')
-          ..write('cachedAt: $cachedAt')
+          ..write('taskId: $taskId, ')
+          ..write('locationId: $locationId, ')
+          ..write('itemId: $itemId, ')
+          ..write('position: $position')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, organizationId, name, description, version, cachedAt);
+  int get hashCode => Object.hash(id, taskId, locationId, itemId, position);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is LocalEquipmentType &&
+      (other is LocalTaskTarget &&
           other.id == this.id &&
-          other.organizationId == this.organizationId &&
-          other.name == this.name &&
-          other.description == this.description &&
-          other.version == this.version &&
-          other.cachedAt == this.cachedAt);
+          other.taskId == this.taskId &&
+          other.locationId == this.locationId &&
+          other.itemId == this.itemId &&
+          other.position == this.position);
 }
 
-class LocalEquipmentTypesCompanion extends UpdateCompanion<LocalEquipmentType> {
+class LocalTaskTargetsCompanion extends UpdateCompanion<LocalTaskTarget> {
   final Value<String> id;
-  final Value<String> organizationId;
-  final Value<String> name;
-  final Value<String> description;
-  final Value<int?> version;
-  final Value<DateTime> cachedAt;
+  final Value<String> taskId;
+  final Value<String?> locationId;
+  final Value<String?> itemId;
+  final Value<int> position;
   final Value<int> rowid;
-  const LocalEquipmentTypesCompanion({
+  const LocalTaskTargetsCompanion({
     this.id = const Value.absent(),
-    this.organizationId = const Value.absent(),
-    this.name = const Value.absent(),
-    this.description = const Value.absent(),
-    this.version = const Value.absent(),
-    this.cachedAt = const Value.absent(),
+    this.taskId = const Value.absent(),
+    this.locationId = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.position = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  LocalEquipmentTypesCompanion.insert({
+  LocalTaskTargetsCompanion.insert({
     required String id,
-    required String organizationId,
-    required String name,
-    this.description = const Value.absent(),
-    this.version = const Value.absent(),
-    required DateTime cachedAt,
+    required String taskId,
+    this.locationId = const Value.absent(),
+    this.itemId = const Value.absent(),
+    this.position = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       organizationId = Value(organizationId),
-       name = Value(name),
-       cachedAt = Value(cachedAt);
-  static Insertable<LocalEquipmentType> custom({
+       taskId = Value(taskId);
+  static Insertable<LocalTaskTarget> custom({
     Expression<String>? id,
-    Expression<String>? organizationId,
-    Expression<String>? name,
-    Expression<String>? description,
-    Expression<int>? version,
-    Expression<DateTime>? cachedAt,
+    Expression<String>? taskId,
+    Expression<String>? locationId,
+    Expression<String>? itemId,
+    Expression<int>? position,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (organizationId != null) 'organization_id': organizationId,
-      if (name != null) 'name': name,
-      if (description != null) 'description': description,
-      if (version != null) 'version': version,
-      if (cachedAt != null) 'cached_at': cachedAt,
+      if (taskId != null) 'task_id': taskId,
+      if (locationId != null) 'location_id': locationId,
+      if (itemId != null) 'item_id': itemId,
+      if (position != null) 'position': position,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  LocalEquipmentTypesCompanion copyWith({
+  LocalTaskTargetsCompanion copyWith({
     Value<String>? id,
-    Value<String>? organizationId,
-    Value<String>? name,
-    Value<String>? description,
-    Value<int?>? version,
-    Value<DateTime>? cachedAt,
+    Value<String>? taskId,
+    Value<String?>? locationId,
+    Value<String?>? itemId,
+    Value<int>? position,
     Value<int>? rowid,
   }) {
-    return LocalEquipmentTypesCompanion(
+    return LocalTaskTargetsCompanion(
       id: id ?? this.id,
-      organizationId: organizationId ?? this.organizationId,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      version: version ?? this.version,
-      cachedAt: cachedAt ?? this.cachedAt,
+      taskId: taskId ?? this.taskId,
+      locationId: locationId ?? this.locationId,
+      itemId: itemId ?? this.itemId,
+      position: position ?? this.position,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -6251,20 +11952,17 @@ class LocalEquipmentTypesCompanion extends UpdateCompanion<LocalEquipmentType> {
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
-    if (organizationId.present) {
-      map['organization_id'] = Variable<String>(organizationId.value);
+    if (taskId.present) {
+      map['task_id'] = Variable<String>(taskId.value);
     }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
+    if (locationId.present) {
+      map['location_id'] = Variable<String>(locationId.value);
     }
-    if (description.present) {
-      map['description'] = Variable<String>(description.value);
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
     }
-    if (version.present) {
-      map['version'] = Variable<int>(version.value);
-    }
-    if (cachedAt.present) {
-      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -6274,13 +11972,12 @@ class LocalEquipmentTypesCompanion extends UpdateCompanion<LocalEquipmentType> {
 
   @override
   String toString() {
-    return (StringBuffer('LocalEquipmentTypesCompanion(')
+    return (StringBuffer('LocalTaskTargetsCompanion(')
           ..write('id: $id, ')
-          ..write('organizationId: $organizationId, ')
-          ..write('name: $name, ')
-          ..write('description: $description, ')
-          ..write('version: $version, ')
-          ..write('cachedAt: $cachedAt, ')
+          ..write('taskId: $taskId, ')
+          ..write('locationId: $locationId, ')
+          ..write('itemId: $itemId, ')
+          ..write('position: $position, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6838,23 +12535,10 @@ class $LocalQrCodesTable extends LocalQrCodes
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _locationIdMeta = const VerificationMeta(
-    'locationId',
-  );
+  static const VerificationMeta _itemIdMeta = const VerificationMeta('itemId');
   @override
-  late final GeneratedColumn<String> locationId = GeneratedColumn<String>(
-    'location_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _equipmentIdMeta = const VerificationMeta(
-    'equipmentId',
-  );
-  @override
-  late final GeneratedColumn<String> equipmentId = GeneratedColumn<String>(
-    'equipment_id',
+  late final GeneratedColumn<String> itemId = GeneratedColumn<String>(
+    'item_id',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -6896,8 +12580,7 @@ class $LocalQrCodesTable extends LocalQrCodes
     status,
     batchId,
     clientId,
-    locationId,
-    equipmentId,
+    itemId,
     assignedAt,
     createdAt,
   ];
@@ -6999,19 +12682,10 @@ class $LocalQrCodesTable extends LocalQrCodes
         clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
       );
     }
-    if (data.containsKey('location_id')) {
+    if (data.containsKey('item_id')) {
       context.handle(
-        _locationIdMeta,
-        locationId.isAcceptableOrUnknown(data['location_id']!, _locationIdMeta),
-      );
-    }
-    if (data.containsKey('equipment_id')) {
-      context.handle(
-        _equipmentIdMeta,
-        equipmentId.isAcceptableOrUnknown(
-          data['equipment_id']!,
-          _equipmentIdMeta,
-        ),
+        _itemIdMeta,
+        itemId.isAcceptableOrUnknown(data['item_id']!, _itemIdMeta),
       );
     }
     if (data.containsKey('assigned_at')) {
@@ -7083,13 +12757,9 @@ class $LocalQrCodesTable extends LocalQrCodes
         DriftSqlType.string,
         data['${effectivePrefix}client_id'],
       ),
-      locationId: attachedDatabase.typeMapping.read(
+      itemId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}location_id'],
-      ),
-      equipmentId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}equipment_id'],
+        data['${effectivePrefix}item_id'],
       ),
       assignedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -7121,8 +12791,7 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
   final String status;
   final String? batchId;
   final String? clientId;
-  final String? locationId;
-  final String? equipmentId;
+  final String? itemId;
   final DateTime? assignedAt;
   final DateTime? createdAt;
   const LocalQrCode({
@@ -7138,8 +12807,7 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
     required this.status,
     this.batchId,
     this.clientId,
-    this.locationId,
-    this.equipmentId,
+    this.itemId,
     this.assignedAt,
     this.createdAt,
   });
@@ -7170,11 +12838,8 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
     if (!nullToAbsent || clientId != null) {
       map['client_id'] = Variable<String>(clientId);
     }
-    if (!nullToAbsent || locationId != null) {
-      map['location_id'] = Variable<String>(locationId);
-    }
-    if (!nullToAbsent || equipmentId != null) {
-      map['equipment_id'] = Variable<String>(equipmentId);
+    if (!nullToAbsent || itemId != null) {
+      map['item_id'] = Variable<String>(itemId);
     }
     if (!nullToAbsent || assignedAt != null) {
       map['assigned_at'] = Variable<DateTime>(assignedAt);
@@ -7211,12 +12876,9 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
       clientId: clientId == null && nullToAbsent
           ? const Value.absent()
           : Value(clientId),
-      locationId: locationId == null && nullToAbsent
+      itemId: itemId == null && nullToAbsent
           ? const Value.absent()
-          : Value(locationId),
-      equipmentId: equipmentId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(equipmentId),
+          : Value(itemId),
       assignedAt: assignedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(assignedAt),
@@ -7244,8 +12906,7 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
       status: serializer.fromJson<String>(json['status']),
       batchId: serializer.fromJson<String?>(json['batchId']),
       clientId: serializer.fromJson<String?>(json['clientId']),
-      locationId: serializer.fromJson<String?>(json['locationId']),
-      equipmentId: serializer.fromJson<String?>(json['equipmentId']),
+      itemId: serializer.fromJson<String?>(json['itemId']),
       assignedAt: serializer.fromJson<DateTime?>(json['assignedAt']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
     );
@@ -7266,8 +12927,7 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
       'status': serializer.toJson<String>(status),
       'batchId': serializer.toJson<String?>(batchId),
       'clientId': serializer.toJson<String?>(clientId),
-      'locationId': serializer.toJson<String?>(locationId),
-      'equipmentId': serializer.toJson<String?>(equipmentId),
+      'itemId': serializer.toJson<String?>(itemId),
       'assignedAt': serializer.toJson<DateTime?>(assignedAt),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
     };
@@ -7286,8 +12946,7 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
     String? status,
     Value<String?> batchId = const Value.absent(),
     Value<String?> clientId = const Value.absent(),
-    Value<String?> locationId = const Value.absent(),
-    Value<String?> equipmentId = const Value.absent(),
+    Value<String?> itemId = const Value.absent(),
     Value<DateTime?> assignedAt = const Value.absent(),
     Value<DateTime?> createdAt = const Value.absent(),
   }) => LocalQrCode(
@@ -7303,8 +12962,7 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
     status: status ?? this.status,
     batchId: batchId.present ? batchId.value : this.batchId,
     clientId: clientId.present ? clientId.value : this.clientId,
-    locationId: locationId.present ? locationId.value : this.locationId,
-    equipmentId: equipmentId.present ? equipmentId.value : this.equipmentId,
+    itemId: itemId.present ? itemId.value : this.itemId,
     assignedAt: assignedAt.present ? assignedAt.value : this.assignedAt,
     createdAt: createdAt.present ? createdAt.value : this.createdAt,
   );
@@ -7332,12 +12990,7 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
       status: data.status.present ? data.status.value : this.status,
       batchId: data.batchId.present ? data.batchId.value : this.batchId,
       clientId: data.clientId.present ? data.clientId.value : this.clientId,
-      locationId: data.locationId.present
-          ? data.locationId.value
-          : this.locationId,
-      equipmentId: data.equipmentId.present
-          ? data.equipmentId.value
-          : this.equipmentId,
+      itemId: data.itemId.present ? data.itemId.value : this.itemId,
       assignedAt: data.assignedAt.present
           ? data.assignedAt.value
           : this.assignedAt,
@@ -7360,8 +13013,7 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
           ..write('status: $status, ')
           ..write('batchId: $batchId, ')
           ..write('clientId: $clientId, ')
-          ..write('locationId: $locationId, ')
-          ..write('equipmentId: $equipmentId, ')
+          ..write('itemId: $itemId, ')
           ..write('assignedAt: $assignedAt, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -7382,8 +13034,7 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
     status,
     batchId,
     clientId,
-    locationId,
-    equipmentId,
+    itemId,
     assignedAt,
     createdAt,
   );
@@ -7403,8 +13054,7 @@ class LocalQrCode extends DataClass implements Insertable<LocalQrCode> {
           other.status == this.status &&
           other.batchId == this.batchId &&
           other.clientId == this.clientId &&
-          other.locationId == this.locationId &&
-          other.equipmentId == this.equipmentId &&
+          other.itemId == this.itemId &&
           other.assignedAt == this.assignedAt &&
           other.createdAt == this.createdAt);
 }
@@ -7422,8 +13072,7 @@ class LocalQrCodesCompanion extends UpdateCompanion<LocalQrCode> {
   final Value<String> status;
   final Value<String?> batchId;
   final Value<String?> clientId;
-  final Value<String?> locationId;
-  final Value<String?> equipmentId;
+  final Value<String?> itemId;
   final Value<DateTime?> assignedAt;
   final Value<DateTime?> createdAt;
   final Value<int> rowid;
@@ -7440,8 +13089,7 @@ class LocalQrCodesCompanion extends UpdateCompanion<LocalQrCode> {
     this.status = const Value.absent(),
     this.batchId = const Value.absent(),
     this.clientId = const Value.absent(),
-    this.locationId = const Value.absent(),
-    this.equipmentId = const Value.absent(),
+    this.itemId = const Value.absent(),
     this.assignedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -7459,8 +13107,7 @@ class LocalQrCodesCompanion extends UpdateCompanion<LocalQrCode> {
     required String status,
     this.batchId = const Value.absent(),
     this.clientId = const Value.absent(),
-    this.locationId = const Value.absent(),
-    this.equipmentId = const Value.absent(),
+    this.itemId = const Value.absent(),
     this.assignedAt = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -7481,8 +13128,7 @@ class LocalQrCodesCompanion extends UpdateCompanion<LocalQrCode> {
     Expression<String>? status,
     Expression<String>? batchId,
     Expression<String>? clientId,
-    Expression<String>? locationId,
-    Expression<String>? equipmentId,
+    Expression<String>? itemId,
     Expression<DateTime>? assignedAt,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
@@ -7500,8 +13146,7 @@ class LocalQrCodesCompanion extends UpdateCompanion<LocalQrCode> {
       if (status != null) 'status': status,
       if (batchId != null) 'batch_id': batchId,
       if (clientId != null) 'client_id': clientId,
-      if (locationId != null) 'location_id': locationId,
-      if (equipmentId != null) 'equipment_id': equipmentId,
+      if (itemId != null) 'item_id': itemId,
       if (assignedAt != null) 'assigned_at': assignedAt,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
@@ -7521,8 +13166,7 @@ class LocalQrCodesCompanion extends UpdateCompanion<LocalQrCode> {
     Value<String>? status,
     Value<String?>? batchId,
     Value<String?>? clientId,
-    Value<String?>? locationId,
-    Value<String?>? equipmentId,
+    Value<String?>? itemId,
     Value<DateTime?>? assignedAt,
     Value<DateTime?>? createdAt,
     Value<int>? rowid,
@@ -7540,8 +13184,7 @@ class LocalQrCodesCompanion extends UpdateCompanion<LocalQrCode> {
       status: status ?? this.status,
       batchId: batchId ?? this.batchId,
       clientId: clientId ?? this.clientId,
-      locationId: locationId ?? this.locationId,
-      equipmentId: equipmentId ?? this.equipmentId,
+      itemId: itemId ?? this.itemId,
       assignedAt: assignedAt ?? this.assignedAt,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
@@ -7587,11 +13230,8 @@ class LocalQrCodesCompanion extends UpdateCompanion<LocalQrCode> {
     if (clientId.present) {
       map['client_id'] = Variable<String>(clientId.value);
     }
-    if (locationId.present) {
-      map['location_id'] = Variable<String>(locationId.value);
-    }
-    if (equipmentId.present) {
-      map['equipment_id'] = Variable<String>(equipmentId.value);
+    if (itemId.present) {
+      map['item_id'] = Variable<String>(itemId.value);
     }
     if (assignedAt.present) {
       map['assigned_at'] = Variable<DateTime>(assignedAt.value);
@@ -7620,8 +13260,7 @@ class LocalQrCodesCompanion extends UpdateCompanion<LocalQrCode> {
           ..write('status: $status, ')
           ..write('batchId: $batchId, ')
           ..write('clientId: $clientId, ')
-          ..write('locationId: $locationId, ')
-          ..write('equipmentId: $equipmentId, ')
+          ..write('itemId: $itemId, ')
           ..write('assignedAt: $assignedAt, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
@@ -9396,6 +15035,29 @@ class $UploadQueueTable extends UploadQueue
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _ownerKindMeta = const VerificationMeta(
+    'ownerKind',
+  );
+  @override
+  late final GeneratedColumn<String> ownerKind = GeneratedColumn<String>(
+    'owner_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('service_order'),
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _serviceOrderIdMeta = const VerificationMeta(
     'serviceOrderId',
   );
@@ -9403,10 +15065,21 @@ class $UploadQueueTable extends UploadQueue
   late final GeneratedColumn<String> serviceOrderId = GeneratedColumn<String>(
     'service_order_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
+  static const VerificationMeta _serviceOrderItemIdMeta =
+      const VerificationMeta('serviceOrderItemId');
+  @override
+  late final GeneratedColumn<String> serviceOrderItemId =
+      GeneratedColumn<String>(
+        'service_order_item_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _kindMeta = const VerificationMeta('kind');
   @override
   late final GeneratedColumn<String> kind = GeneratedColumn<String>(
@@ -9496,7 +15169,10 @@ class $UploadQueueTable extends UploadQueue
   List<GeneratedColumn> get $columns => [
     id,
     organizationId,
+    ownerKind,
+    ownerId,
     serviceOrderId,
+    serviceOrderItemId,
     kind,
     filePath,
     sha256,
@@ -9534,6 +15210,20 @@ class $UploadQueueTable extends UploadQueue
     } else if (isInserting) {
       context.missing(_organizationIdMeta);
     }
+    if (data.containsKey('owner_kind')) {
+      context.handle(
+        _ownerKindMeta,
+        ownerKind.isAcceptableOrUnknown(data['owner_kind']!, _ownerKindMeta),
+      );
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
     if (data.containsKey('service_order_id')) {
       context.handle(
         _serviceOrderIdMeta,
@@ -9542,8 +15232,15 @@ class $UploadQueueTable extends UploadQueue
           _serviceOrderIdMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_serviceOrderIdMeta);
+    }
+    if (data.containsKey('service_order_item_id')) {
+      context.handle(
+        _serviceOrderItemIdMeta,
+        serviceOrderItemId.isAcceptableOrUnknown(
+          data['service_order_item_id']!,
+          _serviceOrderItemIdMeta,
+        ),
+      );
     }
     if (data.containsKey('kind')) {
       context.handle(
@@ -9618,10 +15315,22 @@ class $UploadQueueTable extends UploadQueue
         DriftSqlType.string,
         data['${effectivePrefix}organization_id'],
       )!,
+      ownerKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_kind'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
       serviceOrderId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}service_order_id'],
-      )!,
+      ),
+      serviceOrderItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_order_item_id'],
+      ),
       kind: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}kind'],
@@ -9666,7 +15375,10 @@ class $UploadQueueTable extends UploadQueue
 class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   final String id;
   final String organizationId;
-  final String serviceOrderId;
+  final String ownerKind;
+  final String ownerId;
+  final String? serviceOrderId;
+  final String? serviceOrderItemId;
   final String kind;
   final String filePath;
   final String sha256;
@@ -9678,7 +15390,10 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   const UploadQueueData({
     required this.id,
     required this.organizationId,
-    required this.serviceOrderId,
+    required this.ownerKind,
+    required this.ownerId,
+    this.serviceOrderId,
+    this.serviceOrderItemId,
     required this.kind,
     required this.filePath,
     required this.sha256,
@@ -9693,7 +15408,14 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['organization_id'] = Variable<String>(organizationId);
-    map['service_order_id'] = Variable<String>(serviceOrderId);
+    map['owner_kind'] = Variable<String>(ownerKind);
+    map['owner_id'] = Variable<String>(ownerId);
+    if (!nullToAbsent || serviceOrderId != null) {
+      map['service_order_id'] = Variable<String>(serviceOrderId);
+    }
+    if (!nullToAbsent || serviceOrderItemId != null) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId);
+    }
     map['kind'] = Variable<String>(kind);
     map['file_path'] = Variable<String>(filePath);
     map['sha256'] = Variable<String>(sha256);
@@ -9715,7 +15437,14 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     return UploadQueueCompanion(
       id: Value(id),
       organizationId: Value(organizationId),
-      serviceOrderId: Value(serviceOrderId),
+      ownerKind: Value(ownerKind),
+      ownerId: Value(ownerId),
+      serviceOrderId: serviceOrderId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serviceOrderId),
+      serviceOrderItemId: serviceOrderItemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serviceOrderItemId),
       kind: Value(kind),
       filePath: Value(filePath),
       sha256: Value(sha256),
@@ -9741,7 +15470,12 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     return UploadQueueData(
       id: serializer.fromJson<String>(json['id']),
       organizationId: serializer.fromJson<String>(json['organizationId']),
-      serviceOrderId: serializer.fromJson<String>(json['serviceOrderId']),
+      ownerKind: serializer.fromJson<String>(json['ownerKind']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      serviceOrderId: serializer.fromJson<String?>(json['serviceOrderId']),
+      serviceOrderItemId: serializer.fromJson<String?>(
+        json['serviceOrderItemId'],
+      ),
       kind: serializer.fromJson<String>(json['kind']),
       filePath: serializer.fromJson<String>(json['filePath']),
       sha256: serializer.fromJson<String>(json['sha256']),
@@ -9758,7 +15492,10 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'organizationId': serializer.toJson<String>(organizationId),
-      'serviceOrderId': serializer.toJson<String>(serviceOrderId),
+      'ownerKind': serializer.toJson<String>(ownerKind),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'serviceOrderId': serializer.toJson<String?>(serviceOrderId),
+      'serviceOrderItemId': serializer.toJson<String?>(serviceOrderItemId),
       'kind': serializer.toJson<String>(kind),
       'filePath': serializer.toJson<String>(filePath),
       'sha256': serializer.toJson<String>(sha256),
@@ -9773,7 +15510,10 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   UploadQueueData copyWith({
     String? id,
     String? organizationId,
-    String? serviceOrderId,
+    String? ownerKind,
+    String? ownerId,
+    Value<String?> serviceOrderId = const Value.absent(),
+    Value<String?> serviceOrderItemId = const Value.absent(),
     String? kind,
     String? filePath,
     String? sha256,
@@ -9785,7 +15525,14 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   }) => UploadQueueData(
     id: id ?? this.id,
     organizationId: organizationId ?? this.organizationId,
-    serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+    ownerKind: ownerKind ?? this.ownerKind,
+    ownerId: ownerId ?? this.ownerId,
+    serviceOrderId: serviceOrderId.present
+        ? serviceOrderId.value
+        : this.serviceOrderId,
+    serviceOrderItemId: serviceOrderItemId.present
+        ? serviceOrderItemId.value
+        : this.serviceOrderItemId,
     kind: kind ?? this.kind,
     filePath: filePath ?? this.filePath,
     sha256: sha256 ?? this.sha256,
@@ -9801,9 +15548,14 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
       organizationId: data.organizationId.present
           ? data.organizationId.value
           : this.organizationId,
+      ownerKind: data.ownerKind.present ? data.ownerKind.value : this.ownerKind,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
       serviceOrderId: data.serviceOrderId.present
           ? data.serviceOrderId.value
           : this.serviceOrderId,
+      serviceOrderItemId: data.serviceOrderItemId.present
+          ? data.serviceOrderItemId.value
+          : this.serviceOrderItemId,
       kind: data.kind.present ? data.kind.value : this.kind,
       filePath: data.filePath.present ? data.filePath.value : this.filePath,
       sha256: data.sha256.present ? data.sha256.value : this.sha256,
@@ -9820,7 +15572,10 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     return (StringBuffer('UploadQueueData(')
           ..write('id: $id, ')
           ..write('organizationId: $organizationId, ')
+          ..write('ownerKind: $ownerKind, ')
+          ..write('ownerId: $ownerId, ')
           ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
           ..write('kind: $kind, ')
           ..write('filePath: $filePath, ')
           ..write('sha256: $sha256, ')
@@ -9837,7 +15592,10 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   int get hashCode => Object.hash(
     id,
     organizationId,
+    ownerKind,
+    ownerId,
     serviceOrderId,
+    serviceOrderItemId,
     kind,
     filePath,
     sha256,
@@ -9853,7 +15611,10 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
       (other is UploadQueueData &&
           other.id == this.id &&
           other.organizationId == this.organizationId &&
+          other.ownerKind == this.ownerKind &&
+          other.ownerId == this.ownerId &&
           other.serviceOrderId == this.serviceOrderId &&
+          other.serviceOrderItemId == this.serviceOrderItemId &&
           other.kind == this.kind &&
           other.filePath == this.filePath &&
           other.sha256 == this.sha256 &&
@@ -9867,7 +15628,10 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
 class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   final Value<String> id;
   final Value<String> organizationId;
-  final Value<String> serviceOrderId;
+  final Value<String> ownerKind;
+  final Value<String> ownerId;
+  final Value<String?> serviceOrderId;
+  final Value<String?> serviceOrderItemId;
   final Value<String> kind;
   final Value<String> filePath;
   final Value<String> sha256;
@@ -9880,7 +15644,10 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   const UploadQueueCompanion({
     this.id = const Value.absent(),
     this.organizationId = const Value.absent(),
+    this.ownerKind = const Value.absent(),
+    this.ownerId = const Value.absent(),
     this.serviceOrderId = const Value.absent(),
+    this.serviceOrderItemId = const Value.absent(),
     this.kind = const Value.absent(),
     this.filePath = const Value.absent(),
     this.sha256 = const Value.absent(),
@@ -9894,7 +15661,10 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   UploadQueueCompanion.insert({
     required String id,
     required String organizationId,
-    required String serviceOrderId,
+    this.ownerKind = const Value.absent(),
+    required String ownerId,
+    this.serviceOrderId = const Value.absent(),
+    this.serviceOrderItemId = const Value.absent(),
     required String kind,
     required String filePath,
     required String sha256,
@@ -9906,7 +15676,7 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        organizationId = Value(organizationId),
-       serviceOrderId = Value(serviceOrderId),
+       ownerId = Value(ownerId),
        kind = Value(kind),
        filePath = Value(filePath),
        sha256 = Value(sha256),
@@ -9914,7 +15684,10 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   static Insertable<UploadQueueData> custom({
     Expression<String>? id,
     Expression<String>? organizationId,
+    Expression<String>? ownerKind,
+    Expression<String>? ownerId,
     Expression<String>? serviceOrderId,
+    Expression<String>? serviceOrderItemId,
     Expression<String>? kind,
     Expression<String>? filePath,
     Expression<String>? sha256,
@@ -9928,7 +15701,11 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (organizationId != null) 'organization_id': organizationId,
+      if (ownerKind != null) 'owner_kind': ownerKind,
+      if (ownerId != null) 'owner_id': ownerId,
       if (serviceOrderId != null) 'service_order_id': serviceOrderId,
+      if (serviceOrderItemId != null)
+        'service_order_item_id': serviceOrderItemId,
       if (kind != null) 'kind': kind,
       if (filePath != null) 'file_path': filePath,
       if (sha256 != null) 'sha256': sha256,
@@ -9944,7 +15721,10 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   UploadQueueCompanion copyWith({
     Value<String>? id,
     Value<String>? organizationId,
-    Value<String>? serviceOrderId,
+    Value<String>? ownerKind,
+    Value<String>? ownerId,
+    Value<String?>? serviceOrderId,
+    Value<String?>? serviceOrderItemId,
     Value<String>? kind,
     Value<String>? filePath,
     Value<String>? sha256,
@@ -9958,7 +15738,10 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     return UploadQueueCompanion(
       id: id ?? this.id,
       organizationId: organizationId ?? this.organizationId,
+      ownerKind: ownerKind ?? this.ownerKind,
+      ownerId: ownerId ?? this.ownerId,
       serviceOrderId: serviceOrderId ?? this.serviceOrderId,
+      serviceOrderItemId: serviceOrderItemId ?? this.serviceOrderItemId,
       kind: kind ?? this.kind,
       filePath: filePath ?? this.filePath,
       sha256: sha256 ?? this.sha256,
@@ -9980,8 +15763,17 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     if (organizationId.present) {
       map['organization_id'] = Variable<String>(organizationId.value);
     }
+    if (ownerKind.present) {
+      map['owner_kind'] = Variable<String>(ownerKind.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
     if (serviceOrderId.present) {
       map['service_order_id'] = Variable<String>(serviceOrderId.value);
+    }
+    if (serviceOrderItemId.present) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId.value);
     }
     if (kind.present) {
       map['kind'] = Variable<String>(kind.value);
@@ -10018,7 +15810,10 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     return (StringBuffer('UploadQueueCompanion(')
           ..write('id: $id, ')
           ..write('organizationId: $organizationId, ')
+          ..write('ownerKind: $ownerKind, ')
+          ..write('ownerId: $ownerId, ')
           ..write('serviceOrderId: $serviceOrderId, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
           ..write('kind: $kind, ')
           ..write('filePath: $filePath, ')
           ..write('sha256: $sha256, ')
@@ -10033,20 +15828,614 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   }
 }
 
+class $LocalPhotoCacheTable extends LocalPhotoCache
+    with TableInfo<$LocalPhotoCacheTable, LocalPhotoCacheData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalPhotoCacheTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _photoIdMeta = const VerificationMeta(
+    'photoId',
+  );
+  @override
+  late final GeneratedColumn<String> photoId = GeneratedColumn<String>(
+    'photo_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizationIdMeta = const VerificationMeta(
+    'organizationId',
+  );
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+    'organization_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerKindMeta = const VerificationMeta(
+    'ownerKind',
+  );
+  @override
+  late final GeneratedColumn<String> ownerKind = GeneratedColumn<String>(
+    'owner_kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serviceOrderItemIdMeta =
+      const VerificationMeta('serviceOrderItemId');
+  @override
+  late final GeneratedColumn<String> serviceOrderItemId =
+      GeneratedColumn<String>(
+        'service_order_item_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _captionMeta = const VerificationMeta(
+    'caption',
+  );
+  @override
+  late final GeneratedColumn<String> caption = GeneratedColumn<String>(
+    'caption',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localPathMeta = const VerificationMeta(
+    'localPath',
+  );
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+    'local_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    photoId,
+    organizationId,
+    ownerKind,
+    ownerId,
+    kind,
+    serviceOrderItemId,
+    caption,
+    localPath,
+    cachedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_photo_cache';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalPhotoCacheData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('photo_id')) {
+      context.handle(
+        _photoIdMeta,
+        photoId.isAcceptableOrUnknown(data['photo_id']!, _photoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_photoIdMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+        _organizationIdMeta,
+        organizationId.isAcceptableOrUnknown(
+          data['organization_id']!,
+          _organizationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizationIdMeta);
+    }
+    if (data.containsKey('owner_kind')) {
+      context.handle(
+        _ownerKindMeta,
+        ownerKind.isAcceptableOrUnknown(data['owner_kind']!, _ownerKindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerKindMeta);
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('service_order_item_id')) {
+      context.handle(
+        _serviceOrderItemIdMeta,
+        serviceOrderItemId.isAcceptableOrUnknown(
+          data['service_order_item_id']!,
+          _serviceOrderItemIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('caption')) {
+      context.handle(
+        _captionMeta,
+        caption.isAcceptableOrUnknown(data['caption']!, _captionMeta),
+      );
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(
+        _localPathMeta,
+        localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localPathMeta);
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {photoId};
+  @override
+  LocalPhotoCacheData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalPhotoCacheData(
+      photoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_id'],
+      )!,
+      organizationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organization_id'],
+      )!,
+      ownerKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_kind'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      serviceOrderItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_order_item_id'],
+      ),
+      caption: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}caption'],
+      ),
+      localPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_path'],
+      )!,
+      cachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}cached_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LocalPhotoCacheTable createAlias(String alias) {
+    return $LocalPhotoCacheTable(attachedDatabase, alias);
+  }
+}
+
+class LocalPhotoCacheData extends DataClass
+    implements Insertable<LocalPhotoCacheData> {
+  final String photoId;
+  final String organizationId;
+  final String ownerKind;
+  final String ownerId;
+  final String kind;
+  final String? serviceOrderItemId;
+  final String? caption;
+  final String localPath;
+  final DateTime cachedAt;
+  const LocalPhotoCacheData({
+    required this.photoId,
+    required this.organizationId,
+    required this.ownerKind,
+    required this.ownerId,
+    required this.kind,
+    this.serviceOrderItemId,
+    this.caption,
+    required this.localPath,
+    required this.cachedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['photo_id'] = Variable<String>(photoId);
+    map['organization_id'] = Variable<String>(organizationId);
+    map['owner_kind'] = Variable<String>(ownerKind);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['kind'] = Variable<String>(kind);
+    if (!nullToAbsent || serviceOrderItemId != null) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId);
+    }
+    if (!nullToAbsent || caption != null) {
+      map['caption'] = Variable<String>(caption);
+    }
+    map['local_path'] = Variable<String>(localPath);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  LocalPhotoCacheCompanion toCompanion(bool nullToAbsent) {
+    return LocalPhotoCacheCompanion(
+      photoId: Value(photoId),
+      organizationId: Value(organizationId),
+      ownerKind: Value(ownerKind),
+      ownerId: Value(ownerId),
+      kind: Value(kind),
+      serviceOrderItemId: serviceOrderItemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serviceOrderItemId),
+      caption: caption == null && nullToAbsent
+          ? const Value.absent()
+          : Value(caption),
+      localPath: Value(localPath),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory LocalPhotoCacheData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalPhotoCacheData(
+      photoId: serializer.fromJson<String>(json['photoId']),
+      organizationId: serializer.fromJson<String>(json['organizationId']),
+      ownerKind: serializer.fromJson<String>(json['ownerKind']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      kind: serializer.fromJson<String>(json['kind']),
+      serviceOrderItemId: serializer.fromJson<String?>(
+        json['serviceOrderItemId'],
+      ),
+      caption: serializer.fromJson<String?>(json['caption']),
+      localPath: serializer.fromJson<String>(json['localPath']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'photoId': serializer.toJson<String>(photoId),
+      'organizationId': serializer.toJson<String>(organizationId),
+      'ownerKind': serializer.toJson<String>(ownerKind),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'kind': serializer.toJson<String>(kind),
+      'serviceOrderItemId': serializer.toJson<String?>(serviceOrderItemId),
+      'caption': serializer.toJson<String?>(caption),
+      'localPath': serializer.toJson<String>(localPath),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  LocalPhotoCacheData copyWith({
+    String? photoId,
+    String? organizationId,
+    String? ownerKind,
+    String? ownerId,
+    String? kind,
+    Value<String?> serviceOrderItemId = const Value.absent(),
+    Value<String?> caption = const Value.absent(),
+    String? localPath,
+    DateTime? cachedAt,
+  }) => LocalPhotoCacheData(
+    photoId: photoId ?? this.photoId,
+    organizationId: organizationId ?? this.organizationId,
+    ownerKind: ownerKind ?? this.ownerKind,
+    ownerId: ownerId ?? this.ownerId,
+    kind: kind ?? this.kind,
+    serviceOrderItemId: serviceOrderItemId.present
+        ? serviceOrderItemId.value
+        : this.serviceOrderItemId,
+    caption: caption.present ? caption.value : this.caption,
+    localPath: localPath ?? this.localPath,
+    cachedAt: cachedAt ?? this.cachedAt,
+  );
+  LocalPhotoCacheData copyWithCompanion(LocalPhotoCacheCompanion data) {
+    return LocalPhotoCacheData(
+      photoId: data.photoId.present ? data.photoId.value : this.photoId,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
+      ownerKind: data.ownerKind.present ? data.ownerKind.value : this.ownerKind,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      serviceOrderItemId: data.serviceOrderItemId.present
+          ? data.serviceOrderItemId.value
+          : this.serviceOrderItemId,
+      caption: data.caption.present ? data.caption.value : this.caption,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalPhotoCacheData(')
+          ..write('photoId: $photoId, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('ownerKind: $ownerKind, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('kind: $kind, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
+          ..write('caption: $caption, ')
+          ..write('localPath: $localPath, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    photoId,
+    organizationId,
+    ownerKind,
+    ownerId,
+    kind,
+    serviceOrderItemId,
+    caption,
+    localPath,
+    cachedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalPhotoCacheData &&
+          other.photoId == this.photoId &&
+          other.organizationId == this.organizationId &&
+          other.ownerKind == this.ownerKind &&
+          other.ownerId == this.ownerId &&
+          other.kind == this.kind &&
+          other.serviceOrderItemId == this.serviceOrderItemId &&
+          other.caption == this.caption &&
+          other.localPath == this.localPath &&
+          other.cachedAt == this.cachedAt);
+}
+
+class LocalPhotoCacheCompanion extends UpdateCompanion<LocalPhotoCacheData> {
+  final Value<String> photoId;
+  final Value<String> organizationId;
+  final Value<String> ownerKind;
+  final Value<String> ownerId;
+  final Value<String> kind;
+  final Value<String?> serviceOrderItemId;
+  final Value<String?> caption;
+  final Value<String> localPath;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const LocalPhotoCacheCompanion({
+    this.photoId = const Value.absent(),
+    this.organizationId = const Value.absent(),
+    this.ownerKind = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.serviceOrderItemId = const Value.absent(),
+    this.caption = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalPhotoCacheCompanion.insert({
+    required String photoId,
+    required String organizationId,
+    required String ownerKind,
+    required String ownerId,
+    required String kind,
+    this.serviceOrderItemId = const Value.absent(),
+    this.caption = const Value.absent(),
+    required String localPath,
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  }) : photoId = Value(photoId),
+       organizationId = Value(organizationId),
+       ownerKind = Value(ownerKind),
+       ownerId = Value(ownerId),
+       kind = Value(kind),
+       localPath = Value(localPath),
+       cachedAt = Value(cachedAt);
+  static Insertable<LocalPhotoCacheData> custom({
+    Expression<String>? photoId,
+    Expression<String>? organizationId,
+    Expression<String>? ownerKind,
+    Expression<String>? ownerId,
+    Expression<String>? kind,
+    Expression<String>? serviceOrderItemId,
+    Expression<String>? caption,
+    Expression<String>? localPath,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (photoId != null) 'photo_id': photoId,
+      if (organizationId != null) 'organization_id': organizationId,
+      if (ownerKind != null) 'owner_kind': ownerKind,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (kind != null) 'kind': kind,
+      if (serviceOrderItemId != null)
+        'service_order_item_id': serviceOrderItemId,
+      if (caption != null) 'caption': caption,
+      if (localPath != null) 'local_path': localPath,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalPhotoCacheCompanion copyWith({
+    Value<String>? photoId,
+    Value<String>? organizationId,
+    Value<String>? ownerKind,
+    Value<String>? ownerId,
+    Value<String>? kind,
+    Value<String?>? serviceOrderItemId,
+    Value<String?>? caption,
+    Value<String>? localPath,
+    Value<DateTime>? cachedAt,
+    Value<int>? rowid,
+  }) {
+    return LocalPhotoCacheCompanion(
+      photoId: photoId ?? this.photoId,
+      organizationId: organizationId ?? this.organizationId,
+      ownerKind: ownerKind ?? this.ownerKind,
+      ownerId: ownerId ?? this.ownerId,
+      kind: kind ?? this.kind,
+      serviceOrderItemId: serviceOrderItemId ?? this.serviceOrderItemId,
+      caption: caption ?? this.caption,
+      localPath: localPath ?? this.localPath,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (photoId.present) {
+      map['photo_id'] = Variable<String>(photoId.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
+    }
+    if (ownerKind.present) {
+      map['owner_kind'] = Variable<String>(ownerKind.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (serviceOrderItemId.present) {
+      map['service_order_item_id'] = Variable<String>(serviceOrderItemId.value);
+    }
+    if (caption.present) {
+      map['caption'] = Variable<String>(caption.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalPhotoCacheCompanion(')
+          ..write('photoId: $photoId, ')
+          ..write('organizationId: $organizationId, ')
+          ..write('ownerKind: $ownerKind, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('kind: $kind, ')
+          ..write('serviceOrderItemId: $serviceOrderItemId, ')
+          ..write('caption: $caption, ')
+          ..write('localPath: $localPath, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $LocalClientsTable localClients = $LocalClientsTable(this);
   late final $LocalLocationsTable localLocations = $LocalLocationsTable(this);
-  late final $LocalEquipmentsTable localEquipments = $LocalEquipmentsTable(
-    this,
-  );
+  late final $LocalItemsTable localItems = $LocalItemsTable(this);
+  late final $LocalItemTypesTable localItemTypes = $LocalItemTypesTable(this);
+  late final $LocalItemFieldDefsTable localItemFieldDefs =
+      $LocalItemFieldDefsTable(this);
+  late final $LocalItemFieldOptionsTable localItemFieldOptions =
+      $LocalItemFieldOptionsTable(this);
+  late final $LocalItemFieldValuesTable localItemFieldValues =
+      $LocalItemFieldValuesTable(this);
   late final $LocalServiceOrdersTable localServiceOrders =
       $LocalServiceOrdersTable(this);
+  late final $LocalServiceOrderItemsTable localServiceOrderItems =
+      $LocalServiceOrderItemsTable(this);
   late final $LocalServiceOrderPartsTable localServiceOrderParts =
       $LocalServiceOrderPartsTable(this);
-  late final $LocalEquipmentTypesTable localEquipmentTypes =
-      $LocalEquipmentTypesTable(this);
+  late final $LocalServiceOrderRecommendationsTable
+  localServiceOrderRecommendations = $LocalServiceOrderRecommendationsTable(
+    this,
+  );
+  late final $LocalTasksTable localTasks = $LocalTasksTable(this);
+  late final $LocalTaskTargetsTable localTaskTargets = $LocalTaskTargetsTable(
+    this,
+  );
   late final $LocalReferenceDataTable localReferenceData =
       $LocalReferenceDataTable(this);
   late final $LocalQrCodesTable localQrCodes = $LocalQrCodesTable(this);
@@ -10054,6 +16443,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SyncOutboxTable syncOutbox = $SyncOutboxTable(this);
   late final $LocalSyncStateTable localSyncState = $LocalSyncStateTable(this);
   late final $UploadQueueTable uploadQueue = $UploadQueueTable(this);
+  late final $LocalPhotoCacheTable localPhotoCache = $LocalPhotoCacheTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -10061,16 +16453,24 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     localClients,
     localLocations,
-    localEquipments,
+    localItems,
+    localItemTypes,
+    localItemFieldDefs,
+    localItemFieldOptions,
+    localItemFieldValues,
     localServiceOrders,
+    localServiceOrderItems,
     localServiceOrderParts,
-    localEquipmentTypes,
+    localServiceOrderRecommendations,
+    localTasks,
+    localTaskTargets,
     localReferenceData,
     localQrCodes,
     localQrBatches,
     syncOutbox,
     localSyncState,
     uploadQueue,
+    localPhotoCache,
   ];
 }
 
@@ -10553,8 +16953,7 @@ typedef $$LocalLocationsTableCreateCompanionBuilder =
       Value<bool> deleted,
       required String id,
       required String clientId,
-      Value<String?> parentLocationId,
-      required String name,
+      Value<String> name,
       Value<String> postalCode,
       Value<String> street,
       Value<String> number,
@@ -10562,10 +16961,8 @@ typedef $$LocalLocationsTableCreateCompanionBuilder =
       Value<String> district,
       Value<String> city,
       Value<String> state,
-      Value<String> contactPerson,
-      Value<String> phone,
-      Value<String> accessInstructions,
       Value<String> notes,
+      Value<bool> isActive,
       Value<DateTime?> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -10581,7 +16978,6 @@ typedef $$LocalLocationsTableUpdateCompanionBuilder =
       Value<bool> deleted,
       Value<String> id,
       Value<String> clientId,
-      Value<String?> parentLocationId,
       Value<String> name,
       Value<String> postalCode,
       Value<String> street,
@@ -10590,10 +16986,8 @@ typedef $$LocalLocationsTableUpdateCompanionBuilder =
       Value<String> district,
       Value<String> city,
       Value<String> state,
-      Value<String> contactPerson,
-      Value<String> phone,
-      Value<String> accessInstructions,
       Value<String> notes,
+      Value<bool> isActive,
       Value<DateTime?> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -10653,11 +17047,6 @@ class $$LocalLocationsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get parentLocationId => $composableBuilder(
-    column: $table.parentLocationId,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnFilters(column),
@@ -10698,23 +17087,13 @@ class $$LocalLocationsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get contactPerson => $composableBuilder(
-    column: $table.contactPerson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get phone => $composableBuilder(
-    column: $table.phone,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get accessInstructions => $composableBuilder(
-    column: $table.accessInstructions,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10783,11 +17162,6 @@ class $$LocalLocationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get parentLocationId => $composableBuilder(
-    column: $table.parentLocationId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -10828,23 +17202,13 @@ class $$LocalLocationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get contactPerson => $composableBuilder(
-    column: $table.contactPerson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get phone => $composableBuilder(
-    column: $table.phone,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get accessInstructions => $composableBuilder(
-    column: $table.accessInstructions,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -10903,11 +17267,6 @@ class $$LocalLocationsTableAnnotationComposer
   GeneratedColumn<String> get clientId =>
       $composableBuilder(column: $table.clientId, builder: (column) => column);
 
-  GeneratedColumn<String> get parentLocationId => $composableBuilder(
-    column: $table.parentLocationId,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
@@ -10936,21 +17295,11 @@ class $$LocalLocationsTableAnnotationComposer
   GeneratedColumn<String> get state =>
       $composableBuilder(column: $table.state, builder: (column) => column);
 
-  GeneratedColumn<String> get contactPerson => $composableBuilder(
-    column: $table.contactPerson,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get phone =>
-      $composableBuilder(column: $table.phone, builder: (column) => column);
-
-  GeneratedColumn<String> get accessInstructions => $composableBuilder(
-    column: $table.accessInstructions,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -11001,7 +17350,6 @@ class $$LocalLocationsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> clientId = const Value.absent(),
-                Value<String?> parentLocationId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> postalCode = const Value.absent(),
                 Value<String> street = const Value.absent(),
@@ -11010,10 +17358,8 @@ class $$LocalLocationsTableTableManager
                 Value<String> district = const Value.absent(),
                 Value<String> city = const Value.absent(),
                 Value<String> state = const Value.absent(),
-                Value<String> contactPerson = const Value.absent(),
-                Value<String> phone = const Value.absent(),
-                Value<String> accessInstructions = const Value.absent(),
                 Value<String> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -11027,7 +17373,6 @@ class $$LocalLocationsTableTableManager
                 deleted: deleted,
                 id: id,
                 clientId: clientId,
-                parentLocationId: parentLocationId,
                 name: name,
                 postalCode: postalCode,
                 street: street,
@@ -11036,10 +17381,8 @@ class $$LocalLocationsTableTableManager
                 district: district,
                 city: city,
                 state: state,
-                contactPerson: contactPerson,
-                phone: phone,
-                accessInstructions: accessInstructions,
                 notes: notes,
+                isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -11055,8 +17398,7 @@ class $$LocalLocationsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 required String id,
                 required String clientId,
-                Value<String?> parentLocationId = const Value.absent(),
-                required String name,
+                Value<String> name = const Value.absent(),
                 Value<String> postalCode = const Value.absent(),
                 Value<String> street = const Value.absent(),
                 Value<String> number = const Value.absent(),
@@ -11064,10 +17406,8 @@ class $$LocalLocationsTableTableManager
                 Value<String> district = const Value.absent(),
                 Value<String> city = const Value.absent(),
                 Value<String> state = const Value.absent(),
-                Value<String> contactPerson = const Value.absent(),
-                Value<String> phone = const Value.absent(),
-                Value<String> accessInstructions = const Value.absent(),
                 Value<String> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -11081,7 +17421,6 @@ class $$LocalLocationsTableTableManager
                 deleted: deleted,
                 id: id,
                 clientId: clientId,
-                parentLocationId: parentLocationId,
                 name: name,
                 postalCode: postalCode,
                 street: street,
@@ -11090,10 +17429,8 @@ class $$LocalLocationsTableTableManager
                 district: district,
                 city: city,
                 state: state,
-                contactPerson: contactPerson,
-                phone: phone,
-                accessInstructions: accessInstructions,
                 notes: notes,
+                isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -11132,8 +17469,8 @@ typedef $$LocalLocationsTableProcessedTableManager =
       LocalLocation,
       PrefetchHooks Function()
     >;
-typedef $$LocalEquipmentsTableCreateCompanionBuilder =
-    LocalEquipmentsCompanion Function({
+typedef $$LocalItemsTableCreateCompanionBuilder =
+    LocalItemsCompanion Function({
       required String organizationId,
       Value<int?> version,
       Value<String> syncStatus,
@@ -11142,8 +17479,9 @@ typedef $$LocalEquipmentsTableCreateCompanionBuilder =
       Value<String?> syncError,
       Value<bool> deleted,
       required String id,
-      required String locationId,
-      required String equipmentTypeId,
+      required String clientId,
+      Value<String?> locationId,
+      Value<String?> itemTypeId,
       required String name,
       Value<String> brand,
       Value<String> model,
@@ -11152,12 +17490,13 @@ typedef $$LocalEquipmentsTableCreateCompanionBuilder =
       Value<String?> installedAt,
       Value<String?> cost,
       Value<String> notes,
+      Value<bool> isActive,
       Value<DateTime?> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
     });
-typedef $$LocalEquipmentsTableUpdateCompanionBuilder =
-    LocalEquipmentsCompanion Function({
+typedef $$LocalItemsTableUpdateCompanionBuilder =
+    LocalItemsCompanion Function({
       Value<String> organizationId,
       Value<int?> version,
       Value<String> syncStatus,
@@ -11166,8 +17505,9 @@ typedef $$LocalEquipmentsTableUpdateCompanionBuilder =
       Value<String?> syncError,
       Value<bool> deleted,
       Value<String> id,
-      Value<String> locationId,
-      Value<String> equipmentTypeId,
+      Value<String> clientId,
+      Value<String?> locationId,
+      Value<String?> itemTypeId,
       Value<String> name,
       Value<String> brand,
       Value<String> model,
@@ -11176,14 +17516,15 @@ typedef $$LocalEquipmentsTableUpdateCompanionBuilder =
       Value<String?> installedAt,
       Value<String?> cost,
       Value<String> notes,
+      Value<bool> isActive,
       Value<DateTime?> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
     });
 
-class $$LocalEquipmentsTableFilterComposer
-    extends Composer<_$AppDatabase, $LocalEquipmentsTable> {
-  $$LocalEquipmentsTableFilterComposer({
+class $$LocalItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalItemsTable> {
+  $$LocalItemsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -11230,13 +17571,18 @@ class $$LocalEquipmentsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get locationId => $composableBuilder(
     column: $table.locationId,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get equipmentTypeId => $composableBuilder(
-    column: $table.equipmentTypeId,
+  ColumnFilters<String> get itemTypeId => $composableBuilder(
+    column: $table.itemTypeId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11280,6 +17626,11 @@ class $$LocalEquipmentsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -11291,9 +17642,9 @@ class $$LocalEquipmentsTableFilterComposer
   );
 }
 
-class $$LocalEquipmentsTableOrderingComposer
-    extends Composer<_$AppDatabase, $LocalEquipmentsTable> {
-  $$LocalEquipmentsTableOrderingComposer({
+class $$LocalItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalItemsTable> {
+  $$LocalItemsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -11340,13 +17691,18 @@ class $$LocalEquipmentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get locationId => $composableBuilder(
     column: $table.locationId,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get equipmentTypeId => $composableBuilder(
-    column: $table.equipmentTypeId,
+  ColumnOrderings<String> get itemTypeId => $composableBuilder(
+    column: $table.itemTypeId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -11390,6 +17746,11 @@ class $$LocalEquipmentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -11401,9 +17762,9 @@ class $$LocalEquipmentsTableOrderingComposer
   );
 }
 
-class $$LocalEquipmentsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $LocalEquipmentsTable> {
-  $$LocalEquipmentsTableAnnotationComposer({
+class $$LocalItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalItemsTable> {
+  $$LocalItemsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -11442,13 +17803,16 @@ class $$LocalEquipmentsTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
   GeneratedColumn<String> get locationId => $composableBuilder(
     column: $table.locationId,
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get equipmentTypeId => $composableBuilder(
-    column: $table.equipmentTypeId,
+  GeneratedColumn<String> get itemTypeId => $composableBuilder(
+    column: $table.itemTypeId,
     builder: (column) => column,
   );
 
@@ -11482,6 +17846,9 @@ class $$LocalEquipmentsTableAnnotationComposer
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
 
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -11489,41 +17856,35 @@ class $$LocalEquipmentsTableAnnotationComposer
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 }
 
-class $$LocalEquipmentsTableTableManager
+class $$LocalItemsTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $LocalEquipmentsTable,
-          LocalEquipment,
-          $$LocalEquipmentsTableFilterComposer,
-          $$LocalEquipmentsTableOrderingComposer,
-          $$LocalEquipmentsTableAnnotationComposer,
-          $$LocalEquipmentsTableCreateCompanionBuilder,
-          $$LocalEquipmentsTableUpdateCompanionBuilder,
+          $LocalItemsTable,
+          LocalItem,
+          $$LocalItemsTableFilterComposer,
+          $$LocalItemsTableOrderingComposer,
+          $$LocalItemsTableAnnotationComposer,
+          $$LocalItemsTableCreateCompanionBuilder,
+          $$LocalItemsTableUpdateCompanionBuilder,
           (
-            LocalEquipment,
-            BaseReferences<
-              _$AppDatabase,
-              $LocalEquipmentsTable,
-              LocalEquipment
-            >,
+            LocalItem,
+            BaseReferences<_$AppDatabase, $LocalItemsTable, LocalItem>,
           ),
-          LocalEquipment,
+          LocalItem,
           PrefetchHooks Function()
         > {
-  $$LocalEquipmentsTableTableManager(
-    _$AppDatabase db,
-    $LocalEquipmentsTable table,
-  ) : super(
+  $$LocalItemsTableTableManager(_$AppDatabase db, $LocalItemsTable table)
+    : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$LocalEquipmentsTableFilterComposer($db: db, $table: table),
+              $$LocalItemsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$LocalEquipmentsTableOrderingComposer($db: db, $table: table),
+              $$LocalItemsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$LocalEquipmentsTableAnnotationComposer($db: db, $table: table),
+              $$LocalItemsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> organizationId = const Value.absent(),
@@ -11534,8 +17895,9 @@ class $$LocalEquipmentsTableTableManager
                 Value<String?> syncError = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<String> id = const Value.absent(),
-                Value<String> locationId = const Value.absent(),
-                Value<String> equipmentTypeId = const Value.absent(),
+                Value<String> clientId = const Value.absent(),
+                Value<String?> locationId = const Value.absent(),
+                Value<String?> itemTypeId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> brand = const Value.absent(),
                 Value<String> model = const Value.absent(),
@@ -11544,10 +17906,11 @@ class $$LocalEquipmentsTableTableManager
                 Value<String?> installedAt = const Value.absent(),
                 Value<String?> cost = const Value.absent(),
                 Value<String> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => LocalEquipmentsCompanion(
+              }) => LocalItemsCompanion(
                 organizationId: organizationId,
                 version: version,
                 syncStatus: syncStatus,
@@ -11556,8 +17919,9 @@ class $$LocalEquipmentsTableTableManager
                 syncError: syncError,
                 deleted: deleted,
                 id: id,
+                clientId: clientId,
                 locationId: locationId,
-                equipmentTypeId: equipmentTypeId,
+                itemTypeId: itemTypeId,
                 name: name,
                 brand: brand,
                 model: model,
@@ -11566,6 +17930,7 @@ class $$LocalEquipmentsTableTableManager
                 installedAt: installedAt,
                 cost: cost,
                 notes: notes,
+                isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -11580,8 +17945,9 @@ class $$LocalEquipmentsTableTableManager
                 Value<String?> syncError = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 required String id,
-                required String locationId,
-                required String equipmentTypeId,
+                required String clientId,
+                Value<String?> locationId = const Value.absent(),
+                Value<String?> itemTypeId = const Value.absent(),
                 required String name,
                 Value<String> brand = const Value.absent(),
                 Value<String> model = const Value.absent(),
@@ -11590,10 +17956,11 @@ class $$LocalEquipmentsTableTableManager
                 Value<String?> installedAt = const Value.absent(),
                 Value<String?> cost = const Value.absent(),
                 Value<String> notes = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => LocalEquipmentsCompanion.insert(
+              }) => LocalItemsCompanion.insert(
                 organizationId: organizationId,
                 version: version,
                 syncStatus: syncStatus,
@@ -11602,8 +17969,9 @@ class $$LocalEquipmentsTableTableManager
                 syncError: syncError,
                 deleted: deleted,
                 id: id,
+                clientId: clientId,
                 locationId: locationId,
-                equipmentTypeId: equipmentTypeId,
+                itemTypeId: itemTypeId,
                 name: name,
                 brand: brand,
                 model: model,
@@ -11612,6 +17980,7 @@ class $$LocalEquipmentsTableTableManager
                 installedAt: installedAt,
                 cost: cost,
                 notes: notes,
+                isActive: isActive,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -11619,11 +17988,242 @@ class $$LocalEquipmentsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable<$LocalEquipmentsTable, LocalEquipment>(table),
+                  e.readTable<$LocalItemsTable, LocalItem>(table),
+                  BaseReferences<_$AppDatabase, $LocalItemsTable, LocalItem>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalItemsTable,
+      LocalItem,
+      $$LocalItemsTableFilterComposer,
+      $$LocalItemsTableOrderingComposer,
+      $$LocalItemsTableAnnotationComposer,
+      $$LocalItemsTableCreateCompanionBuilder,
+      $$LocalItemsTableUpdateCompanionBuilder,
+      (LocalItem, BaseReferences<_$AppDatabase, $LocalItemsTable, LocalItem>),
+      LocalItem,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalItemTypesTableCreateCompanionBuilder =
+    LocalItemTypesCompanion Function({
+      required String id,
+      required String organizationId,
+      required String name,
+      Value<String> description,
+      Value<int?> version,
+      required DateTime cachedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalItemTypesTableUpdateCompanionBuilder =
+    LocalItemTypesCompanion Function({
+      Value<String> id,
+      Value<String> organizationId,
+      Value<String> name,
+      Value<String> description,
+      Value<int?> version,
+      Value<DateTime> cachedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalItemTypesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalItemTypesTable> {
+  $$LocalItemTypesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalItemTypesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalItemTypesTable> {
+  $$LocalItemTypesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalItemTypesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalItemTypesTable> {
+  $$LocalItemTypesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$LocalItemTypesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalItemTypesTable,
+          LocalItemType,
+          $$LocalItemTypesTableFilterComposer,
+          $$LocalItemTypesTableOrderingComposer,
+          $$LocalItemTypesTableAnnotationComposer,
+          $$LocalItemTypesTableCreateCompanionBuilder,
+          $$LocalItemTypesTableUpdateCompanionBuilder,
+          (
+            LocalItemType,
+            BaseReferences<_$AppDatabase, $LocalItemTypesTable, LocalItemType>,
+          ),
+          LocalItemType,
+          PrefetchHooks Function()
+        > {
+  $$LocalItemTypesTableTableManager(
+    _$AppDatabase db,
+    $LocalItemTypesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalItemTypesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalItemTypesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalItemTypesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> organizationId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalItemTypesCompanion(
+                id: id,
+                organizationId: organizationId,
+                name: name,
+                description: description,
+                version: version,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String organizationId,
+                required String name,
+                Value<String> description = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                required DateTime cachedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalItemTypesCompanion.insert(
+                id: id,
+                organizationId: organizationId,
+                name: name,
+                description: description,
+                version: version,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalItemTypesTable, LocalItemType>(table),
                   BaseReferences<
                     _$AppDatabase,
-                    $LocalEquipmentsTable,
-                    LocalEquipment
+                    $LocalItemTypesTable,
+                    LocalItemType
                   >(db, table, e),
                 ),
               )
@@ -11633,21 +18233,1069 @@ class $$LocalEquipmentsTableTableManager
       );
 }
 
-typedef $$LocalEquipmentsTableProcessedTableManager =
+typedef $$LocalItemTypesTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $LocalEquipmentsTable,
-      LocalEquipment,
-      $$LocalEquipmentsTableFilterComposer,
-      $$LocalEquipmentsTableOrderingComposer,
-      $$LocalEquipmentsTableAnnotationComposer,
-      $$LocalEquipmentsTableCreateCompanionBuilder,
-      $$LocalEquipmentsTableUpdateCompanionBuilder,
+      $LocalItemTypesTable,
+      LocalItemType,
+      $$LocalItemTypesTableFilterComposer,
+      $$LocalItemTypesTableOrderingComposer,
+      $$LocalItemTypesTableAnnotationComposer,
+      $$LocalItemTypesTableCreateCompanionBuilder,
+      $$LocalItemTypesTableUpdateCompanionBuilder,
       (
-        LocalEquipment,
-        BaseReferences<_$AppDatabase, $LocalEquipmentsTable, LocalEquipment>,
+        LocalItemType,
+        BaseReferences<_$AppDatabase, $LocalItemTypesTable, LocalItemType>,
       ),
-      LocalEquipment,
+      LocalItemType,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalItemFieldDefsTableCreateCompanionBuilder =
+    LocalItemFieldDefsCompanion Function({
+      required String id,
+      required String organizationId,
+      Value<String?> itemTypeId,
+      required String label,
+      required String fieldKey,
+      required String dataType,
+      Value<bool> required,
+      Value<int> position,
+      Value<int?> version,
+      required DateTime cachedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalItemFieldDefsTableUpdateCompanionBuilder =
+    LocalItemFieldDefsCompanion Function({
+      Value<String> id,
+      Value<String> organizationId,
+      Value<String?> itemTypeId,
+      Value<String> label,
+      Value<String> fieldKey,
+      Value<String> dataType,
+      Value<bool> required,
+      Value<int> position,
+      Value<int?> version,
+      Value<DateTime> cachedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalItemFieldDefsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalItemFieldDefsTable> {
+  $$LocalItemFieldDefsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemTypeId => $composableBuilder(
+    column: $table.itemTypeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fieldKey => $composableBuilder(
+    column: $table.fieldKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dataType => $composableBuilder(
+    column: $table.dataType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get required => $composableBuilder(
+    column: $table.required,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalItemFieldDefsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalItemFieldDefsTable> {
+  $$LocalItemFieldDefsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemTypeId => $composableBuilder(
+    column: $table.itemTypeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fieldKey => $composableBuilder(
+    column: $table.fieldKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dataType => $composableBuilder(
+    column: $table.dataType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get required => $composableBuilder(
+    column: $table.required,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalItemFieldDefsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalItemFieldDefsTable> {
+  $$LocalItemFieldDefsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get itemTypeId => $composableBuilder(
+    column: $table.itemTypeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<String> get fieldKey =>
+      $composableBuilder(column: $table.fieldKey, builder: (column) => column);
+
+  GeneratedColumn<String> get dataType =>
+      $composableBuilder(column: $table.dataType, builder: (column) => column);
+
+  GeneratedColumn<bool> get required =>
+      $composableBuilder(column: $table.required, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$LocalItemFieldDefsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalItemFieldDefsTable,
+          LocalItemFieldDef,
+          $$LocalItemFieldDefsTableFilterComposer,
+          $$LocalItemFieldDefsTableOrderingComposer,
+          $$LocalItemFieldDefsTableAnnotationComposer,
+          $$LocalItemFieldDefsTableCreateCompanionBuilder,
+          $$LocalItemFieldDefsTableUpdateCompanionBuilder,
+          (
+            LocalItemFieldDef,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalItemFieldDefsTable,
+              LocalItemFieldDef
+            >,
+          ),
+          LocalItemFieldDef,
+          PrefetchHooks Function()
+        > {
+  $$LocalItemFieldDefsTableTableManager(
+    _$AppDatabase db,
+    $LocalItemFieldDefsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalItemFieldDefsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalItemFieldDefsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalItemFieldDefsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> organizationId = const Value.absent(),
+                Value<String?> itemTypeId = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<String> fieldKey = const Value.absent(),
+                Value<String> dataType = const Value.absent(),
+                Value<bool> required = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalItemFieldDefsCompanion(
+                id: id,
+                organizationId: organizationId,
+                itemTypeId: itemTypeId,
+                label: label,
+                fieldKey: fieldKey,
+                dataType: dataType,
+                required: required,
+                position: position,
+                version: version,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String organizationId,
+                Value<String?> itemTypeId = const Value.absent(),
+                required String label,
+                required String fieldKey,
+                required String dataType,
+                Value<bool> required = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                required DateTime cachedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalItemFieldDefsCompanion.insert(
+                id: id,
+                organizationId: organizationId,
+                itemTypeId: itemTypeId,
+                label: label,
+                fieldKey: fieldKey,
+                dataType: dataType,
+                required: required,
+                position: position,
+                version: version,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalItemFieldDefsTable, LocalItemFieldDef>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalItemFieldDefsTable,
+                    LocalItemFieldDef
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalItemFieldDefsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalItemFieldDefsTable,
+      LocalItemFieldDef,
+      $$LocalItemFieldDefsTableFilterComposer,
+      $$LocalItemFieldDefsTableOrderingComposer,
+      $$LocalItemFieldDefsTableAnnotationComposer,
+      $$LocalItemFieldDefsTableCreateCompanionBuilder,
+      $$LocalItemFieldDefsTableUpdateCompanionBuilder,
+      (
+        LocalItemFieldDef,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalItemFieldDefsTable,
+          LocalItemFieldDef
+        >,
+      ),
+      LocalItemFieldDef,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalItemFieldOptionsTableCreateCompanionBuilder =
+    LocalItemFieldOptionsCompanion Function({
+      required String id,
+      required String organizationId,
+      required String fieldDefId,
+      required String label,
+      required String value,
+      Value<int> position,
+      required DateTime cachedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalItemFieldOptionsTableUpdateCompanionBuilder =
+    LocalItemFieldOptionsCompanion Function({
+      Value<String> id,
+      Value<String> organizationId,
+      Value<String> fieldDefId,
+      Value<String> label,
+      Value<String> value,
+      Value<int> position,
+      Value<DateTime> cachedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalItemFieldOptionsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalItemFieldOptionsTable> {
+  $$LocalItemFieldOptionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fieldDefId => $composableBuilder(
+    column: $table.fieldDefId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalItemFieldOptionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalItemFieldOptionsTable> {
+  $$LocalItemFieldOptionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fieldDefId => $composableBuilder(
+    column: $table.fieldDefId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalItemFieldOptionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalItemFieldOptionsTable> {
+  $$LocalItemFieldOptionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get fieldDefId => $composableBuilder(
+    column: $table.fieldDefId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$LocalItemFieldOptionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalItemFieldOptionsTable,
+          LocalItemFieldOption,
+          $$LocalItemFieldOptionsTableFilterComposer,
+          $$LocalItemFieldOptionsTableOrderingComposer,
+          $$LocalItemFieldOptionsTableAnnotationComposer,
+          $$LocalItemFieldOptionsTableCreateCompanionBuilder,
+          $$LocalItemFieldOptionsTableUpdateCompanionBuilder,
+          (
+            LocalItemFieldOption,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalItemFieldOptionsTable,
+              LocalItemFieldOption
+            >,
+          ),
+          LocalItemFieldOption,
+          PrefetchHooks Function()
+        > {
+  $$LocalItemFieldOptionsTableTableManager(
+    _$AppDatabase db,
+    $LocalItemFieldOptionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalItemFieldOptionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalItemFieldOptionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalItemFieldOptionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> organizationId = const Value.absent(),
+                Value<String> fieldDefId = const Value.absent(),
+                Value<String> label = const Value.absent(),
+                Value<String> value = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalItemFieldOptionsCompanion(
+                id: id,
+                organizationId: organizationId,
+                fieldDefId: fieldDefId,
+                label: label,
+                value: value,
+                position: position,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String organizationId,
+                required String fieldDefId,
+                required String label,
+                required String value,
+                Value<int> position = const Value.absent(),
+                required DateTime cachedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalItemFieldOptionsCompanion.insert(
+                id: id,
+                organizationId: organizationId,
+                fieldDefId: fieldDefId,
+                label: label,
+                value: value,
+                position: position,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $LocalItemFieldOptionsTable,
+                    LocalItemFieldOption
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalItemFieldOptionsTable,
+                    LocalItemFieldOption
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalItemFieldOptionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalItemFieldOptionsTable,
+      LocalItemFieldOption,
+      $$LocalItemFieldOptionsTableFilterComposer,
+      $$LocalItemFieldOptionsTableOrderingComposer,
+      $$LocalItemFieldOptionsTableAnnotationComposer,
+      $$LocalItemFieldOptionsTableCreateCompanionBuilder,
+      $$LocalItemFieldOptionsTableUpdateCompanionBuilder,
+      (
+        LocalItemFieldOption,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalItemFieldOptionsTable,
+          LocalItemFieldOption
+        >,
+      ),
+      LocalItemFieldOption,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalItemFieldValuesTableCreateCompanionBuilder =
+    LocalItemFieldValuesCompanion Function({
+      required String organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      required DateTime localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      required String id,
+      required String itemId,
+      required String fieldDefId,
+      Value<String?> valueText,
+      Value<double?> valueNumber,
+      Value<DateTime?> valueDatetime,
+      Value<bool?> valueBoolean,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalItemFieldValuesTableUpdateCompanionBuilder =
+    LocalItemFieldValuesCompanion Function({
+      Value<String> organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      Value<DateTime> localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      Value<String> id,
+      Value<String> itemId,
+      Value<String> fieldDefId,
+      Value<String?> valueText,
+      Value<double?> valueNumber,
+      Value<DateTime?> valueDatetime,
+      Value<bool?> valueBoolean,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalItemFieldValuesTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalItemFieldValuesTable> {
+  $$LocalItemFieldValuesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fieldDefId => $composableBuilder(
+    column: $table.fieldDefId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get valueText => $composableBuilder(
+    column: $table.valueText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get valueNumber => $composableBuilder(
+    column: $table.valueNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get valueDatetime => $composableBuilder(
+    column: $table.valueDatetime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get valueBoolean => $composableBuilder(
+    column: $table.valueBoolean,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalItemFieldValuesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalItemFieldValuesTable> {
+  $$LocalItemFieldValuesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fieldDefId => $composableBuilder(
+    column: $table.fieldDefId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get valueText => $composableBuilder(
+    column: $table.valueText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get valueNumber => $composableBuilder(
+    column: $table.valueNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get valueDatetime => $composableBuilder(
+    column: $table.valueDatetime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get valueBoolean => $composableBuilder(
+    column: $table.valueBoolean,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalItemFieldValuesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalItemFieldValuesTable> {
+  $$LocalItemFieldValuesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
+
+  GeneratedColumn<String> get fieldDefId => $composableBuilder(
+    column: $table.fieldDefId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get valueText =>
+      $composableBuilder(column: $table.valueText, builder: (column) => column);
+
+  GeneratedColumn<double> get valueNumber => $composableBuilder(
+    column: $table.valueNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get valueDatetime => $composableBuilder(
+    column: $table.valueDatetime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get valueBoolean => $composableBuilder(
+    column: $table.valueBoolean,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalItemFieldValuesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalItemFieldValuesTable,
+          LocalItemFieldValue,
+          $$LocalItemFieldValuesTableFilterComposer,
+          $$LocalItemFieldValuesTableOrderingComposer,
+          $$LocalItemFieldValuesTableAnnotationComposer,
+          $$LocalItemFieldValuesTableCreateCompanionBuilder,
+          $$LocalItemFieldValuesTableUpdateCompanionBuilder,
+          (
+            LocalItemFieldValue,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalItemFieldValuesTable,
+              LocalItemFieldValue
+            >,
+          ),
+          LocalItemFieldValue,
+          PrefetchHooks Function()
+        > {
+  $$LocalItemFieldValuesTableTableManager(
+    _$AppDatabase db,
+    $LocalItemFieldValuesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalItemFieldValuesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalItemFieldValuesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalItemFieldValuesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> organizationId = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<DateTime> localUpdatedAt = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> itemId = const Value.absent(),
+                Value<String> fieldDefId = const Value.absent(),
+                Value<String?> valueText = const Value.absent(),
+                Value<double?> valueNumber = const Value.absent(),
+                Value<DateTime?> valueDatetime = const Value.absent(),
+                Value<bool?> valueBoolean = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalItemFieldValuesCompanion(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                itemId: itemId,
+                fieldDefId: fieldDefId,
+                valueText: valueText,
+                valueNumber: valueNumber,
+                valueDatetime: valueDatetime,
+                valueBoolean: valueBoolean,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String organizationId,
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required DateTime localUpdatedAt,
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String id,
+                required String itemId,
+                required String fieldDefId,
+                Value<String?> valueText = const Value.absent(),
+                Value<double?> valueNumber = const Value.absent(),
+                Value<DateTime?> valueDatetime = const Value.absent(),
+                Value<bool?> valueBoolean = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalItemFieldValuesCompanion.insert(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                itemId: itemId,
+                fieldDefId: fieldDefId,
+                valueText: valueText,
+                valueNumber: valueNumber,
+                valueDatetime: valueDatetime,
+                valueBoolean: valueBoolean,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalItemFieldValuesTable, LocalItemFieldValue>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalItemFieldValuesTable,
+                    LocalItemFieldValue
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalItemFieldValuesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalItemFieldValuesTable,
+      LocalItemFieldValue,
+      $$LocalItemFieldValuesTableFilterComposer,
+      $$LocalItemFieldValuesTableOrderingComposer,
+      $$LocalItemFieldValuesTableAnnotationComposer,
+      $$LocalItemFieldValuesTableCreateCompanionBuilder,
+      $$LocalItemFieldValuesTableUpdateCompanionBuilder,
+      (
+        LocalItemFieldValue,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalItemFieldValuesTable,
+          LocalItemFieldValue
+        >,
+      ),
+      LocalItemFieldValue,
       PrefetchHooks Function()
     >;
 typedef $$LocalServiceOrdersTableCreateCompanionBuilder =
@@ -11661,8 +19309,8 @@ typedef $$LocalServiceOrdersTableCreateCompanionBuilder =
       Value<bool> deleted,
       required String id,
       required String clientId,
-      Value<String?> locationId,
-      Value<String?> equipmentId,
+      Value<String?> itemId,
+      Value<String?> parentOrderId,
       Value<String?> serviceOrderTypeId,
       Value<String?> companyId,
       Value<String?> assignedUserId,
@@ -11691,8 +19339,8 @@ typedef $$LocalServiceOrdersTableUpdateCompanionBuilder =
       Value<bool> deleted,
       Value<String> id,
       Value<String> clientId,
-      Value<String?> locationId,
-      Value<String?> equipmentId,
+      Value<String?> itemId,
+      Value<String?> parentOrderId,
       Value<String?> serviceOrderTypeId,
       Value<String?> companyId,
       Value<String?> assignedUserId,
@@ -11765,13 +19413,13 @@ class $$LocalServiceOrdersTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get locationId => $composableBuilder(
-    column: $table.locationId,
+  ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get equipmentId => $composableBuilder(
-    column: $table.equipmentId,
+  ColumnFilters<String> get parentOrderId => $composableBuilder(
+    column: $table.parentOrderId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11905,13 +19553,13 @@ class $$LocalServiceOrdersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get locationId => $composableBuilder(
-    column: $table.locationId,
+  ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get equipmentId => $composableBuilder(
-    column: $table.equipmentId,
+  ColumnOrderings<String> get parentOrderId => $composableBuilder(
+    column: $table.parentOrderId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -12035,13 +19683,11 @@ class $$LocalServiceOrdersTableAnnotationComposer
   GeneratedColumn<String> get clientId =>
       $composableBuilder(column: $table.clientId, builder: (column) => column);
 
-  GeneratedColumn<String> get locationId => $composableBuilder(
-    column: $table.locationId,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
 
-  GeneratedColumn<String> get equipmentId => $composableBuilder(
-    column: $table.equipmentId,
+  GeneratedColumn<String> get parentOrderId => $composableBuilder(
+    column: $table.parentOrderId,
     builder: (column) => column,
   );
 
@@ -12154,8 +19800,8 @@ class $$LocalServiceOrdersTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> clientId = const Value.absent(),
-                Value<String?> locationId = const Value.absent(),
-                Value<String?> equipmentId = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
+                Value<String?> parentOrderId = const Value.absent(),
                 Value<String?> serviceOrderTypeId = const Value.absent(),
                 Value<String?> companyId = const Value.absent(),
                 Value<String?> assignedUserId = const Value.absent(),
@@ -12182,8 +19828,8 @@ class $$LocalServiceOrdersTableTableManager
                 deleted: deleted,
                 id: id,
                 clientId: clientId,
-                locationId: locationId,
-                equipmentId: equipmentId,
+                itemId: itemId,
+                parentOrderId: parentOrderId,
                 serviceOrderTypeId: serviceOrderTypeId,
                 companyId: companyId,
                 assignedUserId: assignedUserId,
@@ -12212,8 +19858,8 @@ class $$LocalServiceOrdersTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 required String id,
                 required String clientId,
-                Value<String?> locationId = const Value.absent(),
-                Value<String?> equipmentId = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
+                Value<String?> parentOrderId = const Value.absent(),
                 Value<String?> serviceOrderTypeId = const Value.absent(),
                 Value<String?> companyId = const Value.absent(),
                 Value<String?> assignedUserId = const Value.absent(),
@@ -12240,8 +19886,8 @@ class $$LocalServiceOrdersTableTableManager
                 deleted: deleted,
                 id: id,
                 clientId: clientId,
-                locationId: locationId,
-                equipmentId: equipmentId,
+                itemId: itemId,
+                parentOrderId: parentOrderId,
                 serviceOrderTypeId: serviceOrderTypeId,
                 companyId: companyId,
                 assignedUserId: assignedUserId,
@@ -12299,6 +19945,519 @@ typedef $$LocalServiceOrdersTableProcessedTableManager =
       LocalServiceOrder,
       PrefetchHooks Function()
     >;
+typedef $$LocalServiceOrderItemsTableCreateCompanionBuilder =
+    LocalServiceOrderItemsCompanion Function({
+      required String organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      required DateTime localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      required String id,
+      required String serviceOrderId,
+      required String itemId,
+      Value<int> position,
+      Value<String> diagnosis,
+      Value<String> workPerformed,
+      Value<String> finalCondition,
+      Value<String> note,
+      Value<String> approval,
+      Value<DateTime?> approvedAt,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalServiceOrderItemsTableUpdateCompanionBuilder =
+    LocalServiceOrderItemsCompanion Function({
+      Value<String> organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      Value<DateTime> localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      Value<String> id,
+      Value<String> serviceOrderId,
+      Value<String> itemId,
+      Value<int> position,
+      Value<String> diagnosis,
+      Value<String> workPerformed,
+      Value<String> finalCondition,
+      Value<String> note,
+      Value<String> approval,
+      Value<DateTime?> approvedAt,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalServiceOrderItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalServiceOrderItemsTable> {
+  $$LocalServiceOrderItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get diagnosis => $composableBuilder(
+    column: $table.diagnosis,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get workPerformed => $composableBuilder(
+    column: $table.workPerformed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get finalCondition => $composableBuilder(
+    column: $table.finalCondition,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get approval => $composableBuilder(
+    column: $table.approval,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get approvedAt => $composableBuilder(
+    column: $table.approvedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalServiceOrderItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalServiceOrderItemsTable> {
+  $$LocalServiceOrderItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get diagnosis => $composableBuilder(
+    column: $table.diagnosis,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get workPerformed => $composableBuilder(
+    column: $table.workPerformed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get finalCondition => $composableBuilder(
+    column: $table.finalCondition,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get approval => $composableBuilder(
+    column: $table.approval,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get approvedAt => $composableBuilder(
+    column: $table.approvedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalServiceOrderItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalServiceOrderItemsTable> {
+  $$LocalServiceOrderItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<String> get diagnosis =>
+      $composableBuilder(column: $table.diagnosis, builder: (column) => column);
+
+  GeneratedColumn<String> get workPerformed => $composableBuilder(
+    column: $table.workPerformed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get finalCondition => $composableBuilder(
+    column: $table.finalCondition,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get approval =>
+      $composableBuilder(column: $table.approval, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get approvedAt => $composableBuilder(
+    column: $table.approvedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalServiceOrderItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalServiceOrderItemsTable,
+          LocalServiceOrderItem,
+          $$LocalServiceOrderItemsTableFilterComposer,
+          $$LocalServiceOrderItemsTableOrderingComposer,
+          $$LocalServiceOrderItemsTableAnnotationComposer,
+          $$LocalServiceOrderItemsTableCreateCompanionBuilder,
+          $$LocalServiceOrderItemsTableUpdateCompanionBuilder,
+          (
+            LocalServiceOrderItem,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalServiceOrderItemsTable,
+              LocalServiceOrderItem
+            >,
+          ),
+          LocalServiceOrderItem,
+          PrefetchHooks Function()
+        > {
+  $$LocalServiceOrderItemsTableTableManager(
+    _$AppDatabase db,
+    $LocalServiceOrderItemsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalServiceOrderItemsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalServiceOrderItemsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalServiceOrderItemsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> organizationId = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<DateTime> localUpdatedAt = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> serviceOrderId = const Value.absent(),
+                Value<String> itemId = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<String> diagnosis = const Value.absent(),
+                Value<String> workPerformed = const Value.absent(),
+                Value<String> finalCondition = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<String> approval = const Value.absent(),
+                Value<DateTime?> approvedAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalServiceOrderItemsCompanion(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                serviceOrderId: serviceOrderId,
+                itemId: itemId,
+                position: position,
+                diagnosis: diagnosis,
+                workPerformed: workPerformed,
+                finalCondition: finalCondition,
+                note: note,
+                approval: approval,
+                approvedAt: approvedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String organizationId,
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required DateTime localUpdatedAt,
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String id,
+                required String serviceOrderId,
+                required String itemId,
+                Value<int> position = const Value.absent(),
+                Value<String> diagnosis = const Value.absent(),
+                Value<String> workPerformed = const Value.absent(),
+                Value<String> finalCondition = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<String> approval = const Value.absent(),
+                Value<DateTime?> approvedAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalServiceOrderItemsCompanion.insert(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                serviceOrderId: serviceOrderId,
+                itemId: itemId,
+                position: position,
+                diagnosis: diagnosis,
+                workPerformed: workPerformed,
+                finalCondition: finalCondition,
+                note: note,
+                approval: approval,
+                approvedAt: approvedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $LocalServiceOrderItemsTable,
+                    LocalServiceOrderItem
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalServiceOrderItemsTable,
+                    LocalServiceOrderItem
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalServiceOrderItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalServiceOrderItemsTable,
+      LocalServiceOrderItem,
+      $$LocalServiceOrderItemsTableFilterComposer,
+      $$LocalServiceOrderItemsTableOrderingComposer,
+      $$LocalServiceOrderItemsTableAnnotationComposer,
+      $$LocalServiceOrderItemsTableCreateCompanionBuilder,
+      $$LocalServiceOrderItemsTableUpdateCompanionBuilder,
+      (
+        LocalServiceOrderItem,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalServiceOrderItemsTable,
+          LocalServiceOrderItem
+        >,
+      ),
+      LocalServiceOrderItem,
+      PrefetchHooks Function()
+    >;
 typedef $$LocalServiceOrderPartsTableCreateCompanionBuilder =
     LocalServiceOrderPartsCompanion Function({
       required String organizationId,
@@ -12310,6 +20469,7 @@ typedef $$LocalServiceOrderPartsTableCreateCompanionBuilder =
       Value<bool> deleted,
       required String id,
       required String serviceOrderId,
+      Value<String?> serviceOrderItemId,
       Value<String> description,
       Value<String> partNumber,
       Value<String> quantity,
@@ -12332,6 +20492,7 @@ typedef $$LocalServiceOrderPartsTableUpdateCompanionBuilder =
       Value<bool> deleted,
       Value<String> id,
       Value<String> serviceOrderId,
+      Value<String?> serviceOrderItemId,
       Value<String> description,
       Value<String> partNumber,
       Value<String> quantity,
@@ -12395,6 +20556,11 @@ class $$LocalServiceOrderPartsTableFilterComposer
 
   ColumnFilters<String> get serviceOrderId => $composableBuilder(
     column: $table.serviceOrderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12498,6 +20664,11 @@ class $$LocalServiceOrderPartsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get description => $composableBuilder(
     column: $table.description,
     builder: (column) => ColumnOrderings(column),
@@ -12590,6 +20761,11 @@ class $$LocalServiceOrderPartsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get description => $composableBuilder(
     column: $table.description,
     builder: (column) => column,
@@ -12677,6 +20853,7 @@ class $$LocalServiceOrderPartsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> serviceOrderId = const Value.absent(),
+                Value<String?> serviceOrderItemId = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<String> partNumber = const Value.absent(),
                 Value<String> quantity = const Value.absent(),
@@ -12697,6 +20874,7 @@ class $$LocalServiceOrderPartsTableTableManager
                 deleted: deleted,
                 id: id,
                 serviceOrderId: serviceOrderId,
+                serviceOrderItemId: serviceOrderItemId,
                 description: description,
                 partNumber: partNumber,
                 quantity: quantity,
@@ -12719,6 +20897,7 @@ class $$LocalServiceOrderPartsTableTableManager
                 Value<bool> deleted = const Value.absent(),
                 required String id,
                 required String serviceOrderId,
+                Value<String?> serviceOrderItemId = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<String> partNumber = const Value.absent(),
                 Value<String> quantity = const Value.absent(),
@@ -12739,6 +20918,7 @@ class $$LocalServiceOrderPartsTableTableManager
                 deleted: deleted,
                 id: id,
                 serviceOrderId: serviceOrderId,
+                serviceOrderItemId: serviceOrderItemId,
                 description: description,
                 partNumber: partNumber,
                 quantity: quantity,
@@ -12791,30 +20971,1056 @@ typedef $$LocalServiceOrderPartsTableProcessedTableManager =
       LocalServiceOrderPart,
       PrefetchHooks Function()
     >;
-typedef $$LocalEquipmentTypesTableCreateCompanionBuilder =
-    LocalEquipmentTypesCompanion Function({
-      required String id,
+typedef $$LocalServiceOrderRecommendationsTableCreateCompanionBuilder =
+    LocalServiceOrderRecommendationsCompanion Function({
       required String organizationId,
-      required String name,
-      Value<String> description,
       Value<int?> version,
-      required DateTime cachedAt,
+      Value<String> syncStatus,
+      required DateTime localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      required String id,
+      required String serviceOrderId,
+      Value<String?> serviceOrderItemId,
+      Value<String> description,
+      Value<String> priority,
+      Value<String> status,
+      Value<String> notes,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
       Value<int> rowid,
     });
-typedef $$LocalEquipmentTypesTableUpdateCompanionBuilder =
-    LocalEquipmentTypesCompanion Function({
-      Value<String> id,
+typedef $$LocalServiceOrderRecommendationsTableUpdateCompanionBuilder =
+    LocalServiceOrderRecommendationsCompanion Function({
       Value<String> organizationId,
-      Value<String> name,
-      Value<String> description,
       Value<int?> version,
-      Value<DateTime> cachedAt,
+      Value<String> syncStatus,
+      Value<DateTime> localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      Value<String> id,
+      Value<String> serviceOrderId,
+      Value<String?> serviceOrderItemId,
+      Value<String> description,
+      Value<String> priority,
+      Value<String> status,
+      Value<String> notes,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
       Value<int> rowid,
     });
 
-class $$LocalEquipmentTypesTableFilterComposer
-    extends Composer<_$AppDatabase, $LocalEquipmentTypesTable> {
-  $$LocalEquipmentTypesTableFilterComposer({
+class $$LocalServiceOrderRecommendationsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalServiceOrderRecommendationsTable> {
+  $$LocalServiceOrderRecommendationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalServiceOrderRecommendationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalServiceOrderRecommendationsTable> {
+  $$LocalServiceOrderRecommendationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalServiceOrderRecommendationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalServiceOrderRecommendationsTable> {
+  $$LocalServiceOrderRecommendationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get serviceOrderId => $composableBuilder(
+    column: $table.serviceOrderId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalServiceOrderRecommendationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalServiceOrderRecommendationsTable,
+          LocalServiceOrderRecommendation,
+          $$LocalServiceOrderRecommendationsTableFilterComposer,
+          $$LocalServiceOrderRecommendationsTableOrderingComposer,
+          $$LocalServiceOrderRecommendationsTableAnnotationComposer,
+          $$LocalServiceOrderRecommendationsTableCreateCompanionBuilder,
+          $$LocalServiceOrderRecommendationsTableUpdateCompanionBuilder,
+          (
+            LocalServiceOrderRecommendation,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalServiceOrderRecommendationsTable,
+              LocalServiceOrderRecommendation
+            >,
+          ),
+          LocalServiceOrderRecommendation,
+          PrefetchHooks Function()
+        > {
+  $$LocalServiceOrderRecommendationsTableTableManager(
+    _$AppDatabase db,
+    $LocalServiceOrderRecommendationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalServiceOrderRecommendationsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$LocalServiceOrderRecommendationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$LocalServiceOrderRecommendationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> organizationId = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<DateTime> localUpdatedAt = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> serviceOrderId = const Value.absent(),
+                Value<String?> serviceOrderItemId = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> priority = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalServiceOrderRecommendationsCompanion(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                serviceOrderId: serviceOrderId,
+                serviceOrderItemId: serviceOrderItemId,
+                description: description,
+                priority: priority,
+                status: status,
+                notes: notes,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String organizationId,
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required DateTime localUpdatedAt,
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String id,
+                required String serviceOrderId,
+                Value<String?> serviceOrderItemId = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> priority = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalServiceOrderRecommendationsCompanion.insert(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                serviceOrderId: serviceOrderId,
+                serviceOrderItemId: serviceOrderItemId,
+                description: description,
+                priority: priority,
+                status: status,
+                notes: notes,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<
+                    $LocalServiceOrderRecommendationsTable,
+                    LocalServiceOrderRecommendation
+                  >(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalServiceOrderRecommendationsTable,
+                    LocalServiceOrderRecommendation
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalServiceOrderRecommendationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalServiceOrderRecommendationsTable,
+      LocalServiceOrderRecommendation,
+      $$LocalServiceOrderRecommendationsTableFilterComposer,
+      $$LocalServiceOrderRecommendationsTableOrderingComposer,
+      $$LocalServiceOrderRecommendationsTableAnnotationComposer,
+      $$LocalServiceOrderRecommendationsTableCreateCompanionBuilder,
+      $$LocalServiceOrderRecommendationsTableUpdateCompanionBuilder,
+      (
+        LocalServiceOrderRecommendation,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalServiceOrderRecommendationsTable,
+          LocalServiceOrderRecommendation
+        >,
+      ),
+      LocalServiceOrderRecommendation,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalTasksTableCreateCompanionBuilder =
+    LocalTasksCompanion Function({
+      required String organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      required DateTime localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      required String id,
+      required String clientId,
+      Value<String?> taskTypeId,
+      Value<String?> assignedUserId,
+      Value<String?> companyId,
+      Value<String> description,
+      Value<String> notes,
+      Value<String> status,
+      Value<DateTime?> scheduledFor,
+      Value<bool> scheduledAllDay,
+      Value<String> recurrenceRule,
+      Value<String?> generatedOrderId,
+      Value<DateTime?> completedAt,
+      Value<DateTime?> canceledAt,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalTasksTableUpdateCompanionBuilder =
+    LocalTasksCompanion Function({
+      Value<String> organizationId,
+      Value<int?> version,
+      Value<String> syncStatus,
+      Value<DateTime> localUpdatedAt,
+      Value<DateTime?> lastSyncedAt,
+      Value<String?> syncError,
+      Value<bool> deleted,
+      Value<String> id,
+      Value<String> clientId,
+      Value<String?> taskTypeId,
+      Value<String?> assignedUserId,
+      Value<String?> companyId,
+      Value<String> description,
+      Value<String> notes,
+      Value<String> status,
+      Value<DateTime?> scheduledFor,
+      Value<bool> scheduledAllDay,
+      Value<String> recurrenceRule,
+      Value<String?> generatedOrderId,
+      Value<DateTime?> completedAt,
+      Value<DateTime?> canceledAt,
+      Value<DateTime?> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalTasksTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalTasksTable> {
+  $$LocalTasksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get taskTypeId => $composableBuilder(
+    column: $table.taskTypeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get assignedUserId => $composableBuilder(
+    column: $table.assignedUserId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get companyId => $composableBuilder(
+    column: $table.companyId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get scheduledFor => $composableBuilder(
+    column: $table.scheduledFor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get scheduledAllDay => $composableBuilder(
+    column: $table.scheduledAllDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get generatedOrderId => $composableBuilder(
+    column: $table.generatedOrderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get canceledAt => $composableBuilder(
+    column: $table.canceledAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalTasksTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalTasksTable> {
+  $$LocalTasksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncError => $composableBuilder(
+    column: $table.syncError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get taskTypeId => $composableBuilder(
+    column: $table.taskTypeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get assignedUserId => $composableBuilder(
+    column: $table.assignedUserId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get companyId => $composableBuilder(
+    column: $table.companyId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get scheduledFor => $composableBuilder(
+    column: $table.scheduledFor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get scheduledAllDay => $composableBuilder(
+    column: $table.scheduledAllDay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get generatedOrderId => $composableBuilder(
+    column: $table.generatedOrderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get canceledAt => $composableBuilder(
+    column: $table.canceledAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalTasksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalTasksTable> {
+  $$LocalTasksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get localUpdatedAt => $composableBuilder(
+    column: $table.localUpdatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSyncedAt => $composableBuilder(
+    column: $table.lastSyncedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncError =>
+      $composableBuilder(column: $table.syncError, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get taskTypeId => $composableBuilder(
+    column: $table.taskTypeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get assignedUserId => $composableBuilder(
+    column: $table.assignedUserId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get companyId =>
+      $composableBuilder(column: $table.companyId, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get scheduledFor => $composableBuilder(
+    column: $table.scheduledFor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get scheduledAllDay => $composableBuilder(
+    column: $table.scheduledAllDay,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get generatedOrderId => $composableBuilder(
+    column: $table.generatedOrderId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get canceledAt => $composableBuilder(
+    column: $table.canceledAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$LocalTasksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalTasksTable,
+          LocalTask,
+          $$LocalTasksTableFilterComposer,
+          $$LocalTasksTableOrderingComposer,
+          $$LocalTasksTableAnnotationComposer,
+          $$LocalTasksTableCreateCompanionBuilder,
+          $$LocalTasksTableUpdateCompanionBuilder,
+          (
+            LocalTask,
+            BaseReferences<_$AppDatabase, $LocalTasksTable, LocalTask>,
+          ),
+          LocalTask,
+          PrefetchHooks Function()
+        > {
+  $$LocalTasksTableTableManager(_$AppDatabase db, $LocalTasksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalTasksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalTasksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalTasksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> organizationId = const Value.absent(),
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<DateTime> localUpdatedAt = const Value.absent(),
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> clientId = const Value.absent(),
+                Value<String?> taskTypeId = const Value.absent(),
+                Value<String?> assignedUserId = const Value.absent(),
+                Value<String?> companyId = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> scheduledFor = const Value.absent(),
+                Value<bool> scheduledAllDay = const Value.absent(),
+                Value<String> recurrenceRule = const Value.absent(),
+                Value<String?> generatedOrderId = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime?> canceledAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalTasksCompanion(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                clientId: clientId,
+                taskTypeId: taskTypeId,
+                assignedUserId: assignedUserId,
+                companyId: companyId,
+                description: description,
+                notes: notes,
+                status: status,
+                scheduledFor: scheduledFor,
+                scheduledAllDay: scheduledAllDay,
+                recurrenceRule: recurrenceRule,
+                generatedOrderId: generatedOrderId,
+                completedAt: completedAt,
+                canceledAt: canceledAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String organizationId,
+                Value<int?> version = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required DateTime localUpdatedAt,
+                Value<DateTime?> lastSyncedAt = const Value.absent(),
+                Value<String?> syncError = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
+                required String id,
+                required String clientId,
+                Value<String?> taskTypeId = const Value.absent(),
+                Value<String?> assignedUserId = const Value.absent(),
+                Value<String?> companyId = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> scheduledFor = const Value.absent(),
+                Value<bool> scheduledAllDay = const Value.absent(),
+                Value<String> recurrenceRule = const Value.absent(),
+                Value<String?> generatedOrderId = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime?> canceledAt = const Value.absent(),
+                Value<DateTime?> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalTasksCompanion.insert(
+                organizationId: organizationId,
+                version: version,
+                syncStatus: syncStatus,
+                localUpdatedAt: localUpdatedAt,
+                lastSyncedAt: lastSyncedAt,
+                syncError: syncError,
+                deleted: deleted,
+                id: id,
+                clientId: clientId,
+                taskTypeId: taskTypeId,
+                assignedUserId: assignedUserId,
+                companyId: companyId,
+                description: description,
+                notes: notes,
+                status: status,
+                scheduledFor: scheduledFor,
+                scheduledAllDay: scheduledAllDay,
+                recurrenceRule: recurrenceRule,
+                generatedOrderId: generatedOrderId,
+                completedAt: completedAt,
+                canceledAt: canceledAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalTasksTable, LocalTask>(table),
+                  BaseReferences<_$AppDatabase, $LocalTasksTable, LocalTask>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalTasksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalTasksTable,
+      LocalTask,
+      $$LocalTasksTableFilterComposer,
+      $$LocalTasksTableOrderingComposer,
+      $$LocalTasksTableAnnotationComposer,
+      $$LocalTasksTableCreateCompanionBuilder,
+      $$LocalTasksTableUpdateCompanionBuilder,
+      (LocalTask, BaseReferences<_$AppDatabase, $LocalTasksTable, LocalTask>),
+      LocalTask,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalTaskTargetsTableCreateCompanionBuilder =
+    LocalTaskTargetsCompanion Function({
+      required String id,
+      required String taskId,
+      Value<String?> locationId,
+      Value<String?> itemId,
+      Value<int> position,
+      Value<int> rowid,
+    });
+typedef $$LocalTaskTargetsTableUpdateCompanionBuilder =
+    LocalTaskTargetsCompanion Function({
+      Value<String> id,
+      Value<String> taskId,
+      Value<String?> locationId,
+      Value<String?> itemId,
+      Value<int> position,
+      Value<int> rowid,
+    });
+
+class $$LocalTaskTargetsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalTaskTargetsTable> {
+  $$LocalTaskTargetsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -12826,35 +22032,30 @@ class $$LocalEquipmentTypesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get organizationId => $composableBuilder(
-    column: $table.organizationId,
+  ColumnFilters<String> get taskId => $composableBuilder(
+    column: $table.taskId,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
+  ColumnFilters<String> get locationId => $composableBuilder(
+    column: $table.locationId,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get description => $composableBuilder(
-    column: $table.description,
+  ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get version => $composableBuilder(
-    column: $table.version,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
-    column: $table.cachedAt,
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
     builder: (column) => ColumnFilters(column),
   );
 }
 
-class $$LocalEquipmentTypesTableOrderingComposer
-    extends Composer<_$AppDatabase, $LocalEquipmentTypesTable> {
-  $$LocalEquipmentTypesTableOrderingComposer({
+class $$LocalTaskTargetsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalTaskTargetsTable> {
+  $$LocalTaskTargetsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -12866,35 +22067,30 @@ class $$LocalEquipmentTypesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get organizationId => $composableBuilder(
-    column: $table.organizationId,
+  ColumnOrderings<String> get taskId => $composableBuilder(
+    column: $table.taskId,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
+  ColumnOrderings<String> get locationId => $composableBuilder(
+    column: $table.locationId,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get description => $composableBuilder(
-    column: $table.description,
+  ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get version => $composableBuilder(
-    column: $table.version,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
-    column: $table.cachedAt,
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
     builder: (column) => ColumnOrderings(column),
   );
 }
 
-class $$LocalEquipmentTypesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $LocalEquipmentTypesTable> {
-  $$LocalEquipmentTypesTableAnnotationComposer({
+class $$LocalTaskTargetsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalTaskTargetsTable> {
+  $$LocalTaskTargetsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -12904,113 +22100,96 @@ class $$LocalEquipmentTypesTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get organizationId => $composableBuilder(
-    column: $table.organizationId,
+  GeneratedColumn<String> get taskId =>
+      $composableBuilder(column: $table.taskId, builder: (column) => column);
+
+  GeneratedColumn<String> get locationId => $composableBuilder(
+    column: $table.locationId,
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
 
-  GeneratedColumn<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<int> get version =>
-      $composableBuilder(column: $table.version, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get cachedAt =>
-      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
 }
 
-class $$LocalEquipmentTypesTableTableManager
+class $$LocalTaskTargetsTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $LocalEquipmentTypesTable,
-          LocalEquipmentType,
-          $$LocalEquipmentTypesTableFilterComposer,
-          $$LocalEquipmentTypesTableOrderingComposer,
-          $$LocalEquipmentTypesTableAnnotationComposer,
-          $$LocalEquipmentTypesTableCreateCompanionBuilder,
-          $$LocalEquipmentTypesTableUpdateCompanionBuilder,
+          $LocalTaskTargetsTable,
+          LocalTaskTarget,
+          $$LocalTaskTargetsTableFilterComposer,
+          $$LocalTaskTargetsTableOrderingComposer,
+          $$LocalTaskTargetsTableAnnotationComposer,
+          $$LocalTaskTargetsTableCreateCompanionBuilder,
+          $$LocalTaskTargetsTableUpdateCompanionBuilder,
           (
-            LocalEquipmentType,
+            LocalTaskTarget,
             BaseReferences<
               _$AppDatabase,
-              $LocalEquipmentTypesTable,
-              LocalEquipmentType
+              $LocalTaskTargetsTable,
+              LocalTaskTarget
             >,
           ),
-          LocalEquipmentType,
+          LocalTaskTarget,
           PrefetchHooks Function()
         > {
-  $$LocalEquipmentTypesTableTableManager(
+  $$LocalTaskTargetsTableTableManager(
     _$AppDatabase db,
-    $LocalEquipmentTypesTable table,
+    $LocalTaskTargetsTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$LocalEquipmentTypesTableFilterComposer($db: db, $table: table),
+              $$LocalTaskTargetsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$LocalEquipmentTypesTableOrderingComposer(
-                $db: db,
-                $table: table,
-              ),
+              $$LocalTaskTargetsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$LocalEquipmentTypesTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
+              $$LocalTaskTargetsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<String> organizationId = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<String> description = const Value.absent(),
-                Value<int?> version = const Value.absent(),
-                Value<DateTime> cachedAt = const Value.absent(),
+                Value<String> taskId = const Value.absent(),
+                Value<String?> locationId = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
+                Value<int> position = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => LocalEquipmentTypesCompanion(
+              }) => LocalTaskTargetsCompanion(
                 id: id,
-                organizationId: organizationId,
-                name: name,
-                description: description,
-                version: version,
-                cachedAt: cachedAt,
+                taskId: taskId,
+                locationId: locationId,
+                itemId: itemId,
+                position: position,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String id,
-                required String organizationId,
-                required String name,
-                Value<String> description = const Value.absent(),
-                Value<int?> version = const Value.absent(),
-                required DateTime cachedAt,
+                required String taskId,
+                Value<String?> locationId = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
+                Value<int> position = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => LocalEquipmentTypesCompanion.insert(
+              }) => LocalTaskTargetsCompanion.insert(
                 id: id,
-                organizationId: organizationId,
-                name: name,
-                description: description,
-                version: version,
-                cachedAt: cachedAt,
+                taskId: taskId,
+                locationId: locationId,
+                itemId: itemId,
+                position: position,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable<$LocalEquipmentTypesTable, LocalEquipmentType>(
-                    table,
-                  ),
+                  e.readTable<$LocalTaskTargetsTable, LocalTaskTarget>(table),
                   BaseReferences<
                     _$AppDatabase,
-                    $LocalEquipmentTypesTable,
-                    LocalEquipmentType
+                    $LocalTaskTargetsTable,
+                    LocalTaskTarget
                   >(db, table, e),
                 ),
               )
@@ -13020,25 +22199,21 @@ class $$LocalEquipmentTypesTableTableManager
       );
 }
 
-typedef $$LocalEquipmentTypesTableProcessedTableManager =
+typedef $$LocalTaskTargetsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $LocalEquipmentTypesTable,
-      LocalEquipmentType,
-      $$LocalEquipmentTypesTableFilterComposer,
-      $$LocalEquipmentTypesTableOrderingComposer,
-      $$LocalEquipmentTypesTableAnnotationComposer,
-      $$LocalEquipmentTypesTableCreateCompanionBuilder,
-      $$LocalEquipmentTypesTableUpdateCompanionBuilder,
+      $LocalTaskTargetsTable,
+      LocalTaskTarget,
+      $$LocalTaskTargetsTableFilterComposer,
+      $$LocalTaskTargetsTableOrderingComposer,
+      $$LocalTaskTargetsTableAnnotationComposer,
+      $$LocalTaskTargetsTableCreateCompanionBuilder,
+      $$LocalTaskTargetsTableUpdateCompanionBuilder,
       (
-        LocalEquipmentType,
-        BaseReferences<
-          _$AppDatabase,
-          $LocalEquipmentTypesTable,
-          LocalEquipmentType
-        >,
+        LocalTaskTarget,
+        BaseReferences<_$AppDatabase, $LocalTaskTargetsTable, LocalTaskTarget>,
       ),
-      LocalEquipmentType,
+      LocalTaskTarget,
       PrefetchHooks Function()
     >;
 typedef $$LocalReferenceDataTableCreateCompanionBuilder =
@@ -13300,8 +22475,7 @@ typedef $$LocalQrCodesTableCreateCompanionBuilder =
       required String status,
       Value<String?> batchId,
       Value<String?> clientId,
-      Value<String?> locationId,
-      Value<String?> equipmentId,
+      Value<String?> itemId,
       Value<DateTime?> assignedAt,
       Value<DateTime?> createdAt,
       Value<int> rowid,
@@ -13320,8 +22494,7 @@ typedef $$LocalQrCodesTableUpdateCompanionBuilder =
       Value<String> status,
       Value<String?> batchId,
       Value<String?> clientId,
-      Value<String?> locationId,
-      Value<String?> equipmentId,
+      Value<String?> itemId,
       Value<DateTime?> assignedAt,
       Value<DateTime?> createdAt,
       Value<int> rowid,
@@ -13396,13 +22569,8 @@ class $$LocalQrCodesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get locationId => $composableBuilder(
-    column: $table.locationId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get equipmentId => $composableBuilder(
-    column: $table.equipmentId,
+  ColumnFilters<String> get itemId => $composableBuilder(
+    column: $table.itemId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -13486,13 +22654,8 @@ class $$LocalQrCodesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get locationId => $composableBuilder(
-    column: $table.locationId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get equipmentId => $composableBuilder(
-    column: $table.equipmentId,
+  ColumnOrderings<String> get itemId => $composableBuilder(
+    column: $table.itemId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -13562,15 +22725,8 @@ class $$LocalQrCodesTableAnnotationComposer
   GeneratedColumn<String> get clientId =>
       $composableBuilder(column: $table.clientId, builder: (column) => column);
 
-  GeneratedColumn<String> get locationId => $composableBuilder(
-    column: $table.locationId,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get equipmentId => $composableBuilder(
-    column: $table.equipmentId,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get itemId =>
+      $composableBuilder(column: $table.itemId, builder: (column) => column);
 
   GeneratedColumn<DateTime> get assignedAt => $composableBuilder(
     column: $table.assignedAt,
@@ -13624,8 +22780,7 @@ class $$LocalQrCodesTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String?> batchId = const Value.absent(),
                 Value<String?> clientId = const Value.absent(),
-                Value<String?> locationId = const Value.absent(),
-                Value<String?> equipmentId = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
                 Value<DateTime?> assignedAt = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -13642,8 +22797,7 @@ class $$LocalQrCodesTableTableManager
                 status: status,
                 batchId: batchId,
                 clientId: clientId,
-                locationId: locationId,
-                equipmentId: equipmentId,
+                itemId: itemId,
                 assignedAt: assignedAt,
                 createdAt: createdAt,
                 rowid: rowid,
@@ -13662,8 +22816,7 @@ class $$LocalQrCodesTableTableManager
                 required String status,
                 Value<String?> batchId = const Value.absent(),
                 Value<String?> clientId = const Value.absent(),
-                Value<String?> locationId = const Value.absent(),
-                Value<String?> equipmentId = const Value.absent(),
+                Value<String?> itemId = const Value.absent(),
                 Value<DateTime?> assignedAt = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -13680,8 +22833,7 @@ class $$LocalQrCodesTableTableManager
                 status: status,
                 batchId: batchId,
                 clientId: clientId,
-                locationId: locationId,
-                equipmentId: equipmentId,
+                itemId: itemId,
                 assignedAt: assignedAt,
                 createdAt: createdAt,
                 rowid: rowid,
@@ -14615,7 +23767,10 @@ typedef $$UploadQueueTableCreateCompanionBuilder =
     UploadQueueCompanion Function({
       required String id,
       required String organizationId,
-      required String serviceOrderId,
+      Value<String> ownerKind,
+      required String ownerId,
+      Value<String?> serviceOrderId,
+      Value<String?> serviceOrderItemId,
       required String kind,
       required String filePath,
       required String sha256,
@@ -14630,7 +23785,10 @@ typedef $$UploadQueueTableUpdateCompanionBuilder =
     UploadQueueCompanion Function({
       Value<String> id,
       Value<String> organizationId,
-      Value<String> serviceOrderId,
+      Value<String> ownerKind,
+      Value<String> ownerId,
+      Value<String?> serviceOrderId,
+      Value<String?> serviceOrderItemId,
       Value<String> kind,
       Value<String> filePath,
       Value<String> sha256,
@@ -14661,8 +23819,23 @@ class $$UploadQueueTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get ownerKind => $composableBuilder(
+    column: $table.ownerKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get serviceOrderId => $composableBuilder(
     column: $table.serviceOrderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14726,8 +23899,23 @@ class $$UploadQueueTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get ownerKind => $composableBuilder(
+    column: $table.ownerKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get serviceOrderId => $composableBuilder(
     column: $table.serviceOrderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -14789,8 +23977,19 @@ class $$UploadQueueTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get ownerKind =>
+      $composableBuilder(column: $table.ownerKind, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
   GeneratedColumn<String> get serviceOrderId => $composableBuilder(
     column: $table.serviceOrderId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
     builder: (column) => column,
   );
 
@@ -14852,7 +24051,10 @@ class $$UploadQueueTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> organizationId = const Value.absent(),
-                Value<String> serviceOrderId = const Value.absent(),
+                Value<String> ownerKind = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<String?> serviceOrderId = const Value.absent(),
+                Value<String?> serviceOrderItemId = const Value.absent(),
                 Value<String> kind = const Value.absent(),
                 Value<String> filePath = const Value.absent(),
                 Value<String> sha256 = const Value.absent(),
@@ -14865,7 +24067,10 @@ class $$UploadQueueTableTableManager
               }) => UploadQueueCompanion(
                 id: id,
                 organizationId: organizationId,
+                ownerKind: ownerKind,
+                ownerId: ownerId,
                 serviceOrderId: serviceOrderId,
+                serviceOrderItemId: serviceOrderItemId,
                 kind: kind,
                 filePath: filePath,
                 sha256: sha256,
@@ -14880,7 +24085,10 @@ class $$UploadQueueTableTableManager
               ({
                 required String id,
                 required String organizationId,
-                required String serviceOrderId,
+                Value<String> ownerKind = const Value.absent(),
+                required String ownerId,
+                Value<String?> serviceOrderId = const Value.absent(),
+                Value<String?> serviceOrderItemId = const Value.absent(),
                 required String kind,
                 required String filePath,
                 required String sha256,
@@ -14893,7 +24101,10 @@ class $$UploadQueueTableTableManager
               }) => UploadQueueCompanion.insert(
                 id: id,
                 organizationId: organizationId,
+                ownerKind: ownerKind,
+                ownerId: ownerId,
                 serviceOrderId: serviceOrderId,
+                serviceOrderItemId: serviceOrderItemId,
                 kind: kind,
                 filePath: filePath,
                 sha256: sha256,
@@ -14938,6 +24149,307 @@ typedef $$UploadQueueTableProcessedTableManager =
       UploadQueueData,
       PrefetchHooks Function()
     >;
+typedef $$LocalPhotoCacheTableCreateCompanionBuilder =
+    LocalPhotoCacheCompanion Function({
+      required String photoId,
+      required String organizationId,
+      required String ownerKind,
+      required String ownerId,
+      required String kind,
+      Value<String?> serviceOrderItemId,
+      Value<String?> caption,
+      required String localPath,
+      required DateTime cachedAt,
+      Value<int> rowid,
+    });
+typedef $$LocalPhotoCacheTableUpdateCompanionBuilder =
+    LocalPhotoCacheCompanion Function({
+      Value<String> photoId,
+      Value<String> organizationId,
+      Value<String> ownerKind,
+      Value<String> ownerId,
+      Value<String> kind,
+      Value<String?> serviceOrderItemId,
+      Value<String?> caption,
+      Value<String> localPath,
+      Value<DateTime> cachedAt,
+      Value<int> rowid,
+    });
+
+class $$LocalPhotoCacheTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalPhotoCacheTable> {
+  $$LocalPhotoCacheTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get photoId => $composableBuilder(
+    column: $table.photoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerKind => $composableBuilder(
+    column: $table.ownerKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get caption => $composableBuilder(
+    column: $table.caption,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalPhotoCacheTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalPhotoCacheTable> {
+  $$LocalPhotoCacheTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get photoId => $composableBuilder(
+    column: $table.photoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerKind => $composableBuilder(
+    column: $table.ownerKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get caption => $composableBuilder(
+    column: $table.caption,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+    column: $table.localPath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalPhotoCacheTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalPhotoCacheTable> {
+  $$LocalPhotoCacheTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get photoId =>
+      $composableBuilder(column: $table.photoId, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+    column: $table.organizationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get ownerKind =>
+      $composableBuilder(column: $table.ownerKind, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get serviceOrderItemId => $composableBuilder(
+    column: $table.serviceOrderItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get caption =>
+      $composableBuilder(column: $table.caption, builder: (column) => column);
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$LocalPhotoCacheTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalPhotoCacheTable,
+          LocalPhotoCacheData,
+          $$LocalPhotoCacheTableFilterComposer,
+          $$LocalPhotoCacheTableOrderingComposer,
+          $$LocalPhotoCacheTableAnnotationComposer,
+          $$LocalPhotoCacheTableCreateCompanionBuilder,
+          $$LocalPhotoCacheTableUpdateCompanionBuilder,
+          (
+            LocalPhotoCacheData,
+            BaseReferences<
+              _$AppDatabase,
+              $LocalPhotoCacheTable,
+              LocalPhotoCacheData
+            >,
+          ),
+          LocalPhotoCacheData,
+          PrefetchHooks Function()
+        > {
+  $$LocalPhotoCacheTableTableManager(
+    _$AppDatabase db,
+    $LocalPhotoCacheTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalPhotoCacheTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalPhotoCacheTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalPhotoCacheTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> photoId = const Value.absent(),
+                Value<String> organizationId = const Value.absent(),
+                Value<String> ownerKind = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> serviceOrderItemId = const Value.absent(),
+                Value<String?> caption = const Value.absent(),
+                Value<String> localPath = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalPhotoCacheCompanion(
+                photoId: photoId,
+                organizationId: organizationId,
+                ownerKind: ownerKind,
+                ownerId: ownerId,
+                kind: kind,
+                serviceOrderItemId: serviceOrderItemId,
+                caption: caption,
+                localPath: localPath,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String photoId,
+                required String organizationId,
+                required String ownerKind,
+                required String ownerId,
+                required String kind,
+                Value<String?> serviceOrderItemId = const Value.absent(),
+                Value<String?> caption = const Value.absent(),
+                required String localPath,
+                required DateTime cachedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => LocalPhotoCacheCompanion.insert(
+                photoId: photoId,
+                organizationId: organizationId,
+                ownerKind: ownerKind,
+                ownerId: ownerId,
+                kind: kind,
+                serviceOrderItemId: serviceOrderItemId,
+                caption: caption,
+                localPath: localPath,
+                cachedAt: cachedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$LocalPhotoCacheTable, LocalPhotoCacheData>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $LocalPhotoCacheTable,
+                    LocalPhotoCacheData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalPhotoCacheTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalPhotoCacheTable,
+      LocalPhotoCacheData,
+      $$LocalPhotoCacheTableFilterComposer,
+      $$LocalPhotoCacheTableOrderingComposer,
+      $$LocalPhotoCacheTableAnnotationComposer,
+      $$LocalPhotoCacheTableCreateCompanionBuilder,
+      $$LocalPhotoCacheTableUpdateCompanionBuilder,
+      (
+        LocalPhotoCacheData,
+        BaseReferences<
+          _$AppDatabase,
+          $LocalPhotoCacheTable,
+          LocalPhotoCacheData
+        >,
+      ),
+      LocalPhotoCacheData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -14946,17 +24458,38 @@ class $AppDatabaseManager {
       $$LocalClientsTableTableManager(_db, _db.localClients);
   $$LocalLocationsTableTableManager get localLocations =>
       $$LocalLocationsTableTableManager(_db, _db.localLocations);
-  $$LocalEquipmentsTableTableManager get localEquipments =>
-      $$LocalEquipmentsTableTableManager(_db, _db.localEquipments);
+  $$LocalItemsTableTableManager get localItems =>
+      $$LocalItemsTableTableManager(_db, _db.localItems);
+  $$LocalItemTypesTableTableManager get localItemTypes =>
+      $$LocalItemTypesTableTableManager(_db, _db.localItemTypes);
+  $$LocalItemFieldDefsTableTableManager get localItemFieldDefs =>
+      $$LocalItemFieldDefsTableTableManager(_db, _db.localItemFieldDefs);
+  $$LocalItemFieldOptionsTableTableManager get localItemFieldOptions =>
+      $$LocalItemFieldOptionsTableTableManager(_db, _db.localItemFieldOptions);
+  $$LocalItemFieldValuesTableTableManager get localItemFieldValues =>
+      $$LocalItemFieldValuesTableTableManager(_db, _db.localItemFieldValues);
   $$LocalServiceOrdersTableTableManager get localServiceOrders =>
       $$LocalServiceOrdersTableTableManager(_db, _db.localServiceOrders);
+  $$LocalServiceOrderItemsTableTableManager get localServiceOrderItems =>
+      $$LocalServiceOrderItemsTableTableManager(
+        _db,
+        _db.localServiceOrderItems,
+      );
   $$LocalServiceOrderPartsTableTableManager get localServiceOrderParts =>
       $$LocalServiceOrderPartsTableTableManager(
         _db,
         _db.localServiceOrderParts,
       );
-  $$LocalEquipmentTypesTableTableManager get localEquipmentTypes =>
-      $$LocalEquipmentTypesTableTableManager(_db, _db.localEquipmentTypes);
+  $$LocalServiceOrderRecommendationsTableTableManager
+  get localServiceOrderRecommendations =>
+      $$LocalServiceOrderRecommendationsTableTableManager(
+        _db,
+        _db.localServiceOrderRecommendations,
+      );
+  $$LocalTasksTableTableManager get localTasks =>
+      $$LocalTasksTableTableManager(_db, _db.localTasks);
+  $$LocalTaskTargetsTableTableManager get localTaskTargets =>
+      $$LocalTaskTargetsTableTableManager(_db, _db.localTaskTargets);
   $$LocalReferenceDataTableTableManager get localReferenceData =>
       $$LocalReferenceDataTableTableManager(_db, _db.localReferenceData);
   $$LocalQrCodesTableTableManager get localQrCodes =>
@@ -14969,4 +24502,6 @@ class $AppDatabaseManager {
       $$LocalSyncStateTableTableManager(_db, _db.localSyncState);
   $$UploadQueueTableTableManager get uploadQueue =>
       $$UploadQueueTableTableManager(_db, _db.uploadQueue);
+  $$LocalPhotoCacheTableTableManager get localPhotoCache =>
+      $$LocalPhotoCacheTableTableManager(_db, _db.localPhotoCache);
 }

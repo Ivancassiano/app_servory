@@ -2,52 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
-import '../../equipments/data/equipment_type_repository.dart';
+import '../../../core/widgets/brand_app_bar.dart';
+import '../../../core/widgets/form_sheet.dart';
+import '../../items/data/item_type_repository.dart';
 import '../data/reference_repository.dart';
 import '../data/type_catalog_repository.dart';
 
-/// Cadastro dos catálogos auxiliares (tipos de equipamento / de ordem).
-/// Abre num dos dois pelo `initial`.
-class TypeCatalogScreen extends StatelessWidget {
-  const TypeCatalogScreen({super.key, this.initial = TypeCatalog.equipmentType});
-
-  final TypeCatalog initial;
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      initialIndex: initial == TypeCatalog.equipmentType ? 0 : 1,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Tipos'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Equipamentos'),
-              Tab(text: 'Ordens de serviço'),
-            ],
-          ),
-        ),
-        body: const TabBarView(
-          children: [
-            _CatalogTab(kind: TypeCatalog.equipmentType),
-            _CatalogTab(kind: TypeCatalog.serviceOrderType),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CatalogTab extends ConsumerWidget {
-  const _CatalogTab({required this.kind});
+/// Cadastro de um catálogo auxiliar (tipos de equipamento **ou** tipos de ordem
+/// de serviço — nunca os dois na mesma tela). Acessada por Configurações →
+/// Catálogos.
+class TypeCatalogScreen extends ConsumerWidget {
+  const TypeCatalogScreen({super.key, required this.kind});
 
   final TypeCatalog kind;
 
   /// Atualiza também os seletores que consomem esses tipos por outro caminho.
   Future<void> _refreshPickers(WidgetRef ref) async {
-    if (kind == TypeCatalog.equipmentType) {
-      await ref.read(equipmentTypeRepositoryProvider).refresh();
+    if (kind == TypeCatalog.itemType) {
+      await ref.read(itemTypeRepositoryProvider).refresh();
     } else {
       await ref
           .read(referenceDataRepositoryProvider)
@@ -58,8 +30,15 @@ class _CatalogTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(typeCatalogListProvider(kind));
+    final total = async.value?.length;
 
     return Scaffold(
+      appBar: brandAppBar(
+        title: kind.title,
+        count: total == null
+            ? null
+            : '$total ${total == 1 ? 'tipo' : 'tipos'}',
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(typeCatalogRepositoryProvider).refresh(kind),
         child: async.when(
@@ -102,10 +81,10 @@ class _CatalogTab extends ConsumerWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _edit(context, ref),
-        tooltip: 'Novo ${kind.singular.toLowerCase()}',
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: Text('Novo ${kind.singular.toLowerCase()}'),
       ),
     );
   }
@@ -117,31 +96,26 @@ class _CatalogTab extends ConsumerWidget {
   }) async {
     final nameCtrl = TextEditingController(text: item?.name ?? '');
     final descCtrl = TextEditingController(text: item?.description ?? '');
-    final ok = await showDialog<bool>(
+    final ok = await showModalBottomSheet<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(item == null ? 'Novo ${kind.singular.toLowerCase()}' : item.name),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              autofocus: true,
-              decoration: const InputDecoration(labelText: 'Nome'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: descCtrl,
-              maxLines: 2,
-              decoration: const InputDecoration(labelText: 'Descrição'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+      isScrollControlled: true,
+      builder: (ctx) => FormSheet(
+        title: item == null
+            ? 'Novo ${kind.singular.toLowerCase()}'
+            : item.name,
+        children: [
+          TextField(
+            controller: nameCtrl,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Nome'),
           ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: descCtrl,
+            maxLines: 2,
+            decoration: const InputDecoration(labelText: 'Descrição'),
+          ),
+          const SizedBox(height: 16),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Salvar'),
@@ -193,7 +167,9 @@ class _CatalogTab extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Excluir "${item.name}"?'),
-        content: const Text('Não é possível se já houver registros usando este tipo.'),
+        content: const Text(
+          'Não é possível se já houver registros usando este tipo.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
