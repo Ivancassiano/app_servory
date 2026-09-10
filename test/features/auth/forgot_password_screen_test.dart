@@ -81,15 +81,18 @@ void main() {
 
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'abcd 2345'); // vira ABCD2345
-    await tester.enterText(fields.at(1), 'nova-senha-1');
-    await tester.enterText(fields.at(2), 'nova-senha-1');
+    await tester.enterText(fields.at(1), 'Nova-senha-1');
+    await tester.enterText(fields.at(2), 'Nova-senha-1');
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Redefinir senha'),
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Redefinir senha'));
     await tester.pumpAndSettle();
 
     verify(
       () => authApi.resetPassword(
         code: 'ABCD2345',
-        newPassword: 'nova-senha-1',
+        newPassword: 'Nova-senha-1',
       ),
     ).called(1);
     expect(find.text('Senha redefinida. Entre com a nova senha.'), findsOneWidget);
@@ -123,8 +126,11 @@ void main() {
 
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'WRONGCOD');
-    await tester.enterText(fields.at(1), 'nova-senha-1');
-    await tester.enterText(fields.at(2), 'nova-senha-1');
+    await tester.enterText(fields.at(1), 'Nova-senha-1');
+    await tester.enterText(fields.at(2), 'Nova-senha-1');
+    await tester.ensureVisible(
+      find.widgetWithText(FilledButton, 'Redefinir senha'),
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Redefinir senha'));
     await tester.pumpAndSettle();
 

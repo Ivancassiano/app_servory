@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:servory/features/auth/presentation/password_requirements.dart';
 
 void main() {
-  testWidgets('acompanha o controller ao vivo: ○ curta → ✓ ok', (tester) async {
+  testWidgets('acompanha o controller ao vivo: ○ incompleta → ✓ tudo ok', (
+    tester,
+  ) async {
     final controller = TextEditingController();
     addTearDown(controller.dispose);
 
@@ -14,16 +16,21 @@ void main() {
     );
 
     expect(find.text('Pelo menos 8 caracteres'), findsOneWidget);
-    expect(find.byIcon(Icons.circle_outlined), findsOneWidget);
+    expect(find.text('Um símbolo (ex.: ! @ # -)'), findsOneWidget);
+    // vazio: as cinco regras pendentes
+    expect(find.byIcon(Icons.circle_outlined), findsNWidgets(5));
     expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
 
+    // só minúsculas: uma regra satisfeita
     controller.text = 'curta';
     await tester.pump();
-    expect(find.byIcon(Icons.circle_outlined), findsOneWidget);
-
-    controller.text = 'agora-vai-passar';
-    await tester.pump();
     expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.circle_outlined), findsNWidgets(4));
+
+    // completa: as cinco satisfeitas
+    controller.text = 'Senha-forte-1';
+    await tester.pump();
+    expect(find.byIcon(Icons.check_circle_rounded), findsNWidgets(5));
     expect(find.byIcon(Icons.circle_outlined), findsNothing);
   });
 }

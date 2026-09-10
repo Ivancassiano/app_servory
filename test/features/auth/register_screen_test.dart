@@ -80,8 +80,8 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(0), 'Minha Org');
     await tester.enterText(find.byType(TextFormField).at(1), 'Fulano');
     await tester.enterText(find.byType(TextFormField).at(2), 'a@b.com');
-    await tester.enterText(find.byType(TextFormField).at(3), 'senha1234');
-    await tester.enterText(find.byType(TextFormField).at(4), 'outra5678');
+    await tester.enterText(find.byType(TextFormField).at(3), 'Senha-1234');
+    await tester.enterText(find.byType(TextFormField).at(4), 'Outra-5678');
     await tester.ensureVisible(
       find.widgetWithText(FilledButton, 'Criar conta'),
     );
@@ -108,8 +108,8 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(0), 'Minha Org');
     await tester.enterText(find.byType(TextFormField).at(1), 'Fulano');
     await tester.enterText(find.byType(TextFormField).at(2), 'novo@b.com');
-    await tester.enterText(find.byType(TextFormField).at(3), 'senha1234');
-    await tester.enterText(find.byType(TextFormField).at(4), 'senha1234');
+    await tester.enterText(find.byType(TextFormField).at(3), 'Senha-1234');
+    await tester.enterText(find.byType(TextFormField).at(4), 'Senha-1234');
     await tester.ensureVisible(
       find.widgetWithText(FilledButton, 'Criar conta'),
     );
@@ -121,7 +121,7 @@ void main() {
         organizationName: 'Minha Org',
         name: 'Fulano',
         email: 'novo@b.com',
-        password: 'senha1234',
+        password: 'Senha-1234',
       ),
     ).called(1);
     expect(find.text('verify novo@b.com'), findsOneWidget);
@@ -148,8 +148,8 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(0), 'Minha Org');
     await tester.enterText(find.byType(TextFormField).at(1), 'Fulano');
     await tester.enterText(find.byType(TextFormField).at(2), 'dup@b.com');
-    await tester.enterText(find.byType(TextFormField).at(3), 'senha1234');
-    await tester.enterText(find.byType(TextFormField).at(4), 'senha1234');
+    await tester.enterText(find.byType(TextFormField).at(3), 'Senha-1234');
+    await tester.enterText(find.byType(TextFormField).at(4), 'Senha-1234');
     await tester.ensureVisible(
       find.widgetWithText(FilledButton, 'Criar conta'),
     );
