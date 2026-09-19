@@ -156,16 +156,13 @@ class _ItemCustomFieldsFormState extends ConsumerState<ItemCustomFieldsForm> {
         final options =
             ref.watch(itemFieldOptionsProvider(d.id)).value ??
             const <LocalItemFieldOption>[];
-        return DropdownButtonFormField<String>(
-          initialValue: cur?.text,
-          decoration: InputDecoration(labelText: label),
-          items: [
-            for (final o in options)
-              DropdownMenuItem(value: o.value, child: Text(o.label)),
-          ],
+        return _SelectField(
+          key: ValueKey('select:${d.id}'),
+          label: label,
+          required: d.required,
+          options: options,
+          value: cur?.text,
           onChanged: (v) => _set(d.id, TypedFieldValue(text: v)),
-          validator: (v) =>
-              d.required && (v == null || v.isEmpty) ? 'Obrigatório' : null,
         );
       default: // text
         return TextFormField(
@@ -178,5 +175,89 @@ class _ItemCustomFieldsFormState extends ConsumerState<ItemCustomFieldsForm> {
               : null,
         );
     }
+  }
+}
+
+/// Campo de lista. Mostra o rótulo do valor já gravado mesmo que a opção tenha
+/// sido inativada, mas a lista para escolher só traz as opções ativas — quem não
+/// escolher outra mantém o valor que já tinha (o servidor aceita valor inalterado).
+class _SelectField extends StatelessWidget {
+  const _SelectField({
+    super.key,
+    required this.label,
+    required this.required,
+    required this.options,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool required;
+  final List<LocalItemFieldOption> options;
+  final String? value;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return FormField<String>(
+      initialValue: value,
+      validator: (v) => required && (v == null || v.isEmpty) ? 'Obrigatório' : null,
+      builder: (state) {
+        final current = state.value;
+        final shown = current == null || current.isEmpty
+            ? ''
+            : selectOptionLabel(options, current);
+        final inactive =
+            current != null &&
+            options.any((o) => o.value == current && !o.isActive);
+        return InkWell(
+          onTap: () async {
+            final picked = await _pick(context, current);
+            if (picked == null) return;
+            final v = picked.isEmpty ? null : picked;
+            state.didChange(v);
+            onChanged(v);
+          },
+          child: InputDecorator(
+            decoration: InputDecoration(
+              labelText: label,
+              errorText: state.errorText,
+              helperText: inactive
+                  ? 'Opção inativa — escolha outra para trocar'
+                  : null,
+              suffixIcon: const Icon(Icons.arrow_drop_down),
+            ),
+            child: Text(shown.isEmpty ? 'Selecionar…' : shown),
+          ),
+        );
+      },
+    );
+  }
+
+  /// `null` = fechou sem escolher; `''` = limpar; senão o `value` escolhido.
+  Future<String?> _pick(BuildContext context, String? current) {
+    final active = options.where((o) => o.isActive).toList();
+    return showModalBottomSheet<String>(
+      context: context,
+      builder: (c) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            for (final o in active)
+              ListTile(
+                title: Text(o.label),
+                trailing: o.value == current ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.pop(c, o.value),
+              ),
+            if (!required && current != null && current.isNotEmpty)
+              ListTile(
+                leading: const Icon(Icons.clear),
+                title: const Text('Limpar seleção'),
+                onTap: () => Navigator.pop(c, ''),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }

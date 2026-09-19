@@ -5,6 +5,7 @@ import '../../../core/db/app_database.dart';
 import '../../../core/widgets/brand_app_bar.dart';
 import '../../../core/widgets/form_sheet.dart';
 import '../application/items_provider.dart';
+import 'field_options_editor.dart';
 
 const _dataTypeLabels = {
   'text': 'Texto',
@@ -119,12 +120,15 @@ class _ItemFieldsScreenState extends ConsumerState<ItemFieldsScreen> {
   Future<void> _edit(LocalItemFieldDef? existing) async {
     final types = ref.read(itemTypeListProvider).value ?? const [];
     final labelCtrl = TextEditingController(text: existing?.label ?? '');
-    final optionsCtrl = TextEditingController();
+    // Opções (ativas e inativas) como linhas editáveis; renomear/inativar
+    // mantém o id, então os itens que já usam a opção não são afetados.
+    final drafts = <FieldOptionDraft>[];
     if (existing?.dataType == 'select') {
       final opts =
           ref.read(itemFieldOptionsProvider(existing!.id)).value ?? const [];
-      optionsCtrl.text = opts.map((o) => o.label).join('\n');
+      drafts.addAll(opts.map(FieldOptionDraft.from));
     }
+    String? optionsError;
     var dataType = existing?.dataType ?? 'text';
     var required = existing?.required ?? false;
     String? typeId = existing?.itemTypeId;
@@ -148,7 +152,12 @@ class _ItemFieldsScreenState extends ConsumerState<ItemFieldsScreen> {
                 for (final e in _dataTypeLabels.entries)
                   DropdownMenuItem(value: e.key, child: Text(e.value)),
               ],
-              onChanged: (v) => setSt(() => dataType = v ?? 'text'),
+              onChanged: (v) => setSt(() {
+                dataType = v ?? 'text';
+                if (dataType == 'select' && drafts.isEmpty) {
+                  drafts.add(FieldOptionDraft());
+                }
+              }),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String?>(
@@ -166,13 +175,7 @@ class _ItemFieldsScreenState extends ConsumerState<ItemFieldsScreen> {
             ),
             if (dataType == 'select') ...[
               const SizedBox(height: 12),
-              TextField(
-                controller: optionsCtrl,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'Opções (uma por linha)',
-                ),
-              ),
+              FieldOptionsEditor(drafts: drafts, errorText: optionsError),
             ],
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
@@ -182,7 +185,16 @@ class _ItemFieldsScreenState extends ConsumerState<ItemFieldsScreen> {
             ),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: () => Navigator.pop(c, true),
+              onPressed: () {
+                if (dataType == 'select') {
+                  final r = collectFieldOptions(drafts);
+                  if (r.error != null) {
+                    setSt(() => optionsError = r.error);
+                    return;
+                  }
+                }
+                Navigator.pop(c, true);
+              },
               child: const Text('Salvar'),
             ),
           ],
@@ -192,11 +204,8 @@ class _ItemFieldsScreenState extends ConsumerState<ItemFieldsScreen> {
     if (saved != true) return;
 
     final options = dataType == 'select'
-        ? [
-            for (final l in optionsCtrl.text.split('\n'))
-              if (l.trim().isNotEmpty) (label: l.trim(), value: l.trim()),
-          ]
-        : const <({String label, String value})>[];
+        ? collectFieldOptions(drafts).options ?? const <FieldOptionInput>[]
+        : const <FieldOptionInput>[];
 
     try {
       final repo = ref.read(itemFieldDefRepositoryProvider);

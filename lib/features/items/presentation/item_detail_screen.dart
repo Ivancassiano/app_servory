@@ -523,6 +523,8 @@ class _FieldValuesView extends ConsumerWidget {
       for (final d in ref.watch(itemFieldDefListProvider).value ?? const [])
         d.id: d,
     };
+    final optionsByDef =
+        ref.watch(itemFieldOptionsByDefProvider).value ?? const {};
     String fmtDate(DateTime d, {required bool withTime}) {
       final l = d.toLocal();
       String p(int n) => n.toString().padLeft(2, '0');
@@ -536,7 +538,12 @@ class _FieldValuesView extends ConsumerWidget {
         for (final v in values)
           DetailRow(
             defs[v.fieldDefId]?.label ?? 'Campo',
-            v.valueText ??
+            (defs[v.fieldDefId]?.dataType == 'select' && v.valueText != null
+                    ? selectOptionLabel(
+                        optionsByDef[v.fieldDefId] ?? const [],
+                        v.valueText!,
+                      )
+                    : v.valueText) ??
                 v.valueNumber?.toString() ??
                 (v.valueBoolean != null
                     ? (v.valueBoolean! ? 'Sim' : 'Não')

@@ -9,10 +9,13 @@ export '../data/item_type_repository.dart'
     show itemTypeListProvider, itemTypeRepositoryProvider;
 export '../data/item_field_def_repository.dart'
     show
+        FieldOptionInput,
         itemFieldDefListProvider,
         itemFieldDefRepositoryProvider,
         itemFieldDefsForTypeProvider,
-        itemFieldOptionsProvider;
+        itemFieldOptionsByDefProvider,
+        itemFieldOptionsProvider,
+        selectOptionLabel;
 export '../data/item_field_value_repository.dart'
     show
         TypedFieldValue,

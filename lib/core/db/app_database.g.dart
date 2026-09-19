@@ -4459,6 +4459,21 @@ class $LocalItemFieldOptionsTable extends LocalItemFieldOptions
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _cachedAtMeta = const VerificationMeta(
     'cachedAt',
   );
@@ -4478,6 +4493,7 @@ class $LocalItemFieldOptionsTable extends LocalItemFieldOptions
     label,
     value,
     position,
+    isActive,
     cachedAt,
   ];
   @override
@@ -4541,6 +4557,12 @@ class $LocalItemFieldOptionsTable extends LocalItemFieldOptions
         position.isAcceptableOrUnknown(data['position']!, _positionMeta),
       );
     }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
     if (data.containsKey('cached_at')) {
       context.handle(
         _cachedAtMeta,
@@ -4582,6 +4604,10 @@ class $LocalItemFieldOptionsTable extends LocalItemFieldOptions
         DriftSqlType.int,
         data['${effectivePrefix}position'],
       )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
       cachedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}cached_at'],
@@ -4603,6 +4629,7 @@ class LocalItemFieldOption extends DataClass
   final String label;
   final String value;
   final int position;
+  final bool isActive;
   final DateTime cachedAt;
   const LocalItemFieldOption({
     required this.id,
@@ -4611,6 +4638,7 @@ class LocalItemFieldOption extends DataClass
     required this.label,
     required this.value,
     required this.position,
+    required this.isActive,
     required this.cachedAt,
   });
   @override
@@ -4622,6 +4650,7 @@ class LocalItemFieldOption extends DataClass
     map['label'] = Variable<String>(label);
     map['value'] = Variable<String>(value);
     map['position'] = Variable<int>(position);
+    map['is_active'] = Variable<bool>(isActive);
     map['cached_at'] = Variable<DateTime>(cachedAt);
     return map;
   }
@@ -4634,6 +4663,7 @@ class LocalItemFieldOption extends DataClass
       label: Value(label),
       value: Value(value),
       position: Value(position),
+      isActive: Value(isActive),
       cachedAt: Value(cachedAt),
     );
   }
@@ -4650,6 +4680,7 @@ class LocalItemFieldOption extends DataClass
       label: serializer.fromJson<String>(json['label']),
       value: serializer.fromJson<String>(json['value']),
       position: serializer.fromJson<int>(json['position']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
       cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
     );
   }
@@ -4663,6 +4694,7 @@ class LocalItemFieldOption extends DataClass
       'label': serializer.toJson<String>(label),
       'value': serializer.toJson<String>(value),
       'position': serializer.toJson<int>(position),
+      'isActive': serializer.toJson<bool>(isActive),
       'cachedAt': serializer.toJson<DateTime>(cachedAt),
     };
   }
@@ -4674,6 +4706,7 @@ class LocalItemFieldOption extends DataClass
     String? label,
     String? value,
     int? position,
+    bool? isActive,
     DateTime? cachedAt,
   }) => LocalItemFieldOption(
     id: id ?? this.id,
@@ -4682,6 +4715,7 @@ class LocalItemFieldOption extends DataClass
     label: label ?? this.label,
     value: value ?? this.value,
     position: position ?? this.position,
+    isActive: isActive ?? this.isActive,
     cachedAt: cachedAt ?? this.cachedAt,
   );
   LocalItemFieldOption copyWithCompanion(LocalItemFieldOptionsCompanion data) {
@@ -4696,6 +4730,7 @@ class LocalItemFieldOption extends DataClass
       label: data.label.present ? data.label.value : this.label,
       value: data.value.present ? data.value.value : this.value,
       position: data.position.present ? data.position.value : this.position,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
     );
   }
@@ -4709,6 +4744,7 @@ class LocalItemFieldOption extends DataClass
           ..write('label: $label, ')
           ..write('value: $value, ')
           ..write('position: $position, ')
+          ..write('isActive: $isActive, ')
           ..write('cachedAt: $cachedAt')
           ..write(')'))
         .toString();
@@ -4722,6 +4758,7 @@ class LocalItemFieldOption extends DataClass
     label,
     value,
     position,
+    isActive,
     cachedAt,
   );
   @override
@@ -4734,6 +4771,7 @@ class LocalItemFieldOption extends DataClass
           other.label == this.label &&
           other.value == this.value &&
           other.position == this.position &&
+          other.isActive == this.isActive &&
           other.cachedAt == this.cachedAt);
 }
 
@@ -4745,6 +4783,7 @@ class LocalItemFieldOptionsCompanion
   final Value<String> label;
   final Value<String> value;
   final Value<int> position;
+  final Value<bool> isActive;
   final Value<DateTime> cachedAt;
   final Value<int> rowid;
   const LocalItemFieldOptionsCompanion({
@@ -4754,6 +4793,7 @@ class LocalItemFieldOptionsCompanion
     this.label = const Value.absent(),
     this.value = const Value.absent(),
     this.position = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.cachedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -4764,6 +4804,7 @@ class LocalItemFieldOptionsCompanion
     required String label,
     required String value,
     this.position = const Value.absent(),
+    this.isActive = const Value.absent(),
     required DateTime cachedAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -4779,6 +4820,7 @@ class LocalItemFieldOptionsCompanion
     Expression<String>? label,
     Expression<String>? value,
     Expression<int>? position,
+    Expression<bool>? isActive,
     Expression<DateTime>? cachedAt,
     Expression<int>? rowid,
   }) {
@@ -4789,6 +4831,7 @@ class LocalItemFieldOptionsCompanion
       if (label != null) 'label': label,
       if (value != null) 'value': value,
       if (position != null) 'position': position,
+      if (isActive != null) 'is_active': isActive,
       if (cachedAt != null) 'cached_at': cachedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -4801,6 +4844,7 @@ class LocalItemFieldOptionsCompanion
     Value<String>? label,
     Value<String>? value,
     Value<int>? position,
+    Value<bool>? isActive,
     Value<DateTime>? cachedAt,
     Value<int>? rowid,
   }) {
@@ -4811,6 +4855,7 @@ class LocalItemFieldOptionsCompanion
       label: label ?? this.label,
       value: value ?? this.value,
       position: position ?? this.position,
+      isActive: isActive ?? this.isActive,
       cachedAt: cachedAt ?? this.cachedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -4837,6 +4882,9 @@ class LocalItemFieldOptionsCompanion
     if (position.present) {
       map['position'] = Variable<int>(position.value);
     }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
     if (cachedAt.present) {
       map['cached_at'] = Variable<DateTime>(cachedAt.value);
     }
@@ -4855,6 +4903,7 @@ class LocalItemFieldOptionsCompanion
           ..write('label: $label, ')
           ..write('value: $value, ')
           ..write('position: $position, ')
+          ..write('isActive: $isActive, ')
           ..write('cachedAt: $cachedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -18581,6 +18630,7 @@ typedef $$LocalItemFieldOptionsTableCreateCompanionBuilder =
       required String label,
       required String value,
       Value<int> position,
+      Value<bool> isActive,
       required DateTime cachedAt,
       Value<int> rowid,
     });
@@ -18592,6 +18642,7 @@ typedef $$LocalItemFieldOptionsTableUpdateCompanionBuilder =
       Value<String> label,
       Value<String> value,
       Value<int> position,
+      Value<bool> isActive,
       Value<DateTime> cachedAt,
       Value<int> rowid,
     });
@@ -18632,6 +18683,11 @@ class $$LocalItemFieldOptionsTableFilterComposer
 
   ColumnFilters<int> get position => $composableBuilder(
     column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -18680,6 +18736,11 @@ class $$LocalItemFieldOptionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
     column: $table.cachedAt,
     builder: (column) => ColumnOrderings(column),
@@ -18716,6 +18777,9 @@ class $$LocalItemFieldOptionsTableAnnotationComposer
 
   GeneratedColumn<int> get position =>
       $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
 
   GeneratedColumn<DateTime> get cachedAt =>
       $composableBuilder(column: $table.cachedAt, builder: (column) => column);
@@ -18773,6 +18837,7 @@ class $$LocalItemFieldOptionsTableTableManager
                 Value<String> label = const Value.absent(),
                 Value<String> value = const Value.absent(),
                 Value<int> position = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime> cachedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalItemFieldOptionsCompanion(
@@ -18782,6 +18847,7 @@ class $$LocalItemFieldOptionsTableTableManager
                 label: label,
                 value: value,
                 position: position,
+                isActive: isActive,
                 cachedAt: cachedAt,
                 rowid: rowid,
               ),
@@ -18793,6 +18859,7 @@ class $$LocalItemFieldOptionsTableTableManager
                 required String label,
                 required String value,
                 Value<int> position = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 required DateTime cachedAt,
                 Value<int> rowid = const Value.absent(),
               }) => LocalItemFieldOptionsCompanion.insert(
@@ -18802,6 +18869,7 @@ class $$LocalItemFieldOptionsTableTableManager
                 label: label,
                 value: value,
                 position: position,
+                isActive: isActive,
                 cachedAt: cachedAt,
                 rowid: rowid,
               ),

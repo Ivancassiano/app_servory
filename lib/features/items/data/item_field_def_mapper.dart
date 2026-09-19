@@ -35,6 +35,7 @@ List<LocalItemFieldOption> itemFieldOptionsFromApiJson(
         label: (o['label'] as String?) ?? '',
         value: (o['value'] as String?) ?? '',
         position: (o['position'] as int?) ?? 0,
+        isActive: (o['is_active'] as bool?) ?? true,
         cachedAt: now,
       ),
   ];

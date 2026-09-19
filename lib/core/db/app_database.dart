@@ -119,7 +119,9 @@ class LocalItemFieldDefs extends Table {
 }
 
 /// Opções de um campo `select` (`ItemFieldDef.options`) — cacheado junto com
-/// os defs, REST-only.
+/// os defs, REST-only. `value` é o código estável que o item guarda (não muda
+/// ao renomear); `isActive = false` some da seleção, mas o item que já usa a
+/// opção continua exibindo o `label`.
 class LocalItemFieldOptions extends Table {
   TextColumn get id => text()();
   TextColumn get organizationId => text().named('organization_id')();
@@ -127,6 +129,8 @@ class LocalItemFieldOptions extends Table {
   TextColumn get label => text()();
   TextColumn get value => text()();
   IntColumn get position => integer().withDefault(const Constant(0))();
+  BoolColumn get isActive =>
+      boolean().named('is_active').withDefault(const Constant(true))();
   DateTimeColumn get cachedAt => dateTime().named('cached_at')();
 
   @override
@@ -503,7 +507,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -637,6 +641,15 @@ class AppDatabase extends _$AppDatabase {
         await m.database.customStatement(
           'CREATE INDEX IF NOT EXISTS local_photo_cache_owner_idx '
           'ON local_photo_cache (owner_kind, owner_id)',
+        );
+      }
+      if (from >= 8 && from < 18) {
+        // Opção de lista ganhou is_active (inativar). Cache REST-only: só um
+        // ALTER, com default true. Quem vinha de < 8 já recriou a tabela no
+        // schema novo no bloco acima.
+        await m.addColumn(
+          localItemFieldOptions,
+          localItemFieldOptions.isActive,
         );
       }
     },
