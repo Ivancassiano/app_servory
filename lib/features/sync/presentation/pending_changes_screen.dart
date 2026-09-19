@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/brand_app_bar.dart';
+import '../application/pending_target.dart';
 import '../application/sync_provider.dart';
 
 /// Lista o que foi feito offline e ainda não subiu — com o motivo do erro e a
 /// opção de reenviar ou descartar item a item. Chega pela faixa de status
-/// ("N alterações não enviadas → toque") e por Configurações.
+/// ("N alterações não enviadas → toque") e por Configurações. Tocar numa
+/// alteração leva direto ao registro para corrigir o que o servidor recusou.
 class PendingChangesScreen extends ConsumerWidget {
   const PendingChangesScreen({super.key});
 
@@ -116,51 +119,86 @@ class _Card extends StatelessWidget {
   const _Card({
     required this.title,
     required this.meta,
+    this.subject,
     this.error,
+    this.onOpen,
     required this.onDiscard,
   });
 
   final String title;
   final String meta;
+
+  /// Qual registro é (nome do item/campo…) — a outbox só guarda ids.
+  final String? subject;
   final String? error;
+
+  /// Vai até o lugar onde dá para corrigir; `null` = sem tela de destino.
+  final VoidCallback? onOpen;
   final VoidCallback onDiscard;
 
   @override
   Widget build(BuildContext context) {
+    final hasError = error != null && error!.isNotEmpty;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      decoration: const BoxDecoration(
-        border: Border.fromBorderSide(BorderSide(color: BrandColor.border)),
+      decoration: BoxDecoration(
+        border: Border.fromBorderSide(
+          BorderSide(
+            color: hasError ? BrandColor.errorText : BrandColor.border,
+          ),
+        ),
       ),
-      padding: const EdgeInsets.fromLTRB(14, 12, 6, 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontFamily: 'Space Grotesk',
-                    fontWeight: FontWeight.w500,
-                    color: BrandColor.ink,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(meta, style: BrandText.listMeta),
-                if (error != null && error!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    error!,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: BrandColor.errorText,
+            child: InkWell(
+              onTap: onOpen,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 0, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontFamily: 'Space Grotesk',
+                        fontWeight: FontWeight.w500,
+                        color: BrandColor.ink,
+                      ),
                     ),
-                  ),
-                ],
-              ],
+                    if (subject != null) ...[
+                      const SizedBox(height: 2),
+                      Text(subject!, style: BrandText.listMeta),
+                    ],
+                    const SizedBox(height: 2),
+                    Text(meta, style: BrandText.listMeta),
+                    if (hasError) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        error!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: BrandColor.errorText,
+                        ),
+                      ),
+                    ],
+                    if (onOpen != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        hasError
+                            ? 'Toque para corrigir →'
+                            : 'Toque para abrir →',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: BrandColor.blue,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
           IconButton(
@@ -174,6 +212,12 @@ class _Card extends StatelessWidget {
   }
 }
 
+/// Destino (rota + nome do registro) de cada operação da outbox.
+final _pendingTargetProvider = FutureProvider.autoDispose
+    .family<PendingTarget?, SyncOutboxData>(
+      (ref, op) => resolvePendingTarget(ref.watch(appDatabaseProvider), op),
+    );
+
 class _OutboxTile extends ConsumerWidget {
   const _OutboxTile({required this.row, super.key});
 
@@ -184,10 +228,13 @@ class _OutboxTile extends ConsumerWidget {
     final entity = _entityLabels[row.entityType] ?? row.entityType;
     final op = _opLabels[row.operationType] ?? row.operationType;
     final attempts = row.attempts > 0 ? ' · ${row.attempts} tentativa(s)' : '';
+    final target = ref.watch(_pendingTargetProvider(row)).value;
     return _Card(
       title: '$entity • $op',
+      subject: target?.subject,
       meta: '${_since(row.occurredAt)}$attempts',
       error: row.lastError == null ? null : _errorLine(row.lastError!),
+      onOpen: target == null ? null : () => context.push(target.route),
       onDiscard: () => _confirmDiscard(
         context,
         onYes: () => ref

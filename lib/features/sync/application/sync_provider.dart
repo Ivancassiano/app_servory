@@ -152,6 +152,26 @@ final pendingSyncCountProvider = Provider<int>(
   (ref) => ref.watch(pendingSyncCountStreamProvider).value ?? 0,
 );
 
+/// Quantas operações da outbox o servidor RECUSOU (têm `last_error`) — o
+/// usuário precisa mexer nelas; reenviar não resolve. Alimenta o aviso em
+/// vermelho da barra de status.
+final rejectedSyncCountProvider = StreamProvider<int>((ref) {
+  if (kIsWeb) return Stream.value(0);
+  final AppDatabase db;
+  try {
+    db = ref.watch(appDatabaseProvider);
+  } catch (_) {
+    return Stream.value(0);
+  }
+  return db
+      .customSelect(
+        'SELECT COUNT(*) AS n FROM sync_outbox WHERE last_error IS NOT NULL',
+        readsFrom: {db.syncOutbox},
+      )
+      .watchSingle()
+      .map((row) => row.read<int>('n'));
+});
+
 /// Operações de escrita ainda na outbox (para a tela "Alterações pendentes").
 final pendingOutboxProvider =
     StreamProvider.autoDispose<List<SyncOutboxData>>((ref) {

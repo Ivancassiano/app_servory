@@ -102,6 +102,19 @@ class _LocalFirstItemFieldValueRepository extends LocalFirstRepositoryBase
             (r.data as Map<String, dynamic>)['field_values'] as List? ??
             const [];
         await db.transaction(() async {
+          // O PUT substitui o conjunto inteiro: o que estava na outbox para
+          // estes valores (inclusive uma operação recusada pelo servidor, que
+          // o usuário acabou de corrigir) ficou obsoleto — senão reenviaria o
+          // valor velho e o erro voltaria a aparecer em "Alterações pendentes".
+          final stale = await (db.select(
+            db.localItemFieldValues,
+          )..where((t) => t.itemId.equals(itemId))).get();
+          await (db.delete(db.syncOutbox)..where(
+                (t) =>
+                    t.entityType.equals('item_field_value') &
+                    t.entityId.isIn([for (final v in stale) v.id]),
+              ))
+              .go();
           await (db.delete(
             db.localItemFieldValues,
           )..where((t) => t.itemId.equals(itemId))).go();
@@ -168,6 +181,7 @@ class _LocalFirstItemFieldValueRepository extends LocalFirstRepositoryBase
               valueBoolean: Value(e.value.boolean),
               localUpdatedAt: Value(DateTime.now()),
               syncStatus: const Value('pending'),
+              syncError: const Value(null),
             ),
           );
           await _dropPendingOps(cur.id);
@@ -223,8 +237,12 @@ class _LocalFirstItemFieldValueRepository extends LocalFirstRepositoryBase
               valueBoolean: Value(e.value.boolean),
               localUpdatedAt: Value(DateTime.now()),
               syncStatus: const Value('pending'),
+              syncError: const Value(null),
             ),
           );
+          // O `update` novo já carrega o valor final; um `update` anterior
+          // ainda na outbox (p.ex. recusado por opção inválida) fica obsoleto.
+          await _dropPendingOps(cur.id);
           await enqueue(
             entityType: 'item_field_value',
             entityId: cur.id,

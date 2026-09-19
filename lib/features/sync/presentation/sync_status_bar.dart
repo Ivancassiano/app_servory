@@ -93,7 +93,13 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
     final online = ref.watch(isOnlineProvider).value ?? true;
     final status = ref.watch(syncRunnerProvider);
     final pending = ref.watch(pendingSyncCountProvider);
-    final view = _describe(online: online, status: status, pending: pending);
+    final rejected = ref.watch(rejectedSyncCountProvider).value ?? 0;
+    final view = _describe(
+      online: online,
+      status: status,
+      pending: pending,
+      rejected: rejected,
+    );
 
     return Material(
       color: view.background,
@@ -205,6 +211,7 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
     required bool online,
     required SyncStatus status,
     required int pending,
+    required int rejected,
   }) {
     if (!online) {
       return _BarView(
@@ -227,6 +234,14 @@ class _SyncStatusBarState extends ConsumerState<SyncStatusBar>
         background: BrandColor.errorBg,
         foreground: BrandColor.errorText,
         label: 'Falha ao sincronizar — toque para atualizar',
+      );
+    }
+    if (rejected > 0) {
+      // O servidor recusou — reenviar não adianta, o usuário precisa corrigir.
+      return _BarView(
+        background: BrandColor.errorBg,
+        foreground: BrandColor.errorText,
+        label: '${_changes(rejected)} com erro — toque para corrigir',
       );
     }
     if (pending > 0) {
