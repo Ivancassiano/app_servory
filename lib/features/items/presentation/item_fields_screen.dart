@@ -201,18 +201,35 @@ class _ItemFieldsScreenState extends ConsumerState<ItemFieldsScreen> {
         ),
       ),
     );
-    if (saved != true) return;
+    // Dono de labelCtrl e dos controllers de cada opção (nenhum widget os
+    // possui depois que a folha fecha) — libera nos dois desfechos, cancelar
+    // ou já com o valor final lido.
+    void disposeControllers() {
+      labelCtrl.dispose();
+      for (final d in drafts) {
+        d.controller.dispose();
+      }
+    }
+
+    if (saved != true) {
+      disposeControllers();
+      return;
+    }
 
     final options = dataType == 'select'
         ? collectFieldOptions(drafts).options ?? const <FieldOptionInput>[]
         : const <FieldOptionInput>[];
+    // Lê o texto ANTES de descartar os controllers — só depois disso mais
+    // nada aqui os usa.
+    final label = labelCtrl.text.trim();
+    disposeControllers();
 
     try {
       final repo = ref.read(itemFieldDefRepositoryProvider);
       if (existing == null) {
         await repo.create(
           itemTypeId: typeId,
-          label: labelCtrl.text.trim(),
+          label: label,
           dataType: dataType,
           required: required,
           options: options,
@@ -222,7 +239,7 @@ class _ItemFieldsScreenState extends ConsumerState<ItemFieldsScreen> {
           id: existing.id,
           baseVersion: existing.version,
           itemTypeId: typeId,
-          label: labelCtrl.text.trim(),
+          label: label,
           dataType: dataType,
           required: required,
           options: options,
