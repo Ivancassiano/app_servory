@@ -50,7 +50,7 @@ abstract interface class ItemRepository {
   Future<void> refresh();
 
   Future<String> create({
-    required String clientId,
+    String? clientId,
     required ItemFields fields,
   });
 
@@ -98,7 +98,7 @@ class LocalFirstItemRepository extends LocalFirstRepositoryBase
 
   @override
   Future<String> create({
-    required String clientId,
+    String? clientId,
     required ItemFields fields,
   }) async {
     final body = itemCreateBody(
@@ -132,7 +132,7 @@ class LocalFirstItemRepository extends LocalFirstRepositoryBase
             LocalItemsCompanion.insert(
               id: id,
               organizationId: orgId,
-              clientId: clientId,
+              clientId: Value(clientId),
               locationId: Value(fields.locationId),
               itemTypeId: Value(fields.itemTypeId),
               name: fields.name,
@@ -245,7 +245,7 @@ class RemoteItemRepository implements ItemRepository, PagedListRepository {
 
   @override
   Future<String> create({
-    required String clientId,
+    String? clientId,
     required ItemFields fields,
   }) async {
     final it = await _collection.create(

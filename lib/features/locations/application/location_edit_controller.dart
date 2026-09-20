@@ -8,7 +8,7 @@ class LocationEditController {
   final Ref _ref;
 
   Future<String> create({
-    required String clientId,
+    String? clientId,
     required LocationFields fields,
   }) => _ref
       .read(locationRepositoryProvider)

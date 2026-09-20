@@ -139,6 +139,23 @@ void main() {
       expect(outbox.single.operationType, 'create');
       expect(outbox.single.payload, contains('loc1'));
     });
+
+    // Cliente, local e item são independentes entre si (ADR-0027): item de
+    // manutenção interna pode não ter cliente.
+    test('offline: grava item sem cliente', () async {
+      final c = await build(
+        online: false,
+        handler: (req) => (status: 200, body: {'items': <dynamic>[]}),
+      );
+      final repo = c.read(itemRepositoryProvider);
+      final id = await repo.create(
+        fields: const ItemFields(name: 'Item interno'),
+      );
+      final row = await (db.select(
+        db.localItems,
+      )..where((t) => t.id.equals(id))).getSingle();
+      expect(row.clientId, null);
+    });
   });
 }
 

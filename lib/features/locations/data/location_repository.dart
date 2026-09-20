@@ -46,7 +46,7 @@ abstract interface class LocationRepository {
   Future<void> refresh();
 
   Future<String> create({
-    required String clientId,
+    String? clientId,
     required LocationFields fields,
   });
 
@@ -97,7 +97,7 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
 
   @override
   Future<String> create({
-    required String clientId,
+    String? clientId,
     required LocationFields fields,
   }) async {
     final body = locationCreateBody(
@@ -128,7 +128,7 @@ class LocalFirstLocationRepository extends LocalFirstRepositoryBase
             LocalLocationsCompanion.insert(
               id: id,
               organizationId: orgId,
-              clientId: clientId,
+              clientId: Value(clientId),
               name: Value(fields.name),
               postalCode: Value(fields.address.postalCode),
               street: Value(fields.address.street),
@@ -280,7 +280,7 @@ class RemoteLocationRepository
 
   @override
   Future<String> create({
-    required String clientId,
+    String? clientId,
     required LocationFields fields,
   }) async {
     final l = await _collection.create(

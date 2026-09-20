@@ -12,7 +12,7 @@ LocalItem itemFromApiJson(
   return LocalItem(
     id: j['id'] as String,
     organizationId: organizationId,
-    clientId: stringOr(j['client_id']),
+    clientId: j['client_id'] as String?,
     locationId: j['location_id'] as String?,
     itemTypeId: j['item_type_id'] as String?,
     name: stringOr(j['name']),
@@ -52,9 +52,11 @@ Map<String, dynamic> _itemFields({
   'is_active': ?isActive,
 };
 
-/// `POST /v1/items` — `client_id` e `name` obrigatórios.
+/// `POST /v1/items` — `name` obrigatório; `client_id` opcional (cliente,
+/// local e item são independentes entre si; item de manutenção interna pode
+/// não ter cliente).
 Map<String, dynamic> itemCreateBody({
-  required String clientId,
+  String? clientId,
   String? itemTypeId,
   String? locationId,
   required String name,

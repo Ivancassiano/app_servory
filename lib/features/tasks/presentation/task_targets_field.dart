@@ -11,9 +11,12 @@ import '../../locations/data/location_mapper.dart';
 import '../../locations/presentation/location_picker.dart';
 import '../data/task_mapper.dart';
 
-/// Frame "Alvos" da tarefa: locais e itens do cliente. Um item vinculado a um
-/// local aparece aninhado sob ele (sempre visível); endereço + contatos do
-/// cliente ficam atrás de um botão "Ver endereço e contato".
+/// Frame "Alvos" da tarefa: locais e itens. Cliente, local e item são
+/// independentes entre si (ADR-0026) — sem `clientId`, os pickers abaixo
+/// listam local/item da organização inteira, e não só os dele. Um item
+/// vinculado a um local aparece aninhado sob ele (sempre visível); endereço +
+/// contatos do cliente (quando há um) ficam atrás de um botão "Ver endereço e
+/// contato".
 class TaskTargetsField extends ConsumerWidget {
   const TaskTargetsField({
     super.key,
@@ -82,7 +85,7 @@ class TaskTargetsField extends ConsumerWidget {
               child: Text(
                 readOnly
                     ? 'Nenhum local ou item.'
-                    : 'Opcional. Adicione locais e itens do cliente.',
+                    : 'Opcional. Adicione locais e itens.',
                 style: theme.textTheme.bodySmall,
               ),
             ),
@@ -122,7 +125,7 @@ class TaskTargetsField extends ConsumerWidget {
                       ),
               ),
             ),
-          if (!readOnly && clientId != null) ...[
+          if (!readOnly) ...[
             const SizedBox(height: 4),
             Row(
               children: [
@@ -150,7 +153,7 @@ class TaskTargetsField extends ConsumerWidget {
   }
 
   Future<void> _addLocation(BuildContext context, WidgetRef ref) async {
-    final id = await pickLocation(context, clientId: clientId!);
+    final id = await pickLocation(context, clientId: clientId);
     FocusManager.instance.primaryFocus?.unfocus();
     if (id == null || id.isEmpty) return;
     if (targets.any((t) => t.locationId == id && t.itemId == null)) return;
@@ -166,7 +169,7 @@ class TaskTargetsField extends ConsumerWidget {
     final picked = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _ItemPickerSheet(clientId: clientId!),
+      builder: (_) => _ItemPickerSheet(clientId: clientId),
     );
     FocusManager.instance.primaryFocus?.unfocus();
     if (picked == null) return;
@@ -335,9 +338,11 @@ class _LocationInfo extends ConsumerWidget {
   }
 }
 
+/// Sem `clientId` (cliente, local e item são independentes entre si —
+/// ADR-0026), lista os itens da organização inteira.
 class _ItemPickerSheet extends ConsumerStatefulWidget {
   const _ItemPickerSheet({required this.clientId});
-  final String clientId;
+  final String? clientId;
 
   @override
   ConsumerState<_ItemPickerSheet> createState() => _ItemPickerSheetState();
@@ -348,9 +353,12 @@ class _ItemPickerSheetState extends ConsumerState<_ItemPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final clientId = widget.clientId;
+    final all = clientId == null
+        ? ref.watch(itemListProvider).value ?? const []
+        : ref.watch(itemsByClientProvider(clientId));
     final items =
-        ref
-            .watch(itemsByClientProvider(widget.clientId))
+        all
             .where(
               (i) =>
                   _q.isEmpty || accentFold(i.name).contains(accentFold(_q)),
@@ -360,7 +368,7 @@ class _ItemPickerSheetState extends ConsumerState<_ItemPickerSheet> {
             (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
           );
     return FormSheet(
-      title: 'Item do cliente',
+      title: clientId == null ? 'Item' : 'Item do cliente',
       children: [
         TextField(
           decoration: const InputDecoration(
@@ -378,9 +386,11 @@ class _ItemPickerSheetState extends ConsumerState<_ItemPickerSheet> {
           ),
         ),
         if (items.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Text('Nenhum item para este cliente.'),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Text(
+              clientId == null ? 'Nenhum item.' : 'Nenhum item para este cliente.',
+            ),
           ),
       ],
     );

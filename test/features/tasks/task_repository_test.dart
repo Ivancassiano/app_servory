@@ -101,6 +101,43 @@ void main() {
     expect((payload['targets'] as List).length, 2);
   });
 
+  // Cliente, local e item são independentes entre si (ADR-0026): tarefa
+  // interna sem cliente continua gravando normalmente (client_id nulo na
+  // linha local, ausente do payload).
+  test('offline: grava tarefa sem cliente', () async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    final stub = StubDio((req) => (status: 200, body: {'tasks': <dynamic>[]}));
+    final c = ProviderContainer(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        apiClientProvider.overrideWithValue(_FakeApiClient(stub.dio)),
+        isOnlineProvider.overrideWith((ref) => Stream.value(false)),
+        sessionControllerProvider.overrideWith(_FakeSession.new),
+      ],
+    );
+    addTearDown(c.dispose);
+    addTearDown(db.close);
+    c.listen(isOnlineProvider, (_, _) {});
+    await pumpEventQueue();
+
+    final repo = c.read(taskRepositoryProvider);
+    final id = await repo.create(
+      fields: const TaskFields(
+        description: 'Manutenção interna',
+        targets: [TaskTargetInput(itemId: 'i1')],
+      ),
+    );
+
+    final task = await (db.select(
+      db.localTasks,
+    )..where((t) => t.id.equals(id))).getSingle();
+    expect(task.clientId, isNull);
+
+    final outbox = await db.select(db.syncOutbox).getSingle();
+    final payload = jsonDecode(outbox.payload) as Map<String, dynamic>;
+    expect(payload['client_id'], isNull);
+  });
+
   test('offline: transition complete marca done + enfileira ação', () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     final stub = StubDio((req) => (status: 200, body: {'tasks': <dynamic>[]}));

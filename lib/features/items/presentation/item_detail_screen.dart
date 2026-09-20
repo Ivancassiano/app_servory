@@ -171,10 +171,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   Future<void> _submit(LocalItem? existing) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    if (_clientId == null) {
-      setState(() => _error = 'Selecione o cliente.');
-      return;
-    }
     setState(() {
       _saving = true;
       _error = null;
@@ -183,7 +179,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       final ctrl = ref.read(itemEditControllerProvider);
       final String id;
       if (existing == null) {
-        id = await ctrl.create(clientId: _clientId!, fields: _collect());
+        id = await ctrl.create(clientId: _clientId, fields: _collect());
       } else {
         id = existing.id;
         await ctrl.update(
@@ -290,6 +286,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       for (final t in ref.watch(itemTypeListProvider).value ?? const [])
         t.id: t.name,
     };
+    final clientName = (ref.watch(clientListProvider).value ?? const [])
+        .where((c) => c.id == it.clientId)
+        .map((c) => c.name)
+        .join();
     final loc = (ref.watch(locationListProvider).value ?? const [])
         .where((l) => l.id == it.locationId)
         .firstOrNull;
@@ -314,10 +314,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         children: [
           DetailRow(
             'Cliente',
-            (ref.watch(clientListProvider).value ?? const [])
-                .where((c) => c.id == it.clientId)
-                .map((c) => c.name)
-                .join(),
+            clientName.isEmpty ? 'Sem cliente' : clientName,
           ),
           DetailRow('Situação', it.isActive ? 'Ativo' : 'Inativo'),
           if (types[it.itemTypeId] != null)
@@ -355,13 +352,13 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         .map((c) => c.name)
         .join();
 
-    // Salvar só quando os obrigatórios estão preenchidos: cliente, nome e os
-    // campos personalizados `required` do tipo escolhido.
+    // Salvar só quando os obrigatórios estão preenchidos: nome e os campos
+    // personalizados `required` do tipo escolhido. Cliente é opcional —
+    // cliente, local e item são independentes entre si (ADR-0027).
     final requiredCustom = ref
         .watch(itemFieldDefsForTypeProvider(_typeId))
         .where((d) => d.required);
     final canSave =
-        _clientId != null &&
         _name.text.trim().isNotEmpty &&
         requiredCustom.every((d) {
           final v = _fieldValues[d.id];
@@ -401,6 +398,13 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                     }
                   },
                 ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    'Opcional — item de manutenção interna pode ficar sem cliente.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
                 const SizedBox(height: 16),
               ] else if (existing != null && clientName.isNotEmpty) ...[
                 DetailRow('Cliente', clientName),
@@ -431,19 +435,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 onChanged: (v) => setState(() => _typeId = v),
               ),
               const SizedBox(height: 16),
-              if (_clientId != null) ...[
-                LocationPickerField(
-                  locationLabel: _locationLabel(_locationId),
-                  onPick: () async {
-                    final id = await pickLocation(
-                      context,
-                      clientId: _clientId!,
-                    );
-                    if (id != null) setState(() => _locationId = id);
-                  },
-                ),
-                const SizedBox(height: 16),
-              ],
+              LocationPickerField(
+                locationLabel: _locationLabel(_locationId),
+                onPick: () async {
+                  final id = await pickLocation(context, clientId: _clientId);
+                  if (id != null) setState(() => _locationId = id);
+                },
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _notes,
                 decoration: const InputDecoration(labelText: 'Observações'),

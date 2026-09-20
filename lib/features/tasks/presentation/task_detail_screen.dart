@@ -71,10 +71,11 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     });
   }
 
-  /// Salvar habilita só com o mínimo pronto.
+  /// Salvar habilita só com o mínimo pronto. Cliente é opcional — cliente,
+  /// local e item são independentes entre si (ADR-0026); uma tarefa interna
+  /// pode não ter nenhum dos três.
   bool get _canSave {
     if (_description.text.trim().isEmpty) return false;
-    if (_clientId == null) return false;
     if (_showSchedule && _scheduledFor == null) return false;
     return true;
   }
@@ -114,10 +115,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
   Future<void> _submit(LocalTask? existing) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    if (_clientId == null) {
-      setState(() => _error = 'Selecione o cliente.');
-      return;
-    }
     setState(() {
       _saving = true;
       _error = null;
@@ -125,7 +122,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     try {
       final ctrl = ref.read(taskEditControllerProvider);
       if (existing == null) {
-        final id = await ctrl.create(clientId: _clientId!, fields: _collect());
+        final id = await ctrl.create(clientId: _clientId, fields: _collect());
         if (mounted) context.pushReplacement('/tasks/$id');
       } else {
         await ctrl.update(
@@ -263,7 +260,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
   }
 
   Widget _view(BuildContext context, LocalTask t) {
-    final clientName = ref.watch(clientByIdProvider(t.clientId)).value?.name;
+    final clientName = t.clientId == null
+        ? null
+        : ref.watch(clientByIdProvider(t.clientId!)).value?.name;
     final targetRows = ref.watch(taskTargetsProvider(t.id)).value ?? const [];
     final targets = [
       for (final r in targetRows)
@@ -290,7 +289,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          DetailRow('Cliente', clientName ?? ''),
+          DetailRow('Cliente', clientName ?? 'Sem cliente'),
           DetailRow('Descrição', t.description),
           DetailRow('Tipo', _refName(ReferenceKind.taskType, t.taskTypeId)),
           DetailRow(
@@ -483,9 +482,11 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               const SizedBox(height: 16),
               _scheduleFrame(context),
               const SizedBox(height: 16),
-              // Cliente fica logo acima dos alvos; os alvos só aparecem depois
-              // que há um cliente escolhido.
-              if (existing == null && widget.presetClientId == null)
+              // Cliente, local e item são independentes entre si (ADR-0026):
+              // opcional, e os alvos abaixo não dependem dele ter sido
+              // escolhido — uma tarefa interna pode ficar só com local/item,
+              // ou sem nenhum dos três.
+              if (existing == null && widget.presetClientId == null) ...[
                 ClientPickerField(
                   clientName: clientName,
                   onPick: () async {
@@ -499,25 +500,30 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                       });
                     }
                   },
-                )
-              else if (clientName.isNotEmpty)
-                DetailRow('Cliente', clientName),
-              if (_clientId != null) ...[
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    'Alvos',
-                    style: Theme.of(context).textTheme.titleSmall,
+                    'Opcional — tarefas internas podem ficar sem cliente.',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-                const SizedBox(height: 8),
-                TaskTargetsField(
-                  clientId: _clientId,
-                  targets: _targets,
-                  onChanged: (t) => setState(() => _targets = t),
+              ] else if (clientName.isNotEmpty)
+                DetailRow('Cliente', clientName),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Alvos',
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
-              ],
+              ),
+              const SizedBox(height: 8),
+              TaskTargetsField(
+                clientId: _clientId,
+                targets: _targets,
+                onChanged: (t) => setState(() => _targets = t),
+              ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _notes,

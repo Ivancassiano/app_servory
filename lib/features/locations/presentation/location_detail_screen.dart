@@ -71,9 +71,10 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
     _clientId = widget.presetClientId;
   }
 
-  /// Cliente e nome são obrigatórios para salvar.
-  bool get _canSave =>
-      _clientId != null && _name.text.trim().isNotEmpty;
+  /// Nome é obrigatório para salvar. Cliente é opcional — cliente, local e
+  /// item são independentes entre si (ADR-0027); um cadastro pequeno pode
+  /// ter só local + equipamento, sem nunca criar um cliente.
+  bool get _canSave => _name.text.trim().isNotEmpty;
 
   @override
   void dispose() {
@@ -138,10 +139,6 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
 
   Future<void> _submit(LocalLocation? existing) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    if (_clientId == null) {
-      setState(() => _error = 'Selecione o cliente.');
-      return;
-    }
     setState(() {
       _saving = true;
       _error = null;
@@ -150,7 +147,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
       final ctrl = ref.read(locationEditControllerProvider);
       if (existing == null) {
         final id = await ctrl.create(
-          clientId: _clientId!,
+          clientId: _clientId,
           fields: _collect(),
         );
         // Fotos escolhidas no cadastro sobem agora que o local tem id.
@@ -267,13 +264,11 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
     BuildContext context,
     LocalLocation? existing,
   ) async {
-    final clientId = _clientId;
-    if (clientId == null) return;
     final picked = await showModalBottomSheet<LocalItem>(
       context: context,
       isScrollControlled: true,
       builder: (_) => _LinkItemSheet(
-        clientId: clientId,
+        clientId: _clientId,
         excludeLocationId: existing?.id,
         excludeItemIds: existing == null ? _stagedItemIds : const [],
       ),
@@ -311,12 +306,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
             style: Theme.of(context).textTheme.titleSmall,
           ),
         ),
-        if (_clientId == null)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Text('Selecione um cliente para vincular itens.'),
-          )
-        else if (items.isEmpty)
+        if (items.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8),
             child: Text('Nenhum item vinculado.'),
@@ -352,9 +342,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: (_saving || _clientId == null)
-                    ? null
-                    : () => _linkItem(context, existing),
+                onPressed: _saving ? null : () => _linkItem(context, existing),
                 icon: const Icon(Icons.add_link),
                 label: const Text('Vincular item'),
               ),
@@ -362,12 +350,16 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: _clientId == null
-                    ? null
-                    : () => context.push(
-                        '/items/new?clientId=${_clientId!}'
-                        '${existing != null ? '&locationId=${existing.id}' : ''}',
-                      ),
+                onPressed: () {
+                  final clientId = _clientId;
+                  final params = [
+                    if (clientId != null) 'clientId=$clientId',
+                    if (existing != null) 'locationId=${existing.id}',
+                  ];
+                  context.push(
+                    '/items/new${params.isEmpty ? '' : '?${params.join('&')}'}',
+                  );
+                },
                 icon: const Icon(Icons.add),
                 label: const Text('Novo item'),
               ),
@@ -532,7 +524,7 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          DetailRow('Cliente', clientName),
+          DetailRow('Cliente', clientName.isEmpty ? 'Sem cliente' : clientName),
           DetailRow('Situação', l.isActive ? 'Ativo' : 'Inativo'),
           if (addr.isNotEmpty) DetailRow('Endereço', addr),
           if (l.notes.isNotEmpty) DetailRow('Observações', l.notes),
@@ -674,6 +666,13 @@ class _LocationDetailScreenState extends ConsumerState<LocationDetailScreen> {
                     if (id != null) setState(() => _clientId = id);
                   },
                 ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    'Opcional — dá pra cadastrar só o local, sem cliente.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
                 const SizedBox(height: 16),
               ],
               // Na edição o cliente é imutável — mostra só para referência.
@@ -782,7 +781,9 @@ class _LinkItemSheet extends ConsumerStatefulWidget {
     this.excludeItemIds = const [],
   });
 
-  final String clientId;
+  /// Sem cliente (cliente, local e item são independentes entre si —
+  /// ADR-0027), lista os itens da organização inteira.
+  final String? clientId;
 
   /// Esconde os itens já vinculados a este local (edição).
   final String? excludeLocationId;
@@ -799,9 +800,12 @@ class _LinkItemSheetState extends ConsumerState<_LinkItemSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final clientId = widget.clientId;
+    final all = clientId == null
+        ? ref.watch(itemListProvider).value ?? const []
+        : ref.watch(itemsByClientProvider(clientId));
     final items =
-        ref
-            .watch(itemsByClientProvider(widget.clientId))
+        all
             .where(
               (i) =>
                   widget.excludeLocationId == null ||
@@ -841,9 +845,13 @@ class _LinkItemSheetState extends ConsumerState<_LinkItemSheet> {
           ),
         ),
         if (items.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Text('Nenhum item disponível para este cliente.'),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Text(
+              clientId == null
+                  ? 'Nenhum item disponível.'
+                  : 'Nenhum item disponível para este cliente.',
+            ),
           ),
       ],
     );

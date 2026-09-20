@@ -8,7 +8,7 @@ class ItemEditController {
   final Ref _ref;
 
   Future<String> create({
-    required String clientId,
+    String? clientId,
     required ItemFields fields,
   }) => _ref
       .read(itemRepositoryProvider)

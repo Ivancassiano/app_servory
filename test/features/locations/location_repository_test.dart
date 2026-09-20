@@ -96,6 +96,37 @@ void main() {
     expect(outbox.single.operationType, 'create');
   });
 
+  // Cliente, local e item são independentes entre si (ADR-0027): um local
+  // pode existir sem cliente algum (cadastro pequeno que só quer local +
+  // equipamento).
+  test('offline: grava local sem cliente', () async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    final stub = StubDio(
+      (req) => (status: 200, body: {'locations': <dynamic>[]}),
+    );
+    final c = ProviderContainer(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        apiClientProvider.overrideWithValue(_FakeApiClient(stub.dio)),
+        isOnlineProvider.overrideWith((ref) => Stream.value(false)),
+        sessionControllerProvider.overrideWith(_FakeSession.new),
+      ],
+    );
+    addTearDown(c.dispose);
+    addTearDown(db.close);
+    c.listen(isOnlineProvider, (_, _) {});
+    await pumpEventQueue();
+
+    final repo = c.read(locationRepositoryProvider);
+    final id = await repo.create(
+      fields: const LocationFields(name: 'Depósito interno'),
+    );
+    final row = await (db.select(
+      db.localLocations,
+    )..where((t) => t.id.equals(id))).getSingle();
+    expect(row.clientId, null);
+  });
+
   test('offline: delete marca tombstone + outbox delete', () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     final stub = StubDio(

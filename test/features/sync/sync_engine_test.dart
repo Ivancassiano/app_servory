@@ -517,7 +517,7 @@ void main() {
           LocalItemsCompanion.insert(
             id: 'i1',
             organizationId: 'org1',
-            clientId: 'c1',
+            clientId: const Value('c1'),
             name: 'Filial',
             localUpdatedAt: now,
           ),

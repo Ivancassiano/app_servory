@@ -13,7 +13,7 @@ LocalTask taskFromApiJson(
   return LocalTask(
     id: j['id'] as String,
     organizationId: organizationId,
-    clientId: stringOr(j['client_id']),
+    clientId: j['client_id'] as String?,
     taskTypeId: j['task_type_id'] as String?,
     assignedUserId: j['assigned_user_id'] as String?,
     companyId: j['company_id'] as String?,
@@ -90,9 +90,10 @@ Map<String, dynamic> _taskFields({
   'targets': [for (final t in targets) t.toJson()],
 };
 
-/// `POST /v1/tasks` — `client_id` obrigatório.
+/// `POST /v1/tasks` — `client_id` opcional (cliente, local e item são
+/// independentes entre si; uma tarefa interna pode não ter cliente).
 Map<String, dynamic> taskCreateBody({
-  required String clientId,
+  String? clientId,
   String? taskTypeId,
   String? assignedUserId,
   String? companyId,

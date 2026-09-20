@@ -45,14 +45,14 @@ class LocalClients extends Table with _SyncColumns {
 }
 
 /// Espelha `Item` do OpenAPI — a fusão de local + equipamento (spec §7.4/§7.5
-/// reescritos). Árvore livre via `parentItemId` (reparent é REST-only:
-/// PATCH /v1/items/{id}/parent). Endereço estruturado opcional (herda do
-/// ancestral). `serialNumber`/`cost` são campos sensíveis (mascaráveis) —
-/// nullable pelo mesmo motivo de `internalNotes` em [LocalClients]:
-/// ausência no JSON do servidor é "sem permissão de leitura", não vazio.
+/// reescritos). Cliente opcional (ADR-0027: cliente, local e item são
+/// independentes entre si — item de manutenção interna não tem cliente).
+/// `serialNumber`/`cost` são campos sensíveis (mascaráveis) — nullable pelo
+/// mesmo motivo de `internalNotes` em [LocalClients]: ausência no JSON do
+/// servidor é "sem permissão de leitura", não vazio.
 class LocalItems extends Table with _SyncColumns {
   TextColumn get id => text()();
-  TextColumn get clientId => text().named('client_id')();
+  TextColumn get clientId => text().named('client_id').nullable()();
   TextColumn get locationId => text().named('location_id').nullable()();
   TextColumn get itemTypeId => text().named('item_type_id').nullable()();
   TextColumn get name => text()();
@@ -73,12 +73,13 @@ class LocalItems extends Table with _SyncColumns {
   Set<Column> get primaryKey => {id};
 }
 
-/// Espelha `Location` do OpenAPI — endereço estruturado + rótulo curto de um
-/// cliente. Um item aponta para no máximo um local (`LocalItems.locationId`).
-/// Sincroniza.
+/// Espelha `Location` do OpenAPI — endereço estruturado + rótulo curto.
+/// Cliente opcional (ADR-0027: cliente, local e item são independentes entre
+/// si — um cadastro pequeno pode ter só local + equipamento). Um item aponta
+/// para no máximo um local (`LocalItems.locationId`). Sincroniza.
 class LocalLocations extends Table with _SyncColumns {
   TextColumn get id => text()();
-  TextColumn get clientId => text().named('client_id')();
+  TextColumn get clientId => text().named('client_id').nullable()();
   TextColumn get name => text().withDefault(const Constant(''))();
   TextColumn get postalCode =>
       text().named('postal_code').withDefault(const Constant(''))();
@@ -260,13 +261,14 @@ class LocalServiceOrderRecommendations extends Table with _SyncColumns {
 }
 
 /// Espelha `Task` do OpenAPI — a camada de planejamento antes da ordem
-/// (spec: tarefa). UM cliente; alvos (locais/itens) ficam em
-/// [LocalTaskTargets], derivada do payload da tarefa no pull (não é entidade
-/// de sync própria). Sincroniza (`entity_type` = `task`); ações
-/// complete/cancel/reopen são operações nomeadas na outbox.
+/// (spec: tarefa). Cliente opcional (ADR-0026 no servidor — tarefa interna
+/// não tem cliente); alvos (locais/itens) ficam em [LocalTaskTargets],
+/// derivada do payload da tarefa no pull (não é entidade de sync própria).
+/// Sincroniza (`entity_type` = `task`); ações complete/cancel/reopen são
+/// operações nomeadas na outbox.
 class LocalTasks extends Table with _SyncColumns {
   TextColumn get id => text()();
-  TextColumn get clientId => text().named('client_id')();
+  TextColumn get clientId => text().named('client_id').nullable()();
   TextColumn get taskTypeId => text().named('task_type_id').nullable()();
   TextColumn get assignedUserId =>
       text().named('assigned_user_id').nullable()();
@@ -470,6 +472,25 @@ class LocalPhotoCache extends Table {
   Set<Column> get primaryKey => {photoId};
 }
 
+/// Zera `local_sync_state` (força o próximo pull a reprocessar o histórico
+/// inteiro desde o cursor 0) quando essa tabela existe. Usada por uma
+/// migração que dropou/recriou alguma tabela sincronizável — sem isso, o
+/// cursor já avançado faria o próximo pull incremental nunca trazer de volta
+/// o que acabou de ser apagado. `local_sync_state` é uma tabela-base (existe
+/// desde a v1); a checagem é só defensiva para não quebrar num banco
+/// parcial/de teste que não a tenha criado.
+Future<void> _resetSyncCursorIfPresent(Migrator m) async {
+  final hasSyncState = await m.database
+      .customSelect(
+        "SELECT name FROM sqlite_master WHERE type = 'table' "
+        "AND name = 'local_sync_state'",
+      )
+      .getSingleOrNull();
+  if (hasSyncState != null) {
+    await m.database.customStatement('DELETE FROM local_sync_state');
+  }
+}
+
 @DriftDatabase(
   tables: [
     LocalClients,
@@ -507,7 +528,7 @@ class AppDatabase extends _$AppDatabase {
       AppDatabase(executor);
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -651,6 +672,31 @@ class AppDatabase extends _$AppDatabase {
           localItemFieldOptions,
           localItemFieldOptions.isActive,
         );
+      }
+      if (from < 19) {
+        // client_id da tarefa vira opcional (ADR-0026 no servidor: cliente,
+        // local e item são independentes entre si). SQLite não faz ALTER de
+        // NOT NULL numa coluna existente — dropa e recria a tabela; zera o
+        // cursor de sync pra o próximo pull trazer as tarefas (e seus alvos,
+        // reescritos junto pelo mesmo upsert) de volta. As outras tabelas não
+        // mudam de forma e o upsert é idempotente, então um pull completo não
+        // duplica nem perde nada nelas.
+        await m.database.customStatement('DROP TABLE IF EXISTS local_tasks');
+        await m.createTable(localTasks);
+        await _resetSyncCursorIfPresent(m);
+      }
+      if (from < 20) {
+        // client_id de local/item vira opcional (ADR-0027 no servidor,
+        // extensão da ADR-0026: cliente, local e item são independentes
+        // entre si). Mesmo tratamento da v19 — dropa e recria as duas
+        // tabelas (SQLite não faz ALTER de NOT NULL) e zera o cursor de sync
+        // pra o próximo pull repovoar.
+        for (final t in const ['local_items', 'local_locations']) {
+          await m.database.customStatement('DROP TABLE IF EXISTS $t');
+        }
+        await m.createTable(localItems);
+        await m.createTable(localLocations);
+        await _resetSyncCursorIfPresent(m);
       }
     },
   );

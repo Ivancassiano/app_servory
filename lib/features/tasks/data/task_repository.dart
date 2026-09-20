@@ -45,7 +45,7 @@ abstract interface class TaskRepository {
   Stream<List<LocalTaskTarget>> watchTargets(String taskId);
   Future<void> refresh();
 
-  Future<String> create({required String clientId, required TaskFields fields});
+  Future<String> create({String? clientId, required TaskFields fields});
   Future<void> update({
     required String id,
     required int? baseVersion,
@@ -143,7 +143,7 @@ class LocalFirstTaskRepository extends LocalFirstRepositoryBase
 
   @override
   Future<String> create({
-    required String clientId,
+    String? clientId,
     required TaskFields fields,
   }) async {
     final body = taskCreateBody(
@@ -174,7 +174,7 @@ class LocalFirstTaskRepository extends LocalFirstRepositoryBase
             LocalTasksCompanion.insert(
               id: id,
               organizationId: orgId,
-              clientId: clientId,
+              clientId: Value(clientId),
               taskTypeId: Value(fields.taskTypeId),
               assignedUserId: Value(fields.assignedUserId),
               companyId: Value(fields.companyId),
@@ -411,7 +411,7 @@ class RemoteTaskRepository implements TaskRepository, PagedListRepository {
 
   @override
   Future<String> create({
-    required String clientId,
+    String? clientId,
     required TaskFields fields,
   }) async {
     final t = await _collection.create(

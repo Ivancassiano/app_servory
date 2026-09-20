@@ -7,11 +7,15 @@ import '../../clients/presentation/client_picker.dart' show accentFold;
 import '../application/locations_provider.dart';
 import '../data/location_mapper.dart';
 
-/// Bottom sheet de busca + seleção de um local do cliente. Retorna o id
-/// escolhido, ou a string vazia para "nenhum local".
+/// Bottom sheet de busca + seleção de local. Com `clientId`, restringe aos
+/// locais do cliente; sem `clientId` (cliente, local e item são
+/// independentes entre si — ADR-0026/ADR-0027), lista os locais da
+/// organização inteira. "Novo local" cria com o `clientId` recebido (ou sem
+/// cliente algum, se não houver um). Retorna o id escolhido, ou a string
+/// vazia para "nenhum local".
 Future<String?> pickLocation(
   BuildContext context, {
-  required String clientId,
+  String? clientId,
 }) => showModalBottomSheet<String>(
   context: context,
   isScrollControlled: true,
@@ -20,7 +24,7 @@ Future<String?> pickLocation(
 
 class _LocationPickerSheet extends ConsumerStatefulWidget {
   const _LocationPickerSheet({required this.clientId});
-  final String clientId;
+  final String? clientId;
 
   @override
   ConsumerState<_LocationPickerSheet> createState() =>
@@ -39,16 +43,14 @@ class _LocationPickerSheetState extends ConsumerState<_LocationPickerSheet> {
   }
 
   Future<void> _create() async {
+    final clientId = widget.clientId;
     final name = _newName.text.trim();
     if (name.isEmpty) return;
     setState(() => _creating = true);
     try {
       final id = await ref
           .read(locationRepositoryProvider)
-          .create(
-            clientId: widget.clientId,
-            fields: LocationFields(name: name),
-          );
+          .create(clientId: clientId, fields: LocationFields(name: name));
       if (mounted) Navigator.of(context).pop(id);
     } finally {
       if (mounted) setState(() => _creating = false);
@@ -57,9 +59,12 @@ class _LocationPickerSheetState extends ConsumerState<_LocationPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final clientId = widget.clientId;
+    final all = clientId == null
+        ? ref.watch(locationListProvider).value ?? const []
+        : ref.watch(locationsByClientProvider(clientId));
     final locations =
-        ref
-            .watch(locationsByClientProvider(widget.clientId))
+        all
             .where(
               (l) =>
                   _q.isEmpty ||

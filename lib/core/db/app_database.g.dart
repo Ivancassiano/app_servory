@@ -1115,9 +1115,9 @@ class $LocalLocationsTable extends LocalLocations
   late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
     'client_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
@@ -1353,8 +1353,6 @@ class $LocalLocationsTable extends LocalLocations
         _clientIdMeta,
         clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_clientIdMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -1472,7 +1470,7 @@ class $LocalLocationsTable extends LocalLocations
       clientId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}client_id'],
-      )!,
+      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -1539,7 +1537,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
   final String? syncError;
   final bool deleted;
   final String id;
-  final String clientId;
+  final String? clientId;
   final String name;
   final String postalCode;
   final String street;
@@ -1561,7 +1559,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     this.syncError,
     required this.deleted,
     required this.id,
-    required this.clientId,
+    this.clientId,
     required this.name,
     required this.postalCode,
     required this.street,
@@ -1592,7 +1590,9 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     }
     map['deleted'] = Variable<bool>(deleted);
     map['id'] = Variable<String>(id);
-    map['client_id'] = Variable<String>(clientId);
+    if (!nullToAbsent || clientId != null) {
+      map['client_id'] = Variable<String>(clientId);
+    }
     map['name'] = Variable<String>(name);
     map['postal_code'] = Variable<String>(postalCode);
     map['street'] = Variable<String>(street);
@@ -1628,7 +1628,9 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
           : Value(syncError),
       deleted: Value(deleted),
       id: Value(id),
-      clientId: Value(clientId),
+      clientId: clientId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clientId),
       name: Value(name),
       postalCode: Value(postalCode),
       street: Value(street),
@@ -1662,7 +1664,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       syncError: serializer.fromJson<String?>(json['syncError']),
       deleted: serializer.fromJson<bool>(json['deleted']),
       id: serializer.fromJson<String>(json['id']),
-      clientId: serializer.fromJson<String>(json['clientId']),
+      clientId: serializer.fromJson<String?>(json['clientId']),
       name: serializer.fromJson<String>(json['name']),
       postalCode: serializer.fromJson<String>(json['postalCode']),
       street: serializer.fromJson<String>(json['street']),
@@ -1689,7 +1691,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
       'syncError': serializer.toJson<String?>(syncError),
       'deleted': serializer.toJson<bool>(deleted),
       'id': serializer.toJson<String>(id),
-      'clientId': serializer.toJson<String>(clientId),
+      'clientId': serializer.toJson<String?>(clientId),
       'name': serializer.toJson<String>(name),
       'postalCode': serializer.toJson<String>(postalCode),
       'street': serializer.toJson<String>(street),
@@ -1714,7 +1716,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     Value<String?> syncError = const Value.absent(),
     bool? deleted,
     String? id,
-    String? clientId,
+    Value<String?> clientId = const Value.absent(),
     String? name,
     String? postalCode,
     String? street,
@@ -1736,7 +1738,7 @@ class LocalLocation extends DataClass implements Insertable<LocalLocation> {
     syncError: syncError.present ? syncError.value : this.syncError,
     deleted: deleted ?? this.deleted,
     id: id ?? this.id,
-    clientId: clientId ?? this.clientId,
+    clientId: clientId.present ? clientId.value : this.clientId,
     name: name ?? this.name,
     postalCode: postalCode ?? this.postalCode,
     street: street ?? this.street,
@@ -1876,7 +1878,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
   final Value<String?> syncError;
   final Value<bool> deleted;
   final Value<String> id;
-  final Value<String> clientId;
+  final Value<String?> clientId;
   final Value<String> name;
   final Value<String> postalCode;
   final Value<String> street;
@@ -1923,7 +1925,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     this.syncError = const Value.absent(),
     this.deleted = const Value.absent(),
     required String id,
-    required String clientId,
+    this.clientId = const Value.absent(),
     this.name = const Value.absent(),
     this.postalCode = const Value.absent(),
     this.street = const Value.absent(),
@@ -1939,8 +1941,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     this.rowid = const Value.absent(),
   }) : organizationId = Value(organizationId),
        localUpdatedAt = Value(localUpdatedAt),
-       id = Value(id),
-       clientId = Value(clientId);
+       id = Value(id);
   static Insertable<LocalLocation> custom({
     Expression<String>? organizationId,
     Expression<int>? version,
@@ -2000,7 +2001,7 @@ class LocalLocationsCompanion extends UpdateCompanion<LocalLocation> {
     Value<String?>? syncError,
     Value<bool>? deleted,
     Value<String>? id,
-    Value<String>? clientId,
+    Value<String?>? clientId,
     Value<String>? name,
     Value<String>? postalCode,
     Value<String>? street,
@@ -2248,9 +2249,9 @@ class $LocalItemsTable extends LocalItems
   late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
     'client_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _locationIdMeta = const VerificationMeta(
     'locationId',
@@ -2495,8 +2496,6 @@ class $LocalItemsTable extends LocalItems
         _clientIdMeta,
         clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_clientIdMeta);
     }
     if (data.containsKey('location_id')) {
       context.handle(
@@ -2634,7 +2633,7 @@ class $LocalItemsTable extends LocalItems
       clientId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}client_id'],
-      )!,
+      ),
       locationId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}location_id'],
@@ -2705,7 +2704,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
   final String? syncError;
   final bool deleted;
   final String id;
-  final String clientId;
+  final String? clientId;
   final String? locationId;
   final String? itemTypeId;
   final String name;
@@ -2728,7 +2727,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     this.syncError,
     required this.deleted,
     required this.id,
-    required this.clientId,
+    this.clientId,
     this.locationId,
     this.itemTypeId,
     required this.name,
@@ -2760,7 +2759,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     }
     map['deleted'] = Variable<bool>(deleted);
     map['id'] = Variable<String>(id);
-    map['client_id'] = Variable<String>(clientId);
+    if (!nullToAbsent || clientId != null) {
+      map['client_id'] = Variable<String>(clientId);
+    }
     if (!nullToAbsent || locationId != null) {
       map['location_id'] = Variable<String>(locationId);
     }
@@ -2807,7 +2808,9 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
           : Value(syncError),
       deleted: Value(deleted),
       id: Value(id),
-      clientId: Value(clientId),
+      clientId: clientId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clientId),
       locationId: locationId == null && nullToAbsent
           ? const Value.absent()
           : Value(locationId),
@@ -2850,7 +2853,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
       syncError: serializer.fromJson<String?>(json['syncError']),
       deleted: serializer.fromJson<bool>(json['deleted']),
       id: serializer.fromJson<String>(json['id']),
-      clientId: serializer.fromJson<String>(json['clientId']),
+      clientId: serializer.fromJson<String?>(json['clientId']),
       locationId: serializer.fromJson<String?>(json['locationId']),
       itemTypeId: serializer.fromJson<String?>(json['itemTypeId']),
       name: serializer.fromJson<String>(json['name']),
@@ -2878,7 +2881,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
       'syncError': serializer.toJson<String?>(syncError),
       'deleted': serializer.toJson<bool>(deleted),
       'id': serializer.toJson<String>(id),
-      'clientId': serializer.toJson<String>(clientId),
+      'clientId': serializer.toJson<String?>(clientId),
       'locationId': serializer.toJson<String?>(locationId),
       'itemTypeId': serializer.toJson<String?>(itemTypeId),
       'name': serializer.toJson<String>(name),
@@ -2904,7 +2907,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     Value<String?> syncError = const Value.absent(),
     bool? deleted,
     String? id,
-    String? clientId,
+    Value<String?> clientId = const Value.absent(),
     Value<String?> locationId = const Value.absent(),
     Value<String?> itemTypeId = const Value.absent(),
     String? name,
@@ -2927,7 +2930,7 @@ class LocalItem extends DataClass implements Insertable<LocalItem> {
     syncError: syncError.present ? syncError.value : this.syncError,
     deleted: deleted ?? this.deleted,
     id: id ?? this.id,
-    clientId: clientId ?? this.clientId,
+    clientId: clientId.present ? clientId.value : this.clientId,
     locationId: locationId.present ? locationId.value : this.locationId,
     itemTypeId: itemTypeId.present ? itemTypeId.value : this.itemTypeId,
     name: name ?? this.name,
@@ -3078,7 +3081,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
   final Value<String?> syncError;
   final Value<bool> deleted;
   final Value<String> id;
-  final Value<String> clientId;
+  final Value<String?> clientId;
   final Value<String?> locationId;
   final Value<String?> itemTypeId;
   final Value<String> name;
@@ -3127,7 +3130,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     this.syncError = const Value.absent(),
     this.deleted = const Value.absent(),
     required String id,
-    required String clientId,
+    this.clientId = const Value.absent(),
     this.locationId = const Value.absent(),
     this.itemTypeId = const Value.absent(),
     required String name,
@@ -3145,7 +3148,6 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
   }) : organizationId = Value(organizationId),
        localUpdatedAt = Value(localUpdatedAt),
        id = Value(id),
-       clientId = Value(clientId),
        name = Value(name);
   static Insertable<LocalItem> custom({
     Expression<String>? organizationId,
@@ -3208,7 +3210,7 @@ class LocalItemsCompanion extends UpdateCompanion<LocalItem> {
     Value<String?>? syncError,
     Value<bool>? deleted,
     Value<String>? id,
-    Value<String>? clientId,
+    Value<String?>? clientId,
     Value<String?>? locationId,
     Value<String?>? itemTypeId,
     Value<String>? name,
@@ -10482,9 +10484,9 @@ class $LocalTasksTable extends LocalTasks
   late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
     'client_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _taskTypeIdMeta = const VerificationMeta(
     'taskTypeId',
@@ -10747,8 +10749,6 @@ class $LocalTasksTable extends LocalTasks
         _clientIdMeta,
         clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_clientIdMeta);
     }
     if (data.containsKey('task_type_id')) {
       context.handle(
@@ -10902,7 +10902,7 @@ class $LocalTasksTable extends LocalTasks
       clientId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}client_id'],
-      )!,
+      ),
       taskTypeId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}task_type_id'],
@@ -10977,7 +10977,7 @@ class LocalTask extends DataClass implements Insertable<LocalTask> {
   final String? syncError;
   final bool deleted;
   final String id;
-  final String clientId;
+  final String? clientId;
   final String? taskTypeId;
   final String? assignedUserId;
   final String? companyId;
@@ -11001,7 +11001,7 @@ class LocalTask extends DataClass implements Insertable<LocalTask> {
     this.syncError,
     required this.deleted,
     required this.id,
-    required this.clientId,
+    this.clientId,
     this.taskTypeId,
     this.assignedUserId,
     this.companyId,
@@ -11034,7 +11034,9 @@ class LocalTask extends DataClass implements Insertable<LocalTask> {
     }
     map['deleted'] = Variable<bool>(deleted);
     map['id'] = Variable<String>(id);
-    map['client_id'] = Variable<String>(clientId);
+    if (!nullToAbsent || clientId != null) {
+      map['client_id'] = Variable<String>(clientId);
+    }
     if (!nullToAbsent || taskTypeId != null) {
       map['task_type_id'] = Variable<String>(taskTypeId);
     }
@@ -11086,7 +11088,9 @@ class LocalTask extends DataClass implements Insertable<LocalTask> {
           : Value(syncError),
       deleted: Value(deleted),
       id: Value(id),
-      clientId: Value(clientId),
+      clientId: clientId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clientId),
       taskTypeId: taskTypeId == null && nullToAbsent
           ? const Value.absent()
           : Value(taskTypeId),
@@ -11136,7 +11140,7 @@ class LocalTask extends DataClass implements Insertable<LocalTask> {
       syncError: serializer.fromJson<String?>(json['syncError']),
       deleted: serializer.fromJson<bool>(json['deleted']),
       id: serializer.fromJson<String>(json['id']),
-      clientId: serializer.fromJson<String>(json['clientId']),
+      clientId: serializer.fromJson<String?>(json['clientId']),
       taskTypeId: serializer.fromJson<String?>(json['taskTypeId']),
       assignedUserId: serializer.fromJson<String?>(json['assignedUserId']),
       companyId: serializer.fromJson<String?>(json['companyId']),
@@ -11165,7 +11169,7 @@ class LocalTask extends DataClass implements Insertable<LocalTask> {
       'syncError': serializer.toJson<String?>(syncError),
       'deleted': serializer.toJson<bool>(deleted),
       'id': serializer.toJson<String>(id),
-      'clientId': serializer.toJson<String>(clientId),
+      'clientId': serializer.toJson<String?>(clientId),
       'taskTypeId': serializer.toJson<String?>(taskTypeId),
       'assignedUserId': serializer.toJson<String?>(assignedUserId),
       'companyId': serializer.toJson<String?>(companyId),
@@ -11192,7 +11196,7 @@ class LocalTask extends DataClass implements Insertable<LocalTask> {
     Value<String?> syncError = const Value.absent(),
     bool? deleted,
     String? id,
-    String? clientId,
+    Value<String?> clientId = const Value.absent(),
     Value<String?> taskTypeId = const Value.absent(),
     Value<String?> assignedUserId = const Value.absent(),
     Value<String?> companyId = const Value.absent(),
@@ -11216,7 +11220,7 @@ class LocalTask extends DataClass implements Insertable<LocalTask> {
     syncError: syncError.present ? syncError.value : this.syncError,
     deleted: deleted ?? this.deleted,
     id: id ?? this.id,
-    clientId: clientId ?? this.clientId,
+    clientId: clientId.present ? clientId.value : this.clientId,
     taskTypeId: taskTypeId.present ? taskTypeId.value : this.taskTypeId,
     assignedUserId: assignedUserId.present
         ? assignedUserId.value
@@ -11384,7 +11388,7 @@ class LocalTasksCompanion extends UpdateCompanion<LocalTask> {
   final Value<String?> syncError;
   final Value<bool> deleted;
   final Value<String> id;
-  final Value<String> clientId;
+  final Value<String?> clientId;
   final Value<String?> taskTypeId;
   final Value<String?> assignedUserId;
   final Value<String?> companyId;
@@ -11435,7 +11439,7 @@ class LocalTasksCompanion extends UpdateCompanion<LocalTask> {
     this.syncError = const Value.absent(),
     this.deleted = const Value.absent(),
     required String id,
-    required String clientId,
+    this.clientId = const Value.absent(),
     this.taskTypeId = const Value.absent(),
     this.assignedUserId = const Value.absent(),
     this.companyId = const Value.absent(),
@@ -11453,8 +11457,7 @@ class LocalTasksCompanion extends UpdateCompanion<LocalTask> {
     this.rowid = const Value.absent(),
   }) : organizationId = Value(organizationId),
        localUpdatedAt = Value(localUpdatedAt),
-       id = Value(id),
-       clientId = Value(clientId);
+       id = Value(id);
   static Insertable<LocalTask> custom({
     Expression<String>? organizationId,
     Expression<int>? version,
@@ -11518,7 +11521,7 @@ class LocalTasksCompanion extends UpdateCompanion<LocalTask> {
     Value<String?>? syncError,
     Value<bool>? deleted,
     Value<String>? id,
-    Value<String>? clientId,
+    Value<String?>? clientId,
     Value<String?>? taskTypeId,
     Value<String?>? assignedUserId,
     Value<String?>? companyId,
@@ -17001,7 +17004,7 @@ typedef $$LocalLocationsTableCreateCompanionBuilder =
       Value<String?> syncError,
       Value<bool> deleted,
       required String id,
-      required String clientId,
+      Value<String?> clientId,
       Value<String> name,
       Value<String> postalCode,
       Value<String> street,
@@ -17026,7 +17029,7 @@ typedef $$LocalLocationsTableUpdateCompanionBuilder =
       Value<String?> syncError,
       Value<bool> deleted,
       Value<String> id,
-      Value<String> clientId,
+      Value<String?> clientId,
       Value<String> name,
       Value<String> postalCode,
       Value<String> street,
@@ -17398,7 +17401,7 @@ class $$LocalLocationsTableTableManager
                 Value<String?> syncError = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<String> id = const Value.absent(),
-                Value<String> clientId = const Value.absent(),
+                Value<String?> clientId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> postalCode = const Value.absent(),
                 Value<String> street = const Value.absent(),
@@ -17446,7 +17449,7 @@ class $$LocalLocationsTableTableManager
                 Value<String?> syncError = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 required String id,
-                required String clientId,
+                Value<String?> clientId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> postalCode = const Value.absent(),
                 Value<String> street = const Value.absent(),
@@ -17528,7 +17531,7 @@ typedef $$LocalItemsTableCreateCompanionBuilder =
       Value<String?> syncError,
       Value<bool> deleted,
       required String id,
-      required String clientId,
+      Value<String?> clientId,
       Value<String?> locationId,
       Value<String?> itemTypeId,
       required String name,
@@ -17554,7 +17557,7 @@ typedef $$LocalItemsTableUpdateCompanionBuilder =
       Value<String?> syncError,
       Value<bool> deleted,
       Value<String> id,
-      Value<String> clientId,
+      Value<String?> clientId,
       Value<String?> locationId,
       Value<String?> itemTypeId,
       Value<String> name,
@@ -17944,7 +17947,7 @@ class $$LocalItemsTableTableManager
                 Value<String?> syncError = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<String> id = const Value.absent(),
-                Value<String> clientId = const Value.absent(),
+                Value<String?> clientId = const Value.absent(),
                 Value<String?> locationId = const Value.absent(),
                 Value<String?> itemTypeId = const Value.absent(),
                 Value<String> name = const Value.absent(),
@@ -17994,7 +17997,7 @@ class $$LocalItemsTableTableManager
                 Value<String?> syncError = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 required String id,
-                required String clientId,
+                Value<String?> clientId = const Value.absent(),
                 Value<String?> locationId = const Value.absent(),
                 Value<String?> itemTypeId = const Value.absent(),
                 required String name,
@@ -21503,7 +21506,7 @@ typedef $$LocalTasksTableCreateCompanionBuilder =
       Value<String?> syncError,
       Value<bool> deleted,
       required String id,
-      required String clientId,
+      Value<String?> clientId,
       Value<String?> taskTypeId,
       Value<String?> assignedUserId,
       Value<String?> companyId,
@@ -21530,7 +21533,7 @@ typedef $$LocalTasksTableUpdateCompanionBuilder =
       Value<String?> syncError,
       Value<bool> deleted,
       Value<String> id,
-      Value<String> clientId,
+      Value<String?> clientId,
       Value<String?> taskTypeId,
       Value<String?> assignedUserId,
       Value<String?> companyId,
@@ -21942,7 +21945,7 @@ class $$LocalTasksTableTableManager
                 Value<String?> syncError = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 Value<String> id = const Value.absent(),
-                Value<String> clientId = const Value.absent(),
+                Value<String?> clientId = const Value.absent(),
                 Value<String?> taskTypeId = const Value.absent(),
                 Value<String?> assignedUserId = const Value.absent(),
                 Value<String?> companyId = const Value.absent(),
@@ -21994,7 +21997,7 @@ class $$LocalTasksTableTableManager
                 Value<String?> syncError = const Value.absent(),
                 Value<bool> deleted = const Value.absent(),
                 required String id,
-                required String clientId,
+                Value<String?> clientId = const Value.absent(),
                 Value<String?> taskTypeId = const Value.absent(),
                 Value<String?> assignedUserId = const Value.absent(),
                 Value<String?> companyId = const Value.absent(),

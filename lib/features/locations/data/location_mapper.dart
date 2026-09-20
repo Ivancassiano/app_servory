@@ -12,7 +12,7 @@ LocalLocation locationFromApiJson(
   return LocalLocation(
     id: j['id'] as String,
     organizationId: organizationId,
-    clientId: stringOr(j['client_id']),
+    clientId: j['client_id'] as String?,
     name: stringOr(j['name']),
     postalCode: stringOr(j['postal_code']),
     street: stringOr(j['street']),
@@ -89,9 +89,10 @@ Map<String, dynamic> _locationFields({
   'is_active': ?isActive,
 };
 
-/// `POST /v1/locations` — `client_id` obrigatório.
+/// `POST /v1/locations` — `client_id` opcional (cliente, local e item são
+/// independentes entre si; um cadastro pequeno pode ter só local + item).
 Map<String, dynamic> locationCreateBody({
-  required String clientId,
+  String? clientId,
   required String name,
   String notes = '',
   LocationAddressInput address = LocationAddressInput.empty,
