@@ -107,6 +107,8 @@ class ApiException implements Exception {
         'Você não pode escolher outra empresa para este registro.',
     'COMPANY_ASSIGN_FORBIDDEN':
         'Você não pode escolher outra empresa para este registro.',
+    'INVALID_KIND': 'O tipo do cliente informado é inválido.',
+    'INVALID_MODE': 'Modo de criação da ordem inválido.',
     'NETWORK_ERROR':
         'Não foi possível conectar ao servidor. Verifique sua conexão.',
     'INTERNAL': _genericMessage,
