@@ -319,9 +319,9 @@ final sessionControllerProvider =
     NotifierProvider<SessionController, SessionState>(SessionController.new);
 
 /// Tempo mínimo que o splash fica visível no boot (ver [SessionController._restore]).
-/// O padrão é zero (nenhum atraso) — quem liga isso é o `main.dart`, que
-/// sobrescreve com 3s no app de verdade. Assim os testes de widget não ganham
-/// um timer pendente só por encostarem na sessão.
+/// O padrão é zero (nenhum atraso) — nada sobrescreve isso no app de verdade
+/// hoje; existe para um teste poder simular um splash com duração mínima sem
+/// ganhar um timer pendente só por encostar na sessão.
 final bootSplashMinDurationProvider = Provider<Duration>(
   (_) => Duration.zero,
 );
