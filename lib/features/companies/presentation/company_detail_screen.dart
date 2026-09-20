@@ -150,7 +150,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
           personUserId: _kind == 'individual' ? _personUserId : null,
           name: _name.text.trim(),
           legalName: _legalName.text.trim(),
-          taxId: _taxId.text.trim(),
+          taxId: _kind == 'individual' ? '' : _taxId.text.trim(),
           taxRegime: _taxRegime.text.trim(),
           phone: _phone.text.trim(),
           email: _email.text.trim(),
@@ -165,7 +165,7 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
           personUserId: _personUserId,
           name: _name.text.trim(),
           legalName: _legalName.text.trim(),
-          taxId: _taxId.text.trim(),
+          taxId: _kind == 'individual' ? '' : _taxId.text.trim(),
           taxRegime: _taxRegime.text.trim(),
           phone: _phone.text.trim(),
           email: _email.text.trim(),
@@ -303,7 +303,10 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
                 if (widget.isNew) ...[
                   SegmentedButton<String>(
                     segments: const [
-                      ButtonSegment(value: 'legal', label: Text('Pessoa jurídica')),
+                      ButtonSegment(
+                        value: 'legal',
+                        label: Text('Pessoa jurídica'),
+                      ),
                       ButtonSegment(
                         value: 'individual',
                         label: Text('Profissional'),
@@ -345,23 +348,25 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      flex: 3,
-                      child: TextFormField(
-                        controller: _taxId,
-                        decoration: const InputDecoration(
-                          labelText: 'CNPJ / CPF',
+                    // O CPF do profissional é o do cadastro da pessoa
+                    // ("Meus dados"); a empresa individual não guarda o seu.
+                    if (_kind != 'individual') ...[
+                      Expanded(
+                        flex: 3,
+                        child: TextFormField(
+                          controller: _taxId,
+                          decoration: const InputDecoration(
+                            labelText: 'CNPJ / CPF',
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(
                       flex: 2,
                       child: TextFormField(
                         controller: _taxRegime,
-                        decoration: const InputDecoration(
-                          labelText: 'Regime',
-                        ),
+                        decoration: const InputDecoration(labelText: 'Regime'),
                       ),
                     ),
                   ],
@@ -495,7 +500,9 @@ class _CompanyDetailScreenState extends ConsumerState<CompanyDetailScreen> {
                   const SizedBox(height: 12),
                   Text(
                     _error!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 24),
@@ -593,9 +600,7 @@ class _LogoSectionState extends ConsumerState<_LogoSection> {
 
   void _refreshUrl() {
     _urlFuture = widget.company.hasLogo
-        ? ref
-              .read(companyRepositoryProvider)
-              .logoDownloadUrl(widget.company.id)
+        ? ref.read(companyRepositoryProvider).logoDownloadUrl(widget.company.id)
         : Future.value(null);
   }
 
@@ -609,11 +614,9 @@ class _LogoSectionState extends ConsumerState<_LogoSection> {
     if (!mounted) return;
     setState(() => _busy = true);
     try {
-      await ref.read(companyRepositoryProvider).setLogo(
-        widget.company.id,
-        bytes: bytes,
-        filename: file.name,
-      );
+      await ref
+          .read(companyRepositoryProvider)
+          .setLogo(widget.company.id, bytes: bytes, filename: file.name);
     } on ApiException catch (e) {
       _snack(e.friendlyMessage);
     } finally {
@@ -665,7 +668,8 @@ class _LogoSectionState extends ConsumerState<_LogoSection> {
                   url,
                   height: 120,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, _, _) => const Text('Falha ao exibir o logo.'),
+                  errorBuilder: (_, _, _) =>
+                      const Text('Falha ao exibir o logo.'),
                 ),
               );
             },
@@ -785,8 +789,10 @@ class _MembersSection extends ConsumerWidget {
 
   Future<void> _addMember(BuildContext context, WidgetRef ref) async {
     final users =
-        ref.read(referenceListProvider(ReferenceKind.orgUser)).value ?? const [];
-    final current = ref.read(companyMembersProvider(companyId)).value ?? const [];
+        ref.read(referenceListProvider(ReferenceKind.orgUser)).value ??
+        const [];
+    final current =
+        ref.read(companyMembersProvider(companyId)).value ?? const [];
     final taken = current.map((m) => m.userId).toSet();
     final options = users.where((u) => !taken.contains(u.id)).toList();
     if (options.isEmpty) {
@@ -815,9 +821,9 @@ class _MembersSection extends ConsumerWidget {
           .addMember(companyId, userId: userId);
     } on ApiException catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.friendlyMessage)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.friendlyMessage)));
       }
     }
   }

@@ -76,6 +76,8 @@ class ApiException implements Exception {
         'Este registro foi alterado por outra pessoa. Recarregue e tente de novo.',
     'TYPE_LOCKED':
         'Este campo já tem valores preenchidos, então o tipo do dado não pode mudar.',
+    'INDIVIDUAL_TAX_ID':
+        'Empresa de profissional usa o CPF do seu cadastro; não informe outro.',
     'VERSION_REQUIRED':
         'Não foi possível enviar essa edição. Descarte-a e refaça.',
     // Erros de validação que o sync devolve (mesmos códigos do REST).
