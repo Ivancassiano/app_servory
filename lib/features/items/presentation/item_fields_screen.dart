@@ -119,130 +119,54 @@ class _ItemFieldsScreenState extends ConsumerState<ItemFieldsScreen> {
 
   Future<void> _edit(LocalItemFieldDef? existing) async {
     final types = ref.read(itemTypeListProvider).value ?? const [];
-    final labelCtrl = TextEditingController(text: existing?.label ?? '');
     // Opções (ativas e inativas) como linhas editáveis; renomear/inativar
     // mantém o id, então os itens que já usam a opção não são afetados.
-    final drafts = <FieldOptionDraft>[];
-    if (existing?.dataType == 'select') {
-      final opts =
-          ref.read(itemFieldOptionsProvider(existing!.id)).value ?? const [];
-      drafts.addAll(opts.map(FieldOptionDraft.from));
-    }
-    String? optionsError;
-    var dataType = existing?.dataType ?? 'text';
-    var required = existing?.required ?? false;
-    String? typeId = existing?.itemTypeId;
+    //
+    // `await ...watchOptions(id).first`, não `ref.read(itemFieldOptionsProvider
+    // (id)).value` — este provider só é observado aqui (nada mais nesta tela o
+    // mantém "quente"), então na primeira leitura o stream ainda não emitiu e
+    // `.value` vem `null` mesmo com as opções já salvas no banco. Reproduzido
+    // no emulador: editar um campo lista logo após criá-lo mostrava a lista
+    // de opções vazia — salvar nesse estado inativaria Azul/Verde (ausentes
+    // do envio = inativadas), um efeito colateral que o admin não pediu.
+    final initialOptions = existing?.dataType == 'select'
+        ? await ref
+              .read(itemFieldDefRepositoryProvider)
+              .watchOptions(existing!.id)
+              .first
+        : const <LocalItemFieldOption>[];
+    if (!mounted) return; // o await acima pode ultrapassar a vida da tela
 
-    final saved = await showModalBottomSheet<bool>(
+    final result = await showModalBottomSheet<_FieldFormResult>(
       context: context,
       isScrollControlled: true,
-      builder: (c) => StatefulBuilder(
-        builder: (c, setSt) => FormSheet(
-          title: existing == null ? 'Novo campo' : 'Editar campo',
-          children: [
-            TextField(
-              controller: labelCtrl,
-              decoration: const InputDecoration(labelText: 'Descrição'),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: dataType,
-              decoration: const InputDecoration(labelText: 'Tipo do dado'),
-              items: [
-                for (final e in _dataTypeLabels.entries)
-                  DropdownMenuItem(value: e.key, child: Text(e.value)),
-              ],
-              onChanged: (v) => setSt(() {
-                dataType = v ?? 'text';
-                if (dataType == 'select' && drafts.isEmpty) {
-                  drafts.add(FieldOptionDraft());
-                }
-              }),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String?>(
-              initialValue: typeId,
-              decoration: const InputDecoration(labelText: 'Aplica-se a'),
-              items: [
-                const DropdownMenuItem(
-                  value: null,
-                  child: Text('Todos os itens (global)'),
-                ),
-                for (final t in types)
-                  DropdownMenuItem(value: t.id, child: Text(t.name)),
-              ],
-              onChanged: (v) => setSt(() => typeId = v),
-            ),
-            if (dataType == 'select') ...[
-              const SizedBox(height: 12),
-              FieldOptionsEditor(drafts: drafts, errorText: optionsError),
-            ],
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Obrigatório'),
-              value: required,
-              onChanged: (v) => setSt(() => required = v),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () {
-                if (dataType == 'select') {
-                  final r = collectFieldOptions(drafts);
-                  if (r.error != null) {
-                    setSt(() => optionsError = r.error);
-                    return;
-                  }
-                }
-                Navigator.pop(c, true);
-              },
-              child: const Text('Salvar'),
-            ),
-          ],
-        ),
+      builder: (c) => _FieldFormSheet(
+        existing: existing,
+        types: types,
+        initialOptions: initialOptions,
       ),
     );
-    // Dono de labelCtrl e dos controllers de cada opção (nenhum widget os
-    // possui depois que a folha fecha) — libera nos dois desfechos, cancelar
-    // ou já com o valor final lido.
-    void disposeControllers() {
-      labelCtrl.dispose();
-      for (final d in drafts) {
-        d.controller.dispose();
-      }
-    }
-
-    if (saved != true) {
-      disposeControllers();
-      return;
-    }
-
-    final options = dataType == 'select'
-        ? collectFieldOptions(drafts).options ?? const <FieldOptionInput>[]
-        : const <FieldOptionInput>[];
-    // Lê o texto ANTES de descartar os controllers — só depois disso mais
-    // nada aqui os usa.
-    final label = labelCtrl.text.trim();
-    disposeControllers();
+    if (result == null) return;
 
     try {
       final repo = ref.read(itemFieldDefRepositoryProvider);
       if (existing == null) {
         await repo.create(
-          itemTypeId: typeId,
-          label: label,
-          dataType: dataType,
-          required: required,
-          options: options,
+          itemTypeId: result.itemTypeId,
+          label: result.label,
+          dataType: result.dataType,
+          required: result.required,
+          options: result.options,
         );
       } else {
         await repo.update(
           id: existing.id,
           baseVersion: existing.version,
-          itemTypeId: typeId,
-          label: label,
-          dataType: dataType,
-          required: required,
-          options: options,
+          itemTypeId: result.itemTypeId,
+          label: result.label,
+          dataType: result.dataType,
+          required: result.required,
+          options: result.options,
         );
       }
     } catch (_) {
@@ -252,5 +176,133 @@ class _ItemFieldsScreenState extends ConsumerState<ItemFieldsScreen> {
         );
       }
     }
+  }
+}
+
+typedef _FieldFormResult = ({
+  String label,
+  String dataType,
+  String? itemTypeId,
+  bool required,
+  List<FieldOptionInput> options,
+});
+
+/// Conteúdo da folha de criar/editar campo. `StatefulWidget` próprio (em vez
+/// de `StatefulBuilder`) para que os `TextEditingController` sejam
+/// descartados no momento certo pelo framework — `State.dispose()` só roda
+/// depois que a folha de fato saiu da árvore (após a animação de fechar).
+/// Descartá-los "na mão" assim que `Navigator.pop` retorna quebra o app: o
+/// `TextField` ainda está montado terminando a transição de saída e tenta
+/// reagir a um controller já morto (`ChangeNotifier` usado após `dispose()`,
+/// assert `_dependents.isEmpty` — reproduzido ao testar no emulador). Por
+/// isso o resultado (rótulo, tipo, opções...) sai pelo valor do `pop`, não
+/// lido depois de fora.
+class _FieldFormSheet extends StatefulWidget {
+  const _FieldFormSheet({
+    required this.existing,
+    required this.types,
+    required this.initialOptions,
+  });
+
+  final LocalItemFieldDef? existing;
+  final List<LocalItemType> types;
+  final List<LocalItemFieldOption> initialOptions;
+
+  @override
+  State<_FieldFormSheet> createState() => _FieldFormSheetState();
+}
+
+class _FieldFormSheetState extends State<_FieldFormSheet> {
+  late final _labelCtrl = TextEditingController(
+    text: widget.existing?.label ?? '',
+  );
+  late final List<FieldOptionDraft> _drafts = [
+    for (final o in widget.initialOptions) FieldOptionDraft.from(o),
+  ];
+  String? _optionsError;
+  late String _dataType = widget.existing?.dataType ?? 'text';
+  late bool _required = widget.existing?.required ?? false;
+  late String? _typeId = widget.existing?.itemTypeId;
+
+  @override
+  void dispose() {
+    _labelCtrl.dispose();
+    for (final d in _drafts) {
+      d.controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void _save() {
+    var options = const <FieldOptionInput>[];
+    if (_dataType == 'select') {
+      final r = collectFieldOptions(_drafts);
+      if (r.error != null) {
+        setState(() => _optionsError = r.error);
+        return;
+      }
+      options = r.options!;
+    }
+    Navigator.pop(context, (
+      label: _labelCtrl.text.trim(),
+      dataType: _dataType,
+      itemTypeId: _typeId,
+      required: _required,
+      options: options,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FormSheet(
+      title: widget.existing == null ? 'Novo campo' : 'Editar campo',
+      children: [
+        TextField(
+          controller: _labelCtrl,
+          decoration: const InputDecoration(labelText: 'Descrição'),
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          initialValue: _dataType,
+          decoration: const InputDecoration(labelText: 'Tipo do dado'),
+          items: [
+            for (final e in _dataTypeLabels.entries)
+              DropdownMenuItem(value: e.key, child: Text(e.value)),
+          ],
+          onChanged: (v) => setState(() {
+            _dataType = v ?? 'text';
+            if (_dataType == 'select' && _drafts.isEmpty) {
+              _drafts.add(FieldOptionDraft());
+            }
+          }),
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String?>(
+          initialValue: _typeId,
+          decoration: const InputDecoration(labelText: 'Aplica-se a'),
+          items: [
+            const DropdownMenuItem(
+              value: null,
+              child: Text('Todos os itens (global)'),
+            ),
+            for (final t in widget.types)
+              DropdownMenuItem(value: t.id, child: Text(t.name)),
+          ],
+          onChanged: (v) => setState(() => _typeId = v),
+        ),
+        if (_dataType == 'select') ...[
+          const SizedBox(height: 12),
+          FieldOptionsEditor(drafts: _drafts, errorText: _optionsError),
+        ],
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Obrigatório'),
+          value: _required,
+          onChanged: (v) => setState(() => _required = v),
+        ),
+        const SizedBox(height: 16),
+        FilledButton(onPressed: _save, child: const Text('Salvar')),
+      ],
+    );
   }
 }

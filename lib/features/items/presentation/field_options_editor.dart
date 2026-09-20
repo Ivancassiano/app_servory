@@ -60,11 +60,10 @@ class FieldOptionsEditor extends StatefulWidget {
 class _FieldOptionsEditorState extends State<FieldOptionsEditor> {
   List<FieldOptionDraft> get _drafts => widget.drafts;
 
-  // Sem dispose() aqui de propósito: quem abre o editor (`item_fields_screen`)
-  // ainda lê `d.controller.text` (via `collectFieldOptions`) DEPOIS que esta
-  // folha fecha, para montar o payload a enviar — descartar os controllers
-  // neste State quebraria esse segundo uso. Quem monta [drafts] é dono deles
-  // e os descarta quando de fato termina de usá-los.
+  // Sem dispose() aqui: [drafts] é passado de fora (quem chama monta a lista
+  // e pode reordenar/substituir linhas independente deste State); quem cria
+  // os `FieldOptionDraft` — hoje só `_FieldFormSheetState` — é quem descarta
+  // os controllers, no próprio `dispose()`.
 
   @override
   Widget build(BuildContext context) {
